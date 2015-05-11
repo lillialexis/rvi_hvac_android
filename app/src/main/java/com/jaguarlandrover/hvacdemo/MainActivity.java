@@ -89,9 +89,9 @@ public class MainActivity extends ActionBarActivity
 /* do what you need to do */
                 stepAnimation();
 /* and here comes the "trick" */
-                mHandler.postDelayed(this, 0);
+                mHandler.postDelayed(this, 1000);
             }
-        }, 1000);
+        }, 0);
     }
 
     public void stopAnimation() {

@@ -30,10 +30,11 @@
         <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/imageButton"
+                android:id="@+id/hazard_button"
                 android:layout_below="@+id/textView"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true" />
+                android:src="@drawable/hazard_off"
+                android:background="@null"
+                android:onClick="hazardButtonPressed"/>
 
         <SeekBar
                 android:layout_width="match_parent"

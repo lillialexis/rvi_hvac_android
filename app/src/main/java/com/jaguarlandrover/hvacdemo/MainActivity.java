@@ -67,7 +67,6 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
-
     private void stepAnimation() {
         Log.d(TAG, "stepAnimation");
 
@@ -99,5 +98,16 @@ public class MainActivity extends ActionBarActivity
 
         if (mRunnable != null)
             mHandler.removeCallbacks(mRunnable);
+    }
+
+    public void frontDefrostPressed(View view) {
+        ImageButton frontDefrostButton = (ImageButton) view;
+        frontDefrostButton.setSelected(!frontDefrostButton.isSelected());
+
+        if (frontDefrostButton.isSelected())
+            frontDefrostButton.setImageResource(R.drawable.defrost_front_on);
+        else
+            frontDefrostButton.setImageResource(R.drawable.defrost_front_off);
+
     }
 }

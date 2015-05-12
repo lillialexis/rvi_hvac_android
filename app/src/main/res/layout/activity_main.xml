@@ -9,6 +9,8 @@
         android:paddingTop="@dimen/activity_vertical_margin"
         tools:context=".MainActivity">
 
+
+
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -40,13 +42,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/seekBar"
-                android:layout_above="@+id/logo"
                 android:thumbTint="#fe9c01"
                 android:progressTint="#faac58"
                 android:progressBackgroundTint="#faac58"
                 android:layout_toRightOf="@+id/fan_graphic"
+                android:layout_above="@+id/ac_button"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"/>
+        <!--android:layout_above="@+id/logo"-->
 
         <ImageView
                 android:id="@+id/fan_graphic"
@@ -56,4 +59,64 @@
                 android:layout_alignStart="@+id/logo"
                 android:layout_alignBottom="@+id/seekBar"
                 android:src="@drawable/fan"/>
+
+        <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/fan_right"
+                android:layout_alignTop="@+id/ac_button"
+                android:layout_alignParentLeft="true"
+                android:src="@drawable/fan_dir_right_off"
+                android:background="@null"
+                android:onClick="hazardButtonPressed"/>
+
+        <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/ac_button"
+                android:layout_above="@+id/logo"
+                android:layout_toRightOf="@+id/fan_right"
+                android:src="@drawable/fan_control_ac_off"
+                android:background="@null"
+                android:onClick="hazardButtonPressed"/>
+
+        <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/auto_button"
+                android:layout_toRightOf="@+id/ac_button"
+                android:layout_alignTop="@+id/ac_button"
+                android:src="@drawable/fan_control_auto_off"
+                android:background="@null"
+                android:onClick="hazardButtonPressed"/>
+
+        <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/circ_button"
+                android:layout_toRightOf="@+id/auto_button"
+                android:layout_alignTop="@+id/ac_button"
+                android:src="@drawable/fan_control_circ_off"
+                android:background="@null"
+                android:onClick="hazardButtonPressed"/>
+
+        <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/defrost_rear"
+                android:layout_toRightOf="@+id/circ_button"
+                android:layout_alignTop="@+id/ac_button"
+                android:src="@drawable/defrost_front_off"
+                android:layout_alignParentRight="true"
+                android:background="@null"
+                android:onClick="hazardButtonPressed"/>
+
+        <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/hazard_button"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true">
+        </GridLayout>
+
 </RelativeLayout>

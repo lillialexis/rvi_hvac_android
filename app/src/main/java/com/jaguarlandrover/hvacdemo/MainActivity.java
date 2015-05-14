@@ -6,10 +6,11 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
+import android.widget.*;
 
 import android.os.Handler;
-import java.util.logging.LogRecord;
+
+import java.util.HashMap;
 
 
 public class MainActivity extends ActionBarActivity
@@ -17,10 +18,15 @@ public class MainActivity extends ActionBarActivity
     private final static String TAG = "HVACDemo:MainActivity";
 
     private boolean mHazardsAreFlashing = false;
-    private ImageButton mHazardButton;
     private boolean mHazardsImageIsOn;
+
+    private ImageButton mHazardButton;
+
     private final Handler mHandler = new Handler();
-    private Runnable mRunnable;
+    private Runnable      mRunnable;
+
+    private HashMap<Integer, Integer> mButtonImagesOff;
+    private HashMap<Integer, Integer> mButtonImagesOn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,9 +35,58 @@ public class MainActivity extends ActionBarActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mHazardButton = (ImageButton) findViewById(R.id.hazard_button);
+        mButtonImagesOff = MainActivityUtil.initializeButtonOffHashMap();
+        mButtonImagesOn  = MainActivityUtil.initializeButtonOnHashMap();
+
+        mHazardButton    = (ImageButton) findViewById(R.id.hazard_button);
+
+        configurePicker((NumberPicker) findViewById(R.id.left_temp_picker));
+        configurePicker((NumberPicker) findViewById(R.id.right_temp_picker));
+
+        configureSeekBar((SeekBar) findViewById(R.id.fan_power_seekbar));
     }
 
+    private void configureSeekBar(SeekBar seekBar) {
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
+        {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                Log.d(TAG, Util.getMethodName());
+
+                // TODO: Call backend code to update RVI node
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+    }
+
+    private void configurePicker(NumberPicker picker) {
+        // TODO - Barbara, see this on making the picker not so ugly: http://stackoverflow.com/questions/15031624/how-to-change-number-picker-style-in-android
+
+        picker.setMinValue(15);
+        picker.setMaxValue(26);
+
+        picker.setWrapSelectorWheel(false);
+        picker.setDisplayedValues( new String[] { "LO", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "HI" } );
+
+        picker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener()
+        {
+            @Override
+            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                Log.d(TAG, Util.getMethodName());
+
+                // TODO: Call backend code to update RVI node
+            }
+        });
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -55,20 +110,8 @@ public class MainActivity extends ActionBarActivity
         return super.onOptionsItemSelected(item);
     }
 
-    public void hazardButtonPressed(View view) {
-        Log.d(TAG, "hazardButtonPressed");
-        mHazardsAreFlashing = !mHazardsAreFlashing;
-
-        if (mHazardsAreFlashing) {
-            startAnimation();
-        } else { // if (!mHazardsAreFlashing)
-            stopAnimation();
-            mHazardButton.setImageResource(R.drawable.hazard_off);
-        }
-    }
-
     private void stepAnimation() {
-        Log.d(TAG, "stepAnimation");
+        Log.d(TAG, Util.getMethodName());
 
         if (mHazardsImageIsOn)
             mHazardButton.setImageResource(R.drawable.hazard_off);
@@ -79,35 +122,61 @@ public class MainActivity extends ActionBarActivity
     }
 
     public void startAnimation() {
-        Log.d(TAG, "startAnimation");
+        Log.d(TAG, Util.getMethodName());
 
         mHandler.postDelayed(mRunnable = new Runnable()
         {
             @Override
             public void run() {
-/* do what you need to do */
+                /* do what you need to do */
                 stepAnimation();
-/* and here comes the "trick" */
+
+                /* and here comes the "trick" */
                 mHandler.postDelayed(this, 1000);
             }
         }, 0);
     }
 
     public void stopAnimation() {
-        Log.d(TAG, "stopAnimation");
+        Log.d(TAG, Util.getMethodName());
 
         if (mRunnable != null)
             mHandler.removeCallbacks(mRunnable);
     }
 
-    public void frontDefrostPressed(View view) {
-        ImageButton frontDefrostButton = (ImageButton) view;
-        frontDefrostButton.setSelected(!frontDefrostButton.isSelected());
+    public void hazardButtonPressed(View view) {
+        Log.d(TAG, Util.getMethodName());
 
-        if (frontDefrostButton.isSelected())
-            frontDefrostButton.setImageResource(R.drawable.defrost_front_on);
+        mHazardsAreFlashing = !mHazardsAreFlashing;
+
+        if (mHazardsAreFlashing) {
+            startAnimation();
+        } else { // if (!mHazardsAreFlashing)
+            stopAnimation();
+            mHazardButton.setImageResource(R.drawable.hazard_off);
+        }
+
+        // TODO: Call backend code to update RVI node
+    }
+
+    public void toggleButtonPressed(View view) {
+        Log.d(TAG, Util.getMethodName());
+
+        ImageButton toggleButton = (ImageButton) view;
+        toggleButton.setSelected(!toggleButton.isSelected());
+
+        if (toggleButton.isSelected())
+            toggleButton.setImageResource(mButtonImagesOn.get(toggleButton.getId()));
         else
-            frontDefrostButton.setImageResource(R.drawable.defrost_front_off);
+            toggleButton.setImageResource(mButtonImagesOff.get(toggleButton.getId()));
 
+        // TODO: Call backend code to update RVI node
+    }
+
+    public void seatTempButtonPressed(View view) {
+        Log.d(TAG, Util.getMethodName());
+
+        // TODO: Update the image
+        // TODO: Call backend code to update RVI node
     }
 }

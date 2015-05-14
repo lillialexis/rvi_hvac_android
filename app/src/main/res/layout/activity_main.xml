@@ -9,7 +9,6 @@
                 android:paddingTop="@dimen/activity_vertical_margin"
                 tools:context=".MainActivity">
 
-
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -29,11 +28,59 @@
             android:background="@null"
             android:onClick="hazardButtonPressed"/>
 
+
+    <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/spinner_seat_button_linear_layout"
+            android:layout_below="@+id/hazard_button"
+            android:orientation="horizontal">
+
+        <NumberPicker
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="#fff"
+                android:id="@+id/left_temp_picker"/>
+
+        <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleType="fitCenter"
+                android:layout_weight="1"
+                android:id="@+id/left_seat_temp_button"
+                android:src="@drawable/left_heat_seat_off"
+                android:background="@null"
+                android:onClick="seatTempButtonPressed"/>
+
+        <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleType="fitCenter"
+                android:layout_weight="1"
+                android:id="@+id/right_seat_temp_button"
+                android:src="@drawable/right_heat_seat_off"
+                android:background="@null"
+                android:onClick="seatTempButtonPressed"/>
+
+
+        <NumberPicker
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="#fff"
+                android:id="@+id/right_temp_picker"/>
+
+    </LinearLayout>
+
+
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_below="@+id/hazard_button" android:id="@+id/linearLayout">
+            android:layout_below="@+id/spinner_seat_button_linear_layout"
+            android:id="@+id/linearLayout"
+            android:baselineAligned="false">
 
         <LinearLayout
                 android:layout_width="0dp"
@@ -45,66 +92,71 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:scaleType="fitCenter"
-                    android:id="@+id/fan_down"
+                    android:id="@+id/fan_down_button"
                     android:src="@drawable/fan_dir_down_off"
                     android:background="@null"
-                    android:onClick="hazardButtonPressed"/>
+                    android:onClick="toggleButtonPressed"/>
 
             <ImageButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:scaleType="fitCenter"
-                    android:id="@+id/fan_right"
+                    android:id="@+id/fan_right_button"
                     android:src="@drawable/fan_dir_right_off"
                     android:background="@null"
-                    android:onClick="hazardButtonPressed"/>
+                    android:onClick="toggleButtonPressed"/>
 
             <ImageButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/fan_up"
+                    android:id="@+id/fan_up_button"
                     android:scaleType="fitCenter"
                     android:src="@drawable/fan_dir_up_off"
                     android:background="@null"
-                    android:onClick="hazardButtonPressed"/>
+                    android:onClick="toggleButtonPressed"/>
         </LinearLayout>
 
-        <LinearLayout android:layout_width="0dp"
-                      android:layout_height="match_parent"
-                      android:orientation="vertical"
-                      android:layout_weight="3">
+        <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_weight="3">
 
-            <RelativeLayout android:layout_width="wrap_content"
-                            android:layout_height="0dp"
-                            android:layout_weight="1">
 
-                <LinearLayout android:layout_width="match_parent"
-                                          android:layout_height="wrap_content"
-                                          android:layout_centerVertical="true"
-                                          android:orientation="horizontal"
-                                          android:layout_weight="1">
+            <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:layout_weight="1">
 
-                                <ImageView
-                                        android:id="@+id/fan_graphic"
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:src="@drawable/fan"/>
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:orientation="horizontal"
+                        android:layout_weight="1">
 
-                                <SeekBar
-                                        android:layout_width="match_parent"
-                                        android:layout_height="wrap_content"
-                                        android:id="@+id/seekBar"
-                                        android:thumbTint="#fe9c01"
-                                        android:progressTint="#faac58"
-                                        android:progressBackgroundTint="#faac58"/>
-                            </LinearLayout>
+                    <ImageView
+                            android:id="@+id/fan_graphic"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/fan"/>
+
+                    <SeekBar
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/fan_power_seekbar"
+                            android:thumbTint="#fe9c01"
+                            android:progressTint="#faac58"
+                            android:progressBackgroundTint="#faac58"/>
+                </LinearLayout>
             </RelativeLayout>
 
 
-            <LinearLayout android:layout_width="wrap_content"
-                          android:layout_height="0dp"
-                          android:orientation="horizontal"
-                          android:layout_weight="1">
+            <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:orientation="horizontal"
+                    android:layout_weight="1">
 
                 <ImageButton
                         android:layout_width="wrap_content"
@@ -113,7 +165,7 @@
                         android:scaleType="fitCenter"
                         android:src="@drawable/fan_control_ac_off"
                         android:background="@null"
-                        android:onClick="hazardButtonPressed"
+                        android:onClick="toggleButtonPressed"
                         android:layout_weight="1"/>
 
                 <ImageButton
@@ -123,7 +175,7 @@
                         android:id="@+id/auto_button"
                         android:src="@drawable/fan_control_auto_off"
                         android:background="@null"
-                        android:onClick="hazardButtonPressed"
+                        android:onClick="toggleButtonPressed"
                         android:layout_weight="1"/>
 
                 <ImageButton
@@ -133,62 +185,55 @@
                         android:scaleType="fitCenter"
                         android:src="@drawable/fan_control_circ_off"
                         android:background="@null"
-                        android:onClick="hazardButtonPressed"
+                        android:onClick="toggleButtonPressed"
                         android:layout_weight="1"/>
             </LinearLayout>
 
             <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="0dp"
-                    android:id="@+id/logo"
+                    android:id="@+id/logo_graphic"
                     android:src="@drawable/jlr_logo_color"
                     android:layout_weight="1"/>
         </LinearLayout>
 
-        <LinearLayout android:layout_width="0dp"
-                      android:layout_height="wrap_content"
-                      android:orientation="vertical"
-                      android:layout_weight="1">
+        <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1">
 
             <ImageButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/max_fan"
+                    android:id="@+id/max_fan_button"
                     android:src="@drawable/defrost_max_off"
                     android:background="@null"
                     android:scaleType="fitCenter"
-                    android:onClick="hazardButtonPressed"/>
+                    android:onClick="toggleButtonPressed"/>
 
             <ImageButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/defrost_rear"
+                    android:id="@+id/defrost_rear_button"
                     android:scaleType="fitCenter"
                     android:src="@drawable/defrost_rear_off"
                     android:background="@null"
-                    android:onClick="hazardButtonPressed"/>
+                    android:onClick="toggleButtonPressed"/>
 
             <ImageButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/defrost_front"
+                    android:id="@+id/defrost_front_button"
                     android:src="@drawable/defrost_front_off"
                     android:scaleType="fitCenter"
                     android:background="@null"
-                    android:onClick="frontDefrostPressed"/>
+                    android:onClick="toggleButtonPressed"/>
 
         </LinearLayout>
     </LinearLayout>
-    <Spinner
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/spinner"
-            android:layout_above="@+id/linearLayout"
-            android:layout_below="@+id/linearLayout"
-            android:layout_alignRight="@+id/hazard_button"
-            android:layout_alignEnd="@+id/hazard_button"
-            android:layout_marginRight="175dp"
-            android:layout_marginEnd="175dp"/>
+
+
 
 
 </RelativeLayout>

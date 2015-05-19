@@ -61,6 +61,17 @@ public class MainActivity extends ActionBarActivity
         configureSeekBar((SeekBar) findViewById(R.id.fan_power_seekbar));
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (!HVACManager.isRviConfigured())
+            startActivity(new Intent(this, SettingsActivity.class));
+        else
+            HVACManager.start();
+    }
+
+
     private void configureSeekBar(SeekBar seekBar) {
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
         {

@@ -30,12 +30,11 @@ public class SettingsActivity extends ActionBarActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        SharedPreferences sharedPref = getPreferences(MODE_PRIVATE);
-        String vinString = sharedPref.getString(getResources().getString(R.string.vehicle_vin_prefs_string), "");
-        String urlString = sharedPref.getString(getResources().getString(R.string.server_url_prefs_string), "");
+        String vinString = HVACManager.getVin();
+        String urlString = HVACManager.getProxyUrl();
 
         EditText vin = (EditText) findViewById(R.id.vin_edit_text);
-        EditText url = (EditText) findViewById(R.id.server_url_edit_text);
+        EditText url = (EditText) findViewById(R.id.proxy_server_url_edit_text);
 
         vin.setText(vinString);
         url.setText(urlString);
@@ -66,16 +65,10 @@ public class SettingsActivity extends ActionBarActivity
 
     public void settingsSubmitButtonClicked(View view) {
         EditText vin = (EditText) findViewById(R.id.vin_edit_text);
-        EditText url = (EditText) findViewById(R.id.server_url_edit_text);
+        EditText url = (EditText) findViewById(R.id.proxy_server_url_edit_text);
 
-        String vinString = vin.getText().toString();
-        String urlString = url.getText().toString();
-
-        SharedPreferences sharedPref = getPreferences(MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(getString(R.string.vehicle_vin_prefs_string), vinString);
-        editor.putString(getString(R.string.server_url_prefs_string), urlString);
-        editor.commit();
+        HVACManager.setVin(vin.getText().toString());
+        HVACManager.setProxyUrl(url.getText().toString());
 
         finish();
     }

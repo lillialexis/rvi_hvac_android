@@ -33,14 +33,14 @@ public class RVIApp
         mDomain   = domain;
         mVin      = "/vin/" + vin;
 
-        mBackend  = "/backend/123456789"; // TODO: Generate randomly
+        mBackend  = "/backend/987654321"; // TODO: Generate randomly
 
         mServices = new ArrayList<>();
     }
 
     public RVIService getService(String name) {
         for (RVIService service : mServices)
-            if (service.getServiceName().equals(name))
+            if (service.getServiceName().equals(name) || service.getServiceName().equals("/" + name))
                 return service;
 
         RVIService service = new RVIService(name, mAppName, mDomain, mVin, mBackend);
@@ -66,8 +66,8 @@ public class RVIApp
         return mServices;
     }
 
-    public String updateService(String service) {
+    public void updateService(String service) {
         RPCRequest request = new RPCRequest("message", getService(service));
-        return RVIRemoteConnectionManager.sendRviRequest(request);
+        RVIRemoteConnectionManager.sendRviRequest(request);
     }
 }

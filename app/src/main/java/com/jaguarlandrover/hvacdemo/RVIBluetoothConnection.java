@@ -19,8 +19,8 @@ public class RVIBluetoothConnection implements RVIRemoteConnection
     private final static String TAG = "HVACDemo:RVIBluetoothConnection";
 
     @Override
-    public String sendRviRequest(RPCRequest request) {
-        return null;
+    public void sendRviRequest(RPCRequest request) {
+        return;
     }
 
     @Override

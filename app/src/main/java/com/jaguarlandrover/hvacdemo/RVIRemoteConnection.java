@@ -16,7 +16,7 @@ package com.jaguarlandrover.hvacdemo;
 
 public interface RVIRemoteConnection
 {
-    String sendRviRequest(RPCRequest request);
+    void sendRviRequest(RPCRequest request);
 
     boolean isConnected();
     boolean isConfigured();

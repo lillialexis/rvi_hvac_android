@@ -19,8 +19,8 @@ public class RVIDirectServerConnection implements RVIRemoteConnection
     private final static String TAG = "HVACDemo:RVIDirectServerConnection";
 
     @Override
-    public String sendRviRequest(RPCRequest request) {
-        return null;
+    public void sendRviRequest(RPCRequest request) {
+        return;
     }
 
     @Override

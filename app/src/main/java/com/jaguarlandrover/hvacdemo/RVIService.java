@@ -60,7 +60,7 @@ public class RVIService
 
         params.put("service_name", mDomain + mVin + mAppName + mServiceName);
         params.put("parameters", subParams);
-        params.put("timeout", System.currentTimeMillis() + 5000);
+        params.put("timeout", (System.currentTimeMillis()/1000) + 5000);
 
         return params;
     }

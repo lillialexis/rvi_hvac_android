@@ -96,7 +96,7 @@ public class RPCRequest
         mService  = service;
         mListener = listener;
 
-        mId = (new Random()).toString();
+        mId = Integer.toString((new Random()).nextInt());
 
     }
 

@@ -14,8 +14,60 @@ package com.jaguarlandrover.hvacdemo;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
- public class RVIApp
+import java.util.ArrayList;
+
+public class RVIApp
 {
     private final static String TAG = "HVACDemo:RVIApp";
 
+    private String mAppName;
+    private String mDomain;
+    private String mVin;
+
+    private String mBackend;
+
+    private ArrayList<RVIService> mServices;
+
+    public RVIApp(String appName, String domain, String vin) {
+        mAppName  = appName;
+        mDomain   = domain;
+        mVin      = "/vin/" + vin;
+
+        mBackend  = "/backend/123456789"; // TODO: Generate randomly
+
+        mServices = new ArrayList<>();
+    }
+
+    public RVIService getService(String name) {
+        for (RVIService service : mServices)
+            if (service.getServiceName().equals(name))
+                return service;
+
+        RVIService service = new RVIService(name, mAppName, mDomain, mVin, mBackend);
+        mServices.add(service);
+
+        return service;
+    }
+
+    public String getDomain() {
+        return mDomain;
+    }
+
+    public String getVin() {
+        return mVin;
+    }
+
+    public void setVin(String vin) {
+        mVin = vin;
+        mServices.removeAll(mServices);
+    }
+
+    public ArrayList<RVIService> getServices() {
+        return mServices;
+    }
+
+    public String updateService(String service) {
+        RPCRequest request = new RPCRequest("message", getService(service));
+        return RVIRemoteConnectionManager.sendRviRequest(request);
+    }
 }

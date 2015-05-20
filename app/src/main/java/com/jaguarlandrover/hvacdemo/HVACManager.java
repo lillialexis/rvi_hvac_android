@@ -22,37 +22,28 @@ public class HVACManager
 {
     private final static String TAG = "HVACDemo:HVACManager";
 
+    private final static String RVI_DOMAIN   = "jlr.com";
+    private final static String RVI_APP_NAME = "/hvac";
+
     private static HVACManager ourInstance = new HVACManager();
 
     private HVACManager() {}
 
-    public static void sendMethodValue(String method, String value) {
-
-    }
+    private RVIApp mRVIApp;
 
     public static String getVin() {
         SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
-        return sharedPref.getString(HVACApplication.getContext().getResources()
-                                                   .getString(R.string.vehicle_vin_prefs_string), "");
+        return sharedPref.getString(HVACApplication.getContext().getResources().getString(R.string.vehicle_vin_prefs_string), "");
     }
 
     public static void setVin(String vin) {
         SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(HVACApplication.getContext().getString(R.string.vehicle_vin_prefs_string), vin);
-        editor.commit();
-    }
+        editor.apply();
 
-    public static String getDomain() {
-        return "jlr.com/";
-    }
-
-    public static String getApp() {
-        return "/hvac/";
-    }
-
-    public static String getBackend() {
-        return "/backend/123456789"; // TODO: Generate and save
+        if (ourInstance.mRVIApp != null)
+            ourInstance.mRVIApp.setVin(vin);
     }
 
     public static String getProxyUrl() {
@@ -64,14 +55,13 @@ public class HVACManager
         SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(HVACApplication.getContext().getString(R.string.proxy_server_url_prefs_string), proxyUrl);
-        editor.commit();
+        editor.apply();
+
+        RVIRemoteConnectionManager.setProxyServerUrl(proxyUrl);
     }
 
     public static boolean isRviConfigured() {
         if (getVin()      == null || getVin().isEmpty())      return false;
-        if (getDomain()   == null || getDomain().isEmpty())   return false;
-        if (getApp()      == null || getApp().isEmpty())      return false;
-        if (getBackend()  == null || getBackend().isEmpty())  return false;
         if (getProxyUrl() == null || getProxyUrl().isEmpty()) return false;
 
         return true;
@@ -79,5 +69,13 @@ public class HVACManager
 
     public static void start() {
         RVIRemoteConnectionManager.setProxyServerUrl(getProxyUrl());
+
+        ourInstance.mRVIApp = new RVIApp(RVI_APP_NAME, RVI_DOMAIN, getVin());
     }
+
+    public static void updateService(String service, String value) {
+        ourInstance.mRVIApp.getService(service).setValue(value);
+        ourInstance.mRVIApp.updateService(service);
+    }
+
 }

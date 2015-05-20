@@ -109,7 +109,7 @@ public class MainActivity extends ActionBarActivity
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
                 Log.d(TAG, Util.getMethodName());
 
-                // TODO: Call backend code to update RVI node
+                HVACManager.updateService("temp_left", Integer.toString(newVal));
             }
         });
     }

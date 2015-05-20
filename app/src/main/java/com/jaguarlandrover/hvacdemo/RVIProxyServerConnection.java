@@ -14,18 +14,13 @@ package com.jaguarlandrover.hvacdemo;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
-
-import javax.net.ssl.HttpsURLConnection;
+import android.util.Log;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 public class RVIProxyServerConnection implements RVIRemoteConnection
 {
@@ -44,6 +39,8 @@ public class RVIProxyServerConnection implements RVIRemoteConnection
         try {
             String urlParameters = request.jsonString();
 
+            Log.d(TAG, "Sending url parameters: " + urlParameters);
+
             //Create connection
             url = new URL(mProxyServerUrl);
             connection = (HttpURLConnection)url.openConnection();
@@ -59,8 +56,7 @@ public class RVIProxyServerConnection implements RVIRemoteConnection
             connection.setDoOutput(true);
 
             //Send request
-            DataOutputStream wr = new DataOutputStream (
-                     connection.getOutputStream ());
+            DataOutputStream wr = new DataOutputStream (connection.getOutputStream ());
             wr.writeBytes (urlParameters);
             wr.flush ();
             wr.close ();
@@ -77,6 +73,8 @@ public class RVIProxyServerConnection implements RVIRemoteConnection
             }
 
             rd.close();
+
+            Log.d(TAG, "Got response: " + response.toString());
 
             return response.toString();
 

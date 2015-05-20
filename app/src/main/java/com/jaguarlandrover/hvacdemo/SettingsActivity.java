@@ -64,11 +64,13 @@ public class SettingsActivity extends ActionBarActivity
     }
 
     public void settingsSubmitButtonClicked(View view) {
+        // TODO: Validate input (correct URLs, etc.)
+
         EditText vin = (EditText) findViewById(R.id.vin_edit_text);
         EditText url = (EditText) findViewById(R.id.proxy_server_url_edit_text);
 
-        HVACManager.setVin(vin.getText().toString());
-        HVACManager.setProxyUrl(url.getText().toString());
+        HVACManager.setVin(vin.getText().toString().trim());
+        HVACManager.setProxyUrl(url.getText().toString().trim());
 
         finish();
     }

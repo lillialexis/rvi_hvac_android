@@ -23,7 +23,6 @@ public class RPCRequest
 {
     private final static String TAG = "HVACDemo:RPCRequest";
 
-
     /**
      * The RPC Version.
      * This client only supports version 2.0 at the moment.
@@ -41,9 +40,9 @@ public class RPCRequest
     private String mMethod;
 
     /**
-     * Request params. Either named, un-named, or nil
+     * The RVIService used to create the request params
      */
-    private Object mParams;
+    private RVIService mService;
 
     /**
      * Callback to call whenever request is finished
@@ -57,9 +56,9 @@ public class RPCRequest
         HashMap<String, Object> requestHash = new HashMap<>(4);
 
         requestHash.put("jsonrpc", mVersion);
-        requestHash.put("params", mParams);
-        requestHash.put("id", mId);
-        requestHash.put("method", mMethod);
+        requestHash.put("params",  mService.generateRequestParams());
+        requestHash.put("id",      mId);
+        requestHash.put("method",  mMethod);
 
         Gson gson = new Gson();
         return gson.toJson(requestHash);
@@ -78,23 +77,23 @@ public class RPCRequest
      * Helper method to get a request object
      *
      * @param method The method that this request is for
-     * @param params Some parameters to send along with the request, either named, un-named, or nil
+     * @param service Some parameters to send along with the request, either named, un-named, or nil
      */
-    public RPCRequest(String method, Object params) {
-        this(method, params, null);
+    public RPCRequest(String method, RVIService service) {
+        this(method, service, null);
     }
 
     /**
      * Helper method to get a request object
      *
      * @param method The method that this request is for
-     * @param params Some parameters to send along with the request, either named, un-named, or nil
+     * @param service Some parameters to send along with the request, either named, un-named, or nil
      * @param listener The listener to call once the request is finished
      */
-    public RPCRequest(String method, Object params, RPCRequestListener listener) {
+    public RPCRequest(String method, RVIService service, RPCRequestListener listener) {
         mVersion  = "2.0";
         mMethod   = method;
-        mParams   = params;
+        mService  = service;
         mListener = listener;
 
         mId = (new Random()).toString();

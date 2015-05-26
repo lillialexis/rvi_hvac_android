@@ -86,13 +86,15 @@ public class MainActivity extends ActionBarActivity
     }
 
     private void configureSeekBar(SeekBar seekBar) {
+        seekBar.setMax(7);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
         {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 Log.d(TAG, Util.getMethodName());
 
-                // TODO: Call backend code to update RVI node
+                HVACManager.updateService((String) mButtonServices.get(seekBar.getId()),
+                                          Integer.toString(progress));
             }
 
             @Override

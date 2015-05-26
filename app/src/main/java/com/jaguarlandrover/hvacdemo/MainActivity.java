@@ -224,13 +224,13 @@ public class MainActivity extends ActionBarActivity
 
             case R.id.defrost_rear_button:
             case R.id.defrost_front_button:
+            case R.id.circ_button:
                 HVACManager.updateService((String) mButtonServices.get(toggleButton.getId()),
                                           Boolean.toString(toggleButton.isSelected()));
                 break;
 
             case R.id.ac_button:
             case R.id.auto_button:
-            case R.id.circ_button:
             case R.id.max_fan_button:
                 // TODO: Do stuff here
                 break;

@@ -15,6 +15,7 @@ package com.jaguarlandrover.hvacdemo;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import android.content.Intent;
+import android.media.Image;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,23 +26,31 @@ import android.widget.*;
 
 import android.os.Handler;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 
 public class MainActivity extends ActionBarActivity
 {
     private final static String TAG = "HVACDemo:MainActivity";
 
+    private final Handler mHandler = new Handler();
+    private Runnable mRunnable;
+
+    private HashMap<Integer, Integer> mButtonImagesOff;
+    private HashMap<Integer, Integer> mButtonImagesOn;
+    private HashMap<Integer, List>    mSeatTempImages;
+
+    private List<Integer> mSeatTempValues = Arrays.asList(0, 5, 3, 1);
+
+    private int mLeftSeatTempState  = 0;
+    private int mRightSeatTempState = 0;
+
     private boolean mHazardsAreFlashing = false;
     private boolean mHazardsImageIsOn;
 
     private ImageButton mHazardButton;
-
-    private final Handler mHandler = new Handler();
-    private Runnable      mRunnable;
-
-    private HashMap<Integer, Integer> mButtonImagesOff;
-    private HashMap<Integer, Integer> mButtonImagesOn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +62,9 @@ public class MainActivity extends ActionBarActivity
         mButtonImagesOff = MainActivityUtil.initializeButtonOffHashMap();
         mButtonImagesOn  = MainActivityUtil.initializeButtonOnHashMap();
 
-        mHazardButton    = (ImageButton) findViewById(R.id.hazard_button);
+        mSeatTempImages  = MainActivityUtil.initializeSeatTempHashArray();
+
+        mHazardButton = (ImageButton) findViewById(R.id.hazard_button);
 
         configurePicker((NumberPicker) findViewById(R.id.left_temp_picker));
         configurePicker((NumberPicker) findViewById(R.id.right_temp_picker));
@@ -70,7 +81,6 @@ public class MainActivity extends ActionBarActivity
         else
             HVACManager.start();
     }
-
 
     private void configureSeekBar(SeekBar seekBar) {
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
@@ -98,10 +108,10 @@ public class MainActivity extends ActionBarActivity
         // TODO - Barbara, see this on making the picker not so ugly: http://stackoverflow.com/questions/15031624/how-to-change-number-picker-style-in-android
 
         picker.setMinValue(15);
-        picker.setMaxValue(26);
+        picker.setMaxValue(29);
 
         picker.setWrapSelectorWheel(false);
-        picker.setDisplayedValues( new String[] { "LO", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "HI" } );
+        picker.setDisplayedValues( new String[] { "LO", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "HI" } );
 
         picker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener()
         {
@@ -185,7 +195,7 @@ public class MainActivity extends ActionBarActivity
             mHazardButton.setImageResource(R.drawable.hazard_off);
         }
 
-        // TODO: Call backend code to update RVI node
+        HVACManager.updateService("hazard", Boolean.toString(mHazardsAreFlashing));
     }
 
     public void toggleButtonPressed(View view) {
@@ -205,7 +215,19 @@ public class MainActivity extends ActionBarActivity
     public void seatTempButtonPressed(View view) {
         Log.d(TAG, Util.getMethodName());
 
-        // TODO: Update the image
-        // TODO: Call backend code to update RVI node
+        ImageButton seatTempButton = (ImageButton) view;
+
+        int newSeatTempState;
+        if (seatTempButton == findViewById(R.id.left_seat_temp_button))
+            newSeatTempState = ++mLeftSeatTempState % 4;
+        else
+            newSeatTempState = ++mRightSeatTempState % 4;
+
+        seatTempButton.setImageResource((Integer) mSeatTempImages.get(seatTempButton.getId()).get(newSeatTempState));
+
+        if (seatTempButton == findViewById(R.id.left_seat_temp_button))
+            HVACManager.updateService("seat_heat_left", Integer.toString(mSeatTempValues.get(newSeatTempState)));
+        else
+            HVACManager.updateService("seat_heat_right", Integer.toString(mSeatTempValues.get(newSeatTempState)));
     }
 }

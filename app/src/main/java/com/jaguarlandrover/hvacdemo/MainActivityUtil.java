@@ -14,7 +14,10 @@ package com.jaguarlandrover.hvacdemo;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 public class MainActivityUtil
 {
@@ -48,6 +51,21 @@ public class MainActivityUtil
         hm.put(R.id.max_fan_button,       R.drawable.defrost_max_on);
         hm.put(R.id.defrost_rear_button,  R.drawable.defrost_rear_on);
         hm.put(R.id.defrost_front_button, R.drawable.defrost_front_on);
+
+        return hm;
+    }
+
+    public static HashMap<Integer, List> initializeSeatTempHashArray(){
+        HashMap<Integer, List> hm = new HashMap<>();
+
+        hm.put(R.id.left_seat_temp_button,  Arrays.asList(R.drawable.left_heat_seat_off,
+                                                          R.drawable.left_heat_seat_5,
+                                                          R.drawable.left_heat_seat_3,
+                                                          R.drawable.left_heat_seat_1));
+        hm.put(R.id.right_seat_temp_button, Arrays.asList(R.drawable.right_heat_seat_off,
+                                                          R.drawable.right_heat_seat_5,
+                                                          R.drawable.right_heat_seat_3,
+                                                          R.drawable.right_heat_seat_1));
 
         return hm;
     }

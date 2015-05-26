@@ -15,6 +15,8 @@ package com.jaguarlandrover.hvacdemo;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import javax.xml.validation.Validator;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.prefs.BackingStoreException;
 
@@ -59,7 +61,7 @@ public class RVIService
         subParams.put("value", mValue);
 
         params.put("service_name", mDomain + mVin + mAppName + mServiceName);
-        params.put("parameters", subParams);
+        params.put("parameters", Arrays.asList(subParams));
         params.put("timeout", (System.currentTimeMillis()/1000) + 5000);
 
         return params;

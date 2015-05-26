@@ -33,7 +33,7 @@ public class RVIApp
         mDomain   = domain;
         mVin      = "/vin/" + vin;
 
-        mBackend  = "/backend/987654321"; // TODO: Generate randomly
+        mBackend  = "/android/987654321"; // TODO: Generate randomly
 
         mServices = new ArrayList<>();
     }

@@ -110,8 +110,8 @@ public class RVIProxyServerConnection implements RVIRemoteConnection
 
             try
             {
-                url = new URL("http://192.168.6.86:8811");//http://rvi1.nginfotpdx.net:8801");//mProxyServerUrl);
-
+                url = new URL("http://rvi1.nginfotpdx.net:8801");//mProxyServerUrl);
+                //url = new URL("http://192.168.6.86:8811");//http://rvi1.nginfotpdx.net:8801");//mProxyServerUrl);
                 //url = new URL("http://posttestserver.com/post.php");//mProxyServerUrl);
 
                 //Create connection

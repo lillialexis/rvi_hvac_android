@@ -16,16 +16,6 @@ package com.jaguarlandrover.hvacdemo;
 
 import android.os.AsyncTask;
 import android.util.Log;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -49,68 +39,19 @@ public class RVIProxyServerConnection implements RVIRemoteConnection
 
     private class AsyncRVIRequest extends AsyncTask<String, Void, String> {
 
-//        private static final int MAX_RETRIES = 3;
-//
-//        private void fetchResult(String urlParams) {
-//            fetchResult(urlParams, 0);
-//        }
-//
-//        private void fetchResult(String urlParams, int reentryCount) {
-//            try {
-//
-//
-//
-//
-//
-//
-//
-//            } catch (EOFException e) {
-//                if (reentryCount < MAX_RETRIES) {
-//                    fetchResult(urlParams, reentryCount + 1);
-//                }
-//            }
-//            // continue processing response
-//        }
-
         @Override
         protected String doInBackground(String... strs) {
 
             String urlParameters = strs[0];
             Log.d(TAG, "Sending url parameters: " + urlParameters);
 
-//            HttpClient httpClient = new DefaultHttpClient();
-//            HttpPost httpPost = new HttpPost(mProxyServerUrl);
-//
-//            //Encoding POST data
-//            try {
-//                httpPost.setEntity(new ByteArrayEntity(urlParameters.getBytes("UTF8")));
-//            } catch (UnsupportedEncodingException e) {
-//                // log exception
-//                e.printStackTrace();
-//            }
-//
-//            //making POST request.
-//            try {
-//                HttpResponse response = httpClient.execute(httpPost);
-//                // write response to log
-//                Log.d("Http Post Response:", response.toString());
-//            } catch (ClientProtocolException e) {
-//                // Log exception
-//                e.printStackTrace();
-//            } catch (IOException e) {
-//                // Log exception
-//                e.printStackTrace();
-//            }
-//
-//            return null;
-
-
             HttpURLConnection connection = null;
             URL url;
 
             try
             {
-                url = new URL("http://rvi1.nginfotpdx.net:8801");//mProxyServerUrl);
+                url = new URL(mProxyServerUrl);
+                //url = new URL("http://rvi1.nginfotpdx.net:8801");//mProxyServerUrl);
                 //url = new URL("http://192.168.6.86:8811");//http://rvi1.nginfotpdx.net:8801");//mProxyServerUrl);
                 //url = new URL("http://posttestserver.com/post.php");//mProxyServerUrl);
 

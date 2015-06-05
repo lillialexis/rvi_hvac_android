@@ -14,7 +14,10 @@ package com.jaguarlandrover.hvacdemo;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 public class MainActivityUtil
 {
@@ -52,4 +55,44 @@ public class MainActivityUtil
         return hm;
     }
 
+    public static HashMap<Integer, List> initializeSeatTempHashArray(){
+        HashMap<Integer, List> hm = new HashMap<>();
+
+        hm.put(R.id.left_seat_temp_button,  Arrays.asList(R.drawable.left_heat_seat_off,
+                                                          R.drawable.left_heat_seat_5,
+                                                          R.drawable.left_heat_seat_3,
+                                                          R.drawable.left_heat_seat_1));
+        hm.put(R.id.right_seat_temp_button, Arrays.asList(R.drawable.right_heat_seat_off,
+                                                          R.drawable.right_heat_seat_5,
+                                                          R.drawable.right_heat_seat_3,
+                                                          R.drawable.right_heat_seat_1));
+
+        return hm;
+    }
+
+    public static HashMap<Integer, Object> initializeButtonServices() {
+        HashMap<Integer, Object> hm = new HashMap<>();
+
+        hm.put(R.id.fan_power_seekbar,            "fan_speed");
+        hm.put(R.id.fan_down_button,              "airflow_direction");
+        hm.put(R.id.fan_right_button,             "airflow_direction");
+        hm.put(R.id.fan_up_button,                "airflow_direction");
+        hm.put(R.id.defrost_rear_button,          "defrost_rear");
+        hm.put(R.id.defrost_front_button,         "defrost_front");
+        hm.put(R.id.left_seat_temp_button,        "seat_heat_left");
+        hm.put(R.id.right_seat_temp_button,       "seat_heat_right");
+        hm.put(R.id.circ_button,                  "air_circ");
+        hm.put(R.id.ac_button,                    null);
+        hm.put(R.id.auto_button,    Arrays.asList("airflow_direction",
+                                                  "defrost_rear",
+                                                  "defrost_front",
+                                                  "fan_speed",
+                                                  "temp_left",
+                                                  "temp_right"));
+        hm.put(R.id.max_fan_button, Arrays.asList("defrost_rear",
+                                                  "defrost_front",
+                                                  "fan_speed"));
+
+        return hm;
+    }
 }

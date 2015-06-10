@@ -14,9 +14,11 @@ package com.jaguarlandrover.hvacdemo;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-public class RVIBluetoothConnection implements RVIRemoteConnection
+public class RVIBluetoothConnection implements RVIRemoteConnectionInterface
 {
     private final static String TAG = "HVACDemo:RVIBluetoothConnection";
+
+    private RemoteConnectionListener mRemoteConnectionListener;
 
     @Override
     public void sendRviRequest(RPCRequest request) {
@@ -29,7 +31,7 @@ public class RVIBluetoothConnection implements RVIRemoteConnection
     }
 
     @Override
-    public boolean isConfigured() {
+    public boolean isEnabled() {
         return false;
     }
 
@@ -39,5 +41,10 @@ public class RVIBluetoothConnection implements RVIRemoteConnection
 
     @Override
     public void disconnect() {
+    }
+
+    @Override
+    public void setRemoteConnectionListener(RemoteConnectionListener remoteConnectionListener) {
+        mRemoteConnectionListener = remoteConnectionListener;
     }
 }

@@ -19,126 +19,34 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
-import android.os.Build;
-import android.os.Handler;
-import android.util.Log;
-
-import java.io.*;
 import java.net.*;
 
-import java.util.List;
-import java.util.Map;
-
-public class RVIProxyServerConnection implements RVIRemoteConnection
+public class RVIProxyServerConnection implements RVIRemoteConnectionInterface
 {
-    private final static String TAG = "HVACDemo:RVIProxyServerConnection";
+    private final static String TAG = "HVACDemo:RVIProxySer...";
+    private RemoteConnectionListener mRemoteConnectionListener;
 
-    private ServerSocket serverSocket;
-
-    private Handler updateConversationHandler;
-    private Thread serverThread = null;
-
-    public static final int SERVERPORT = 8807;
+    public static final int SERVER_PORT = 8807;
     private String mProxyServerUrl;
 
+    Socket mSocket;
 
     @Override
     public void sendRviRequest(RPCRequest request) {
-        if (!isConfigured())
+        if (!isConnected() || !isEnabled()) // TODO: Call error on listener
             return;
 
-        new AsyncRVIRequest().execute(request.jsonString());
-    }
-
-    private class AsyncRVIRequest extends AsyncTask<String, Void, String>
-    {
-        @Override
-        protected String doInBackground(String... strs) {
-
-            String urlParameters = strs[0];
-            Log.d(TAG, "Sending url parameters: " + urlParameters);
-
-            HttpURLConnection connection = null;
-            URL url;
-
-            try
-            {
-                url = new URL(mProxyServerUrl);
-                //url = new URL("http://rvi1.nginfotpdx.net:8801");//mProxyServerUrl);
-                //url = new URL("http://192.168.6.86:8811");//http://rvi1.nginfotpdx.net:8801");//mProxyServerUrl);
-                //url = new URL("http://posttestserver.com/post.php");//mProxyServerUrl);
-
-                //Create connection
-                connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Content-Type", "application/json-rpc");
-                connection.setRequestProperty("User-Agent", "objc-JSONRpc/1.0");
-
-                connection.setRequestProperty("Content-Length", "" + Integer.toString(urlParameters.getBytes().length));
-                connection.setRequestProperty("Content-Language", "en-US");
-
-                connection.setUseCaches(false);
-                connection.setDoInput(true);
-                connection.setDoOutput(true);
-
-                //Send request
-                DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
-                wr.writeBytes(urlParameters);
-                wr.flush();
-                wr.close();
-
-                Map<String, List<String>> responseHeaders = connection.getHeaderFields();
-                String responseString = connection.getResponseMessage();
-
-                Log.d(TAG, "Response code: " + Integer.toString(connection.getResponseCode()));
-
-                //Get Response
-                InputStream is = connection.getInputStream();
-                BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-                String line;
-                StringBuffer response = new StringBuffer();
-
-                while ((line = rd.readLine()) != null) {
-                    response.append(line);
-                    response.append('\r');
-                }
-
-                rd.close();
-
-                Log.d(TAG, "Got response: " + response.toString());
-
-                return response.toString();
-
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-                return null;
-            }
-            finally
-            {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-        }
-
-           @Override
-           protected void onPostExecute(String result) {
-               //Log.d(TAG, result);
-           }
+        new AsyncRVIRequest().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, request.jsonString());
     }
 
     @Override
     public boolean isConnected() {
-        return true;
+        return mSocket != null && mSocket.isConnected();//true;
     }
 
     @Override
-    public boolean isConfigured() {
+    public boolean isEnabled() {
         return !(mProxyServerUrl == null || mProxyServerUrl.isEmpty());
     }
 
@@ -150,59 +58,53 @@ public class RVIProxyServerConnection implements RVIRemoteConnection
     @Override
     public void disconnect() {
         try {
-            serverSocket.close();
+            mSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void connectSocket() {
-        Log.d(TAG, "Connecting the socket...");
-        MyClientTask myClientTask = new MyClientTask(mProxyServerUrl, SERVERPORT);
-        myClientTask.execute();
+    @Override
+    public void setRemoteConnectionListener(RemoteConnectionListener remoteConnectionListener) {
+        mRemoteConnectionListener = remoteConnectionListener;
     }
 
-    public class MyClientTask extends AsyncTask<Void, Void, Void> {
+    private void connectSocket() {
+        Log.d(TAG, "Connecting the socket...");
+
+        String authorizeMessage = "{\"tid\":1,\"cmd\":\"au\",\"addr\":\"0.0.0.0\",\"port\":0,\"ver\":\"1.0\",\"cert\":\"\",\"sign\":\"\"}";
+
+        ConnectAndAuthorizeTask connectAndAuthorizeTask = new ConnectAndAuthorizeTask(mProxyServerUrl, SERVER_PORT);
+        connectAndAuthorizeTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, authorizeMessage);
+    }
+
+    public class ConnectAndAuthorizeTask extends AsyncTask<String, Void, Void> {
 
         String dstAddress;
         int dstPort;
         String response = "";
 
-        MyClientTask(String addr, int port){
+        ConnectAndAuthorizeTask(String addr, int port){
            dstAddress = addr;
            dstPort = port;
         }
 
         @Override
-        protected Void doInBackground(Void... arg0) {
+        protected Void doInBackground(String... params) {
             Log.d(TAG, "Starting auth sequence...");
 
-            Socket socket = null;
+            String authorizeMessage = params[0];
 
             try {
-                //socket = new Socket("192.168.4.189", 50000);
-                socket = new Socket(dstAddress, dstPort);
-
-//                ByteArrayOutputStream foo = new ByteArrayOutputStream(1024);
-//                final byte[] authorizeMessageBytes = new byte[] {0x7b, 0x22, 0x74, 0x69, 0x64, 0x22, 0x3a, 0x31, 0x2c, 0x22, 0x63, 0x6d, 0x64, 0x22, 0x3a, 0x22, 0x61, 0x75, 0x22, 0x2c, 0x22, 0x61, 0x64, 0x64, 0x72, 0x22, 0x3a, 0x22, 0x33, 0x38, 0x2e, 0x31, 0x32, 0x39, 0x2e, 0x36, 0x34, 0x2e, 0x33, 0x31, 0x22, 0x2c, 0x22, 0x70, 0x6f, 0x72, 0x74, 0x22, 0x3a, 0x38, 0x38, 0x30, 0x37, 0x2c, 0x22, 0x76, 0x65, 0x72, 0x22, 0x3a, 0x22, 0x31, 0x2e, 0x30, 0x22, 0x2c, 0x22, 0x63, 0x65, 0x72, 0x74, 0x22, 0x3a, 0x22, 0x22, 0x2c, 0x22, 0x73, 0x69, 0x67, 0x6e, 0x22, 0x3a, 0x22, 0x22, 0x7d};
-//                //final byte[] authorizeMessageBytes = new byte[] {0x00, 0x00, 0x00, 0x56, 0x7b, 0x22, 0x74, 0x69, 0x64, 0x22, 0x3a, 0x31, 0x2c, 0x22, 0x63, 0x6d, 0x64, 0x22, 0x3a, 0x22, 0x61, 0x75, 0x22, 0x2c, 0x22, 0x61, 0x64, 0x64, 0x72, 0x22, 0x3a, 0x22, 0x33, 0x38, 0x2e, 0x31, 0x32, 0x39, 0x2e, 0x36, 0x34, 0x2e, 0x33, 0x31, 0x22, 0x2c, 0x22, 0x70, 0x6f, 0x72, 0x74, 0x22, 0x3a, 0x38, 0x38, 0x30, 0x37, 0x2c, 0x22, 0x76, 0x65, 0x72, 0x22, 0x3a, 0x22, 0x31, 0x2e, 0x30, 0x22, 0x2c, 0x22, 0x63, 0x65, 0x72, 0x74, 0x22, 0x3a, 0x22, 0x22, 0x2c, 0x22, 0x73, 0x69, 0x67, 0x6e, 0x22, 0x3a, 0x22, 0x22, 0x7d};
-//                String authorizeMessage;
-//                int br;
-
-//                foo.write(authorizeMessageBytes, 0, authorizeMessageBytes.length);
-                String authorizeMessage = "{\"tid\":1,\"cmd\":\"au\",\"addr\":\"0.0.0.0\",\"port\":0,\"ver\":\"1.0\",\"cert\":\"\",\"sign\":\"\"}";//foo.toString("UTF-8");
+                mSocket = new Socket(dstAddress, dstPort);
 
                 Log.d(TAG, "Sending auth message: " + authorizeMessage);
 
-                DataOutputStream wr = new DataOutputStream(socket.getOutputStream());
+                DataOutputStream wr = new DataOutputStream(mSocket.getOutputStream());
                 wr.writeBytes(authorizeMessage);
                 wr.flush();
 
                 Log.d(TAG, "Auth message sent. Waiting for response...");
-
-//                PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
-//                out.println(str);
-
 
 //                //Get Response
 //                InputStream is = socket.getInputStream();
@@ -218,16 +120,12 @@ public class RVIProxyServerConnection implements RVIRemoteConnection
 //                    Log.d(TAG, "Got response: " + response.toString());
 //
 //                }
-//
-//                rd.close();
-
-//                Log.d(TAG, "Got response: " + response.toString());
 
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
                 byte[] buffer = new byte[1024];
 
                 int bytesRead;
-                InputStream inputStream = socket.getInputStream();
+                InputStream inputStream = mSocket.getInputStream();
 
                 /*
                  * notice:
@@ -247,23 +145,113 @@ public class RVIProxyServerConnection implements RVIRemoteConnection
                 e.printStackTrace();
                 response = "IOException: " + e.toString();
             } finally {
-//                if (socket != null) {
-//                    try {
-//                        socket.close();
-//                    } catch (IOException e) {
-//
-//                        e.printStackTrace();
-//                    }
-//                }
+                if (mSocket != null) {
+                    try {
+                        mSocket.close();
+                    } catch (IOException e) {
+
+                        e.printStackTrace();
+                    }
+                }
             }
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result) {
-
-            //textResponse.setText(response);
             super.onPostExecute(result);
+        }
+    }
+
+    private class AsyncRVIRequest extends AsyncTask<String, Void, Void>
+    {
+        @Override
+        protected Void doInBackground(String... strs) {
+
+            String urlParameters = strs[0];
+            Log.d(TAG, "Sending url parameters: " + urlParameters);
+
+            DataOutputStream wr = null;
+
+            try {
+                wr = new DataOutputStream(mSocket.getOutputStream());
+
+                wr.writeBytes(urlParameters);
+                wr.flush();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+//            HttpURLConnection connection = null;
+//            URL url;
+//
+//            try {
+//                url = new URL(mProxyServerUrl);
+//                //url = new URL("http://rvi1.nginfotpdx.net:8801");//mProxyServerUrl);
+//                //url = new URL("http://192.168.6.86:8811");//http://rvi1.nginfotpdx.net:8801");//mProxyServerUrl);
+//                //url = new URL("http://posttestserver.com/post.php");//mProxyServerUrl);
+//
+//                //Create connection
+//                connection = (HttpURLConnection) url.openConnection();
+//                connection.setRequestMethod("POST");
+//                connection.setRequestProperty("Content-Type", "application/json-rpc");
+//                connection.setRequestProperty("User-Agent", "objc-JSONRpc/1.0");
+//
+//                connection.setRequestProperty("Content-Length", "" + Integer.toString(urlParameters.getBytes().length));
+//                connection.setRequestProperty("Content-Language", "en-US");
+//
+//                connection.setUseCaches(false);
+//                connection.setDoInput(true);
+//                connection.setDoOutput(true);
+//
+//                //Send request
+//                DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
+//                wr.writeBytes(urlParameters);
+//                wr.flush();
+//                wr.close();
+//
+//                Map<String, List<String>> responseHeaders = connection.getHeaderFields();
+//                String responseString = connection.getResponseMessage();
+//
+//                Log.d(TAG, "Response code: " + Integer.toString(connection.getResponseCode()));
+//
+//                //Get Response
+//                InputStream is = connection.getInputStream();
+//                BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+//                String line;
+//                StringBuffer response = new StringBuffer();
+//
+//                while ((line = rd.readLine()) != null) {
+//                    response.append(line);
+//                    response.append('\r');
+//                }
+//
+//                rd.close();
+//
+//                Log.d(TAG, "Got response: " + response.toString());
+//
+//                return response.toString();
+//
+//            }
+//            catch (Exception e)
+//            {
+//                e.printStackTrace();
+//                return null;
+//            }
+//            finally
+//            {
+//                if (connection != null) {
+//                    connection.disconnect();
+//                }
+//            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            //Log.d(TAG, result);
         }
     }
 
@@ -277,7 +265,7 @@ public class RVIProxyServerConnection implements RVIRemoteConnection
         public void run() {
             Socket socket = null;
             try {
-                serverSocket = new ServerSocket(SERVERPORT);
+                serverSocket = new ServerSocket(SERVER_PORT);
             } catch (IOException e) {
                 e.printStackTrace();
             }

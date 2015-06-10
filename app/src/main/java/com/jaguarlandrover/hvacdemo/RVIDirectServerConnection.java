@@ -14,9 +14,10 @@ package com.jaguarlandrover.hvacdemo;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-public class RVIDirectServerConnection implements RVIRemoteConnection
+public class RVIDirectServerConnection implements RVIRemoteConnectionInterface
 {
     private final static String TAG = "HVACDemo:RVIDirectServerConnection";
+    private RemoteConnectionListener mRemoteConnectionListener;
 
     @Override
     public void sendRviRequest(RPCRequest request) {
@@ -29,7 +30,7 @@ public class RVIDirectServerConnection implements RVIRemoteConnection
     }
 
     @Override
-    public boolean isConfigured() {
+    public boolean isEnabled() {
         return false;
     }
 
@@ -39,5 +40,10 @@ public class RVIDirectServerConnection implements RVIRemoteConnection
 
     @Override
     public void disconnect() {
+    }
+
+    @Override
+    public void setRemoteConnectionListener(RemoteConnectionListener remoteConnectionListener) {
+        mRemoteConnectionListener = remoteConnectionListener;
     }
 }

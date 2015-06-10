@@ -14,7 +14,7 @@ package com.jaguarlandrover.hvacdemo;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-public class RVIRemoteConnectionManager
+public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.RemoteConnectionListener
 {
     private final static String TAG = "HVACDemo:RVIRemoteConnectionManager";
 
@@ -39,7 +39,7 @@ public class RVIRemoteConnectionManager
     }
 
     public static void startListening() {
-        RVIRemoteConnection remoteConnection = ourInstance.selectRemoteConnection();
+        RVIRemoteConnectionInterface remoteConnection = ourInstance.selectEnabledRemoteConnection();
 
         if (remoteConnection == null) return;
 
@@ -47,21 +47,57 @@ public class RVIRemoteConnectionManager
     }
 
     public static void sendRviRequest(RPCRequest request) {
-        RVIRemoteConnection remoteConnection = ourInstance.selectRemoteConnection();
+        RVIRemoteConnectionInterface remoteConnection = ourInstance.selectConnectedRemoteConnection();
 
         if (remoteConnection == null) return;
 
         remoteConnection.sendRviRequest(request);
     }
 
-    private RVIRemoteConnection selectRemoteConnection() {
-        if (mDirectServerConnection.isConfigured() && mDirectServerConnection.isConnected())
+    private RVIRemoteConnectionInterface selectConnectedRemoteConnection() {
+        if (mDirectServerConnection.isEnabled() && mDirectServerConnection.isConnected())
             return mDirectServerConnection;
-        if (mBluetoothConnection.isConfigured() && mBluetoothConnection.isConnected())
+        if (mBluetoothConnection.isEnabled() && mBluetoothConnection.isConnected())
             return mBluetoothConnection;
-        if (mProxyServerConnection.isConfigured() && mProxyServerConnection.isConnected())
+        if (mProxyServerConnection.isEnabled() && mProxyServerConnection.isConnected())
             return mProxyServerConnection;
 
         return null;
+    }
+
+    private RVIRemoteConnectionInterface selectEnabledRemoteConnection() {
+        if (mDirectServerConnection.isEnabled())
+            return mDirectServerConnection;
+        if (mBluetoothConnection.isEnabled())
+            return mBluetoothConnection;
+        if (mProxyServerConnection.isEnabled())
+            return mProxyServerConnection;
+
+        return null;
+    }
+
+    @Override
+    public void onRemoteConnectionDidConnect() {
+
+    }
+
+    @Override
+    public void onRemoteConnectionDidFailToConnect() {
+
+    }
+
+    @Override
+    public void onRemoteConnectionDidReceiveData() {
+
+    }
+
+    @Override
+    public void onDidSendDataToRemoteConnection() {
+
+    }
+
+    @Override
+    public void onDidFailToSendDataToRemoteConnection() {
+
     }
 }

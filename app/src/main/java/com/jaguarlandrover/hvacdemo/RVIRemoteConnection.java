@@ -21,5 +21,6 @@ public interface RVIRemoteConnection
     boolean isConnected();
     boolean isConfigured();
 
-
+    void connect();
+    void disconnect();
 }

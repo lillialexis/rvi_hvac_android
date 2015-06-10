@@ -38,6 +38,14 @@ public class RVIRemoteConnectionManager
         RVIRemoteConnectionManager.ourInstance.mProxyServerConnection.setProxyServerUrl(proxyServerUrl);
     }
 
+    public static void startListening() {
+        RVIRemoteConnection remoteConnection = ourInstance.selectRemoteConnection();
+
+        if (remoteConnection == null) return;
+
+        remoteConnection.connect();
+    }
+
     public static void sendRviRequest(RPCRequest request) {
         RVIRemoteConnection remoteConnection = ourInstance.selectRemoteConnection();
 

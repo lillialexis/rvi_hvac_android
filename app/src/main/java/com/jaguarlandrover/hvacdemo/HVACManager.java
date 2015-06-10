@@ -71,6 +71,8 @@ public class HVACManager
         RVIRemoteConnectionManager.setProxyServerUrl(getProxyUrl());
 
         ourInstance.mRVIApp = new RVIApp(RVI_APP_NAME, RVI_DOMAIN, getVin());
+
+        RVIRemoteConnectionManager.startListening();
     }
 
     public static void updateService(String service, String value) {

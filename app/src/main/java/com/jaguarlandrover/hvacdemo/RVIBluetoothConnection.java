@@ -32,4 +32,12 @@ public class RVIBluetoothConnection implements RVIRemoteConnection
     public boolean isConfigured() {
         return false;
     }
+
+    @Override
+    public void connect() {
+    }
+
+    @Override
+    public void disconnect() {
+    }
 }

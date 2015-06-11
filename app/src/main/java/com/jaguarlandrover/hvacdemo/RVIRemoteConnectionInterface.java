@@ -31,12 +31,12 @@ public interface RVIRemoteConnectionInterface
     {
         public void onRemoteConnectionDidConnect();
 
-        public void onRemoteConnectionDidFailToConnect();
+        public void onRemoteConnectionDidFailToConnect(Error error);
 
-        public void onRemoteConnectionDidReceiveData();
+        public void onRemoteConnectionDidReceiveData(String data);
 
         public void onDidSendDataToRemoteConnection();
 
-        public void onDidFailToSendDataToRemoteConnection();
+        public void onDidFailToSendDataToRemoteConnection(Error error);
     }
 }

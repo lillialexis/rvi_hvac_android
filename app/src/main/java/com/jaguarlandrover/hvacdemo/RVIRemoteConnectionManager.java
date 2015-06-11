@@ -43,6 +43,8 @@ public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.
 
         if (remoteConnection == null) return;
 
+        remoteConnection.setRemoteConnectionListener(ourInstance); // TODO: Doing it this way, dynamically selecting a connection at the beginning and later when sending messages,
+                                                                   // TODO, cont': but only setting the listener here, will lead to funny async race conditions later; fix.
         remoteConnection.connect();
     }
 
@@ -82,12 +84,12 @@ public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.
     }
 
     @Override
-    public void onRemoteConnectionDidFailToConnect() {
+    public void onRemoteConnectionDidFailToConnect(Error error) {
 
     }
 
     @Override
-    public void onRemoteConnectionDidReceiveData() {
+    public void onRemoteConnectionDidReceiveData(String data) {
 
     }
 
@@ -97,7 +99,7 @@ public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.
     }
 
     @Override
-    public void onDidFailToSendDataToRemoteConnection() {
+    public void onDidFailToSendDataToRemoteConnection(Error error) {
 
     }
 }

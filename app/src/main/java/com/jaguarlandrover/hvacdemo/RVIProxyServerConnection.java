@@ -15,115 +15,195 @@ package com.jaguarlandrover.hvacdemo;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import android.os.AsyncTask;
+
+import android.util.Base64;
 import android.util.Log;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.List;
-import java.util.Map;
 
-public class RVIProxyServerConnection implements RVIRemoteConnection
+import java.net.*;
+
+public class RVIProxyServerConnection implements RVIRemoteConnectionInterface
 {
-    private final static String TAG = "HVACDemo:RVIProxyServerConnection";
+    private final static String TAG = "HVACDemo:RVIProxySer...";
+    private RemoteConnectionListener mRemoteConnectionListener;
 
+    public static final int SERVER_PORT = 8807;
     private String mProxyServerUrl;
+
+    Socket mSocket;
 
     @Override
     public void sendRviRequest(RPCRequest request) {
-        if (!isConfigured())
+        if (!isConnected() || !isEnabled()) // TODO: Call error on listener
             return;
 
-        new AsyncRVIRequest().execute(request.jsonString());
-    }
+        String data = "{\"tid\":1,\n" +
+                "\"cmd\":\"rcv\",\n" +
+                "\"mod\":\"proto_json_rpc\",\n" +
+                "\"data\":\"" + Base64.encodeToString(request.jsonString().getBytes(), Base64.DEFAULT) + "\"}";
 
-    private class AsyncRVIRequest extends AsyncTask<String, Void, String> {
-
-        @Override
-        protected String doInBackground(String... strs) {
-
-            String urlParameters = strs[0];
-            Log.d(TAG, "Sending url parameters: " + urlParameters);
-
-            HttpURLConnection connection = null;
-            URL url;
-
-            try
-            {
-                url = new URL(mProxyServerUrl);
-                //url = new URL("http://rvi1.nginfotpdx.net:8801");//mProxyServerUrl);
-                //url = new URL("http://192.168.6.86:8811");//http://rvi1.nginfotpdx.net:8801");//mProxyServerUrl);
-                //url = new URL("http://posttestserver.com/post.php");//mProxyServerUrl);
-
-                //Create connection
-                connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Content-Type", "application/json-rpc");
-                connection.setRequestProperty("User-Agent", "objc-JSONRpc/1.0");
-
-                connection.setRequestProperty("Content-Length", "" + Integer.toString(urlParameters.getBytes().length));
-                connection.setRequestProperty("Content-Language", "en-US");
-
-                connection.setUseCaches(false);
-                connection.setDoInput(true);
-                connection.setDoOutput(true);
-
-                //Send request
-                DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
-                wr.writeBytes(urlParameters);
-                wr.flush();
-                wr.close();
-
-                Map<String, List<String>> responseHeaders = connection.getHeaderFields();
-                String responseString = connection.getResponseMessage();
-
-                Log.d(TAG, "Response code: " + Integer.toString(connection.getResponseCode()));
-
-                //Get Response
-                InputStream is = connection.getInputStream();
-                BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-                String line;
-                StringBuffer response = new StringBuffer();
-
-                while ((line = rd.readLine()) != null) {
-                    response.append(line);
-                    response.append('\r');
-                }
-
-                rd.close();
-
-                Log.d(TAG, "Got response: " + response.toString());
-
-                return response.toString();
-
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-                return null;
-            }
-            finally
-            {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-        }
-
-           @Override
-           protected void onPostExecute(String result) {
-               //Log.d(TAG, result);
-           }
+        new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, data);
     }
 
     @Override
     public boolean isConnected() {
-        return true;
+        return mSocket != null && mSocket.isConnected();//true;
     }
 
     @Override
-    public boolean isConfigured() {
+    public boolean isEnabled() {
         return !(mProxyServerUrl == null || mProxyServerUrl.isEmpty());
+    }
+
+    @Override
+    public void connect() {
+        connectSocket();
+    }
+
+    @Override
+    public void disconnect() {
+        try {
+            mSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void setRemoteConnectionListener(RemoteConnectionListener remoteConnectionListener) {
+        mRemoteConnectionListener = remoteConnectionListener;
+    }
+
+    private void connectSocket() {
+        Log.d(TAG, "Connecting the socket...");
+
+
+        ConnectAndListenTask connectAndAuthorizeTask = new ConnectAndListenTask(mProxyServerUrl, SERVER_PORT);
+        connectAndAuthorizeTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+    }
+
+    public class ConnectAndListenTask extends AsyncTask<Void, String, Void> {
+
+        String dstAddress;
+        int dstPort;
+        String response = "";
+
+        private final static String CONNECTION_UPDATE = "CONNECTION_UPDATE";
+        private final static String DATA_UPDATE       = "DATA_UPDATE";
+        private final static String CONNECTION_DID_SUCCEED = "CONNECTION_DID_SUCCEED";
+        private final static String CONNECTION_DID_FAIL    = "CONNECTION_DID_FAIL";
+
+        ConnectAndListenTask(String addr, int port){
+           dstAddress = addr;
+           dstPort = port;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            Log.d(TAG, "Starting auth sequence...");
+
+            try {
+                mSocket = new Socket(dstAddress, dstPort);
+
+                publishProgress(ConnectAndListenTask.CONNECTION_UPDATE, ConnectAndListenTask.CONNECTION_DID_SUCCEED);
+
+                String authorizeMessage = "{\"tid\":1,\"cmd\":\"au\",\"addr\":\"0.0.0.0\",\"port\":0,\"ver\":\"1.0\",\"cert\":\"\",\"sign\":\"\"}"; // TODO: Abstract this out, obvs
+                new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, authorizeMessage);
+
+
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
+                byte[] buffer = new byte[1024];
+
+                int bytesRead;
+                InputStream inputStream = mSocket.getInputStream();
+
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    byteArrayOutputStream.write(buffer, 0, bytesRead);
+                    response += byteArrayOutputStream.toString("UTF-8");
+
+                    Log.d(TAG, "Response so far: " + byteArrayOutputStream.toString("UTF-8"));
+
+                    // TODO: Buffer data for a complete json object
+
+                    publishProgress(ConnectAndListenTask.DATA_UPDATE, byteArrayOutputStream.toString("UTF-8"));
+                }
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+                response = "UnknownHostException: " + e.toString();
+
+                publishProgress(ConnectAndListenTask.CONNECTION_UPDATE, ConnectAndListenTask.CONNECTION_DID_FAIL, response);
+            } catch (IOException e) {
+                e.printStackTrace();
+                response = "IOException: " + e.toString();
+
+                publishProgress(ConnectAndListenTask.CONNECTION_UPDATE, ConnectAndListenTask.CONNECTION_DID_FAIL, response);
+            } finally {
+                if (mSocket != null) {
+                    try {
+                        mSocket.close();
+                    } catch (IOException e) {
+
+                        e.printStackTrace();
+                    }
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(String... params) {
+            super.onProgressUpdate(params);
+
+            String updateType = params[0];
+
+            if (updateType.equals(CONNECTION_UPDATE)) {
+                String updateOutcome = params[1];
+                if (updateOutcome.equals(CONNECTION_DID_SUCCEED))
+                    mRemoteConnectionListener.onRemoteConnectionDidConnect();
+                else
+                    mRemoteConnectionListener.onRemoteConnectionDidFailToConnect(new Error(params[2]));
+            } else {
+                String data = params[1];
+
+                mRemoteConnectionListener.onRemoteConnectionDidReceiveData(data);
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+        }
+    }
+
+    private class SendDataTask extends AsyncTask<String, Void, Void>
+    {
+        @Override
+        protected Void doInBackground(String... params) {
+
+            String data = params[0];
+            Log.d(TAG, "Sending data: " + data);
+
+            DataOutputStream wr = null;
+
+            try {
+                wr = new DataOutputStream(mSocket.getOutputStream());
+
+                wr.writeBytes(data);
+                wr.flush();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+
+        }
     }
 
     public String getProxyServerUrl() {

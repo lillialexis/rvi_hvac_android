@@ -48,12 +48,12 @@ public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.
         remoteConnection.connect();
     }
 
-    public static void sendRviRequest(RPCRequest request) {
+    public static void sendRviRequest(RVIServiceInvokeJSONObject serviceInvokeJSONObject) {
         RVIRemoteConnectionInterface remoteConnection = ourInstance.selectConnectedRemoteConnection();
 
         if (remoteConnection == null) return;
 
-        remoteConnection.sendRviRequest(request);
+        remoteConnection.sendRviRequest(serviceInvokeJSONObject);
     }
 
     private RVIRemoteConnectionInterface selectConnectedRemoteConnection() {

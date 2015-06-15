@@ -14,6 +14,9 @@ package com.jaguarlandrover.hvacdemo;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+import android.util.Log;
+import com.google.gson.Gson;
+
 import javax.xml.validation.Validator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,10 +63,21 @@ public class RVIService
         subParams.put("sending_node", mDomain + mBackend);
         subParams.put("value", mValue);
 
-        params.put("service_name", mDomain + mVin + mAppName + mServiceName);
+        params.put("service", mDomain + mVin + mAppName + mServiceName);
         params.put("parameters", Arrays.asList(subParams));
-        params.put("timeout", (System.currentTimeMillis()/1000) + 5000);
+        params.put("timeout", System.currentTimeMillis() + 5000);
+        params.put("signature", "signature");
+        params.put("certificate", "certificate");
+
 
         return params;
+    }
+
+    public String jsonString() {
+        Gson gson = new Gson();
+
+        Log.d(TAG, "Service json: " + gson.toJson(generateRequestParams()));
+
+        return gson.toJson(generateRequestParams());
     }
 }

@@ -127,11 +127,15 @@ public class RVIProxyServerConnection implements RVIRemoteConnectionInterface
                     byteArrayOutputStream.write(buffer, 0, bytesRead);
                     response += byteArrayOutputStream.toString("UTF-8");
 
+                    Log.d(TAG, "Bytes read: " + bytesRead);
                     Log.d(TAG, "Response so far: " + byteArrayOutputStream.toString("UTF-8"));
 
                     // TODO: Buffer data for a complete json object
 
                     publishProgress(ConnectAndListenTask.DATA_UPDATE, byteArrayOutputStream.toString("UTF-8"));
+
+
+                    byteArrayOutputStream.reset();
                 }
             } catch (UnknownHostException e) {
                 e.printStackTrace();

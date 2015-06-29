@@ -20,7 +20,7 @@ public class RVIDirectServerConnection implements RVIRemoteConnectionInterface
     private RemoteConnectionListener mRemoteConnectionListener;
 
     @Override
-    public void sendRviRequest(RPCRequest request) {
+    public void sendRviRequest(RVIServiceInvokeJSONObject serviceInvokeJSONObject) {
         return;
     }
 

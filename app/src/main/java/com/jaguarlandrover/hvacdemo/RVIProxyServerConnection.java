@@ -34,14 +34,16 @@ public class RVIProxyServerConnection implements RVIRemoteConnectionInterface
     Socket mSocket;
 
     @Override
-    public void sendRviRequest(RPCRequest request) {
+    public void sendRviRequest(RVIServiceInvokeJSONObject serviceInvokeJSONObject) {
         if (!isConnected() || !isEnabled()) // TODO: Call error on listener
             return;
 
-        String data = "{\"tid\":1,\n" +
-                "\"cmd\":\"rcv\",\n" +
-                "\"mod\":\"proto_json_rpc\",\n" +
-                "\"data\":\"" + Base64.encodeToString(request.jsonString().getBytes(), Base64.DEFAULT) + "\"}";
+//        String data = "{\"tid\":1,\n" +
+//                "\"cmd\":\"rcv\",\n" +
+//                "\"mod\":\"proto_json_rpc\",\n" +
+//                "\"data\":\"" + Base64.encodeToString(request.jsonString().getBytes(), Base64.DEFAULT) + "\"}";
+
+        String data = serviceInvokeJSONObject.jsonString();
 
         new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, data);
     }
@@ -109,7 +111,9 @@ public class RVIProxyServerConnection implements RVIRemoteConnectionInterface
 
                 publishProgress(ConnectAndListenTask.CONNECTION_UPDATE, ConnectAndListenTask.CONNECTION_DID_SUCCEED);
 
-                String authorizeMessage = "{\"tid\":1,\"cmd\":\"au\",\"addr\":\"0.0.0.0\",\"port\":0,\"ver\":\"1.0\",\"cert\":\"\",\"sign\":\"\"}"; // TODO: Abstract this out, obvs
+                //String authorizeMessage = "{\"tid\":1,\"cmd\":\"au\",\"addr\":\"0.0.0.0\",\"port\":0,\"ver\":\"1.0\",\"cert\":\"\",\"sign\":\"\"}"; // TODO: Abstract this out, obvs
+
+                String authorizeMessage = new RVIAuthJSONObject().jsonString();
                 new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, authorizeMessage);
 
 
@@ -123,11 +127,15 @@ public class RVIProxyServerConnection implements RVIRemoteConnectionInterface
                     byteArrayOutputStream.write(buffer, 0, bytesRead);
                     response += byteArrayOutputStream.toString("UTF-8");
 
+                    Log.d(TAG, "Bytes read: " + bytesRead);
                     Log.d(TAG, "Response so far: " + byteArrayOutputStream.toString("UTF-8"));
 
                     // TODO: Buffer data for a complete json object
 
                     publishProgress(ConnectAndListenTask.DATA_UPDATE, byteArrayOutputStream.toString("UTF-8"));
+
+
+                    byteArrayOutputStream.reset();
                 }
             } catch (UnknownHostException e) {
                 e.printStackTrace();

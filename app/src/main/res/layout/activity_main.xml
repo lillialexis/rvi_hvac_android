@@ -1,32 +1,23 @@
-<RelativeLayout
+<LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#222"
+        android:orientation="vertical"
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin"
-        tools:context=".MainActivity" >
-
-    <!--<TextView
-            android:id="@+id/textView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:text="@string/hello_world"
-            android:textColor="#fff" />-->
+        tools:context=".MainActivity">
 
     <ImageButton
             android:id="@+id/hazard_button"
             android:layout_width="wrap_content"
             android:layout_height="60dp"
-            android:scaleType="fitCenter"
             android:background="@null"
             android:onClick="hazardButtonPressed"
-            android:src="@drawable/hazard_off" />
+            android:scaleType="fitCenter"
+            android:src="@drawable/hazard_off"/>
 
 
     <LinearLayout
@@ -36,40 +27,50 @@
             android:layout_centerHorizontal="true"
             android:layout_below="@+id/hazard_button"
             android:orientation="horizontal"
-            android:layout_alignParentStart="false"
-            android:layout_alignParentEnd="false">
+            android:layout_gravity="center"
+            >
 
         <NumberPicker
                 android:id="@+id/left_temp_picker"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:paddingLeft="@dimen/paddingLeft"
+                android:paddingRight="@dimen/paddingRight"
+                android:layout_marginTop="@dimen/marginTop"
+                android:layout_marginBottom="@dimen/marginBottom" />
 
         <ImageButton
                 android:id="@+id/left_seat_temp_button"
                 android:layout_width="80dp"
                 android:layout_height="wrap_content"
-                android:scaleType="fitCenter"
-                android:paddingLeft="@dimen/paddingLeft"
-                android:paddingRight="@dimen/paddingRight"
                 android:background="@null"
                 android:onClick="seatTempButtonPressed"
-                android:src="@drawable/left_heat_seat_off" />
+                android:paddingLeft="@dimen/paddingLeft"
+                android:paddingRight="@dimen/paddingRight"
+                android:scaleType="fitCenter"
+                android:src="@drawable/left_heat_seat_off"/>
 
         <ImageButton
                 android:id="@+id/right_seat_temp_button"
                 android:layout_width="80dp"
                 android:layout_height="wrap_content"
-                android:scaleType="fitCenter"
-                android:paddingLeft="@dimen/paddingLeft"
-                android:paddingRight="@dimen/paddingRight"
                 android:background="@null"
                 android:onClick="seatTempButtonPressed"
-                android:src="@drawable/right_heat_seat_off" />
+                android:paddingLeft="@dimen/paddingLeft"
+                android:paddingRight="@dimen/paddingRight"
+                android:scaleType="fitCenter"
+                android:src="@drawable/right_heat_seat_off"/>
 
         <NumberPicker
                 android:id="@+id/right_temp_picker"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:paddingLeft="@dimen/paddingLeft"
+                android:paddingRight="@dimen/paddingRight"
+                android:paddingTop="@dimen/paddingTop"
+                android:paddingBottom="@dimen/paddingBottom"
+                android:layout_marginTop="@dimen/marginTop"
+                android:layout_marginBottom="@dimen/marginBottom" />
 
     </LinearLayout>
 
@@ -77,16 +78,17 @@
             android:id="@+id/layout_fan_slider"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:layout_below="@id/spinner_seat_button_linear_layout"
             android:layout_centerInParent="true"
-            android:layout_below="@id/spinner_seat_button_linear_layout" >
+            android:orientation="horizontal"
+            android:layout_marginBottom="@dimen/marginBottom" >
 
         <ImageView
                 android:id="@+id/fan_graphic"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/marginLeft"
-                android:src="@drawable/fan" />
+                android:src="@drawable/fan"/>
 
         <SeekBar
                 android:id="@+id/fan_power_seekbar"
@@ -96,145 +98,178 @@
                 android:layout_marginRight="@dimen/marginRight"
                 android:progressBackgroundTint="#faac58"
                 android:progressTint="#faac58"
-                android:thumbTint="#fe9c01" />
+                android:thumbTint="#fe9c01"/>
 
     </RelativeLayout>
 
 
-    <RelativeLayout
-            android:id="@+id/layout_top_row_buttons"
+    <GridLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_below="@id/layout_fan_slider" >
+            android:alignmentMode="alignBounds"
+            android:columnCount="5"
+            android:orientation="vertical"
+            android:rowCount="3"
+            android:useDefaultMargins="true">
 
-        <ImageButton
-                android:id="@+id/fan_down_button"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:scaleType="centerInside"
-                android:layout_alignParentLeft="true"
-                android:background="@null"
-                android:onClick="toggleButtonPressed"
-                android:src="@drawable/fan_dir_down_off" />
-
-        <ImageButton
-                android:id="@+id/max_fan_button"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:scaleType="centerInside"
-                android:layout_alignParentRight="true"
-                android:background="@null"
-                android:onClick="toggleButtonPressed"
-                android:src="@drawable/defrost_max_off" />
-
-    </RelativeLayout>
-
-    <LinearLayout
-            android:id="@+id/linear_layout_mid_row_buttons"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_gravity="clip_vertical"
-            android:layout_below="@id/layout_top_row_buttons">
-
-        <ImageButton
-                android:id="@+id/fan_right_button"
-                android:layout_width="0dp"
+        <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:scaleType="centerInside"
-                android:layout_weight="1"
-                android:paddingRight="@dimen/paddingRight"
-                android:background="@null"
-                android:onClick="toggleButtonPressed"
-                android:src="@drawable/fan_dir_right_off" />
+                android:orientation="horizontal">
 
-        <ImageButton
-                android:id="@+id/ac_button"
-                android:layout_width="0dp"
+            <ImageButton
+                    android:id="@+id/fan_down_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:paddingRight="@dimen/paddingRight"
+                    android:paddingLeft="@dimen/paddingLeft"
+                    android:background="@null"
+                    android:contentDescription="@null"
+                    android:onClick="toggleButtonPressed"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/fan_dir_down_off"/>
+
+            <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnSpan="3"
+                    android:layout_row="1"
+                    android:layout_weight="3"/>
+
+            <ImageButton
+                    android:id="@+id/max_fan_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:paddingRight="@dimen/paddingRight"
+                    android:paddingLeft="@dimen/paddingLeft"
+                    android:background="@null"
+                    android:onClick="toggleButtonPressed"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/defrost_max_off"/>
+        </LinearLayout>
+
+        <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:scaleType="centerInside"
-                android:layout_weight="1"
-                android:paddingLeft="@dimen/paddingLeft"
-                android:paddingRight="@dimen/paddingRight"
-                android:background="@null"
-                android:onClick="toggleButtonPressed"
-                android:src="@drawable/fan_control_ac_off" />
+                android:orientation="horizontal">
 
-        <ImageButton
-                android:id="@+id/auto_button"
-                android:layout_width="0dp"
+            <ImageButton
+                    android:id="@+id/fan_right_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:paddingRight="@dimen/paddingRight"
+                    android:paddingLeft="@dimen/paddingLeft"
+                    android:background="@null"
+                    android:onClick="toggleButtonPressed"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/fan_dir_right_off"/>
+
+            <ImageButton
+                    android:id="@+id/ac_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:paddingRight="@dimen/paddingRight"
+                    android:paddingLeft="@dimen/paddingLeft"
+                    android:background="@null"
+                    android:onClick="toggleButtonPressed"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/fan_control_ac_off"/>
+
+            <ImageButton
+                    android:id="@+id/auto_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:paddingRight="@dimen/paddingRight"
+                    android:paddingLeft="@dimen/paddingLeft"
+                    android:background="@null"
+                    android:onClick="toggleButtonPressed"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/fan_control_auto_off"/>
+
+            <ImageButton
+                    android:id="@+id/circ_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingRight="@dimen/paddingRight"
+                    android:paddingLeft="@dimen/paddingLeft"
+                    android:adjustViewBounds="true"
+                    android:background="@null"
+                    android:onClick="toggleButtonPressed"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/fan_control_circ_off"/>
+
+            <ImageButton
+                    android:id="@+id/defrost_rear_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingRight="@dimen/paddingRight"
+                    android:paddingLeft="@dimen/paddingLeft"
+                    android:adjustViewBounds="true"
+                    android:background="@null"
+                    android:onClick="toggleButtonPressed"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/defrost_rear_off"/>
+        </LinearLayout>
+
+        <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:scaleType="centerInside"
-                android:layout_weight="1"
-                android:paddingLeft="@dimen/paddingLeft"
-                android:paddingRight="@dimen/paddingRight"
-                android:background="@null"
-                android:onClick="toggleButtonPressed"
-                android:src="@drawable/fan_control_auto_off" />
+                android:orientation="horizontal">
 
-        <ImageButton
-                android:id="@+id/circ_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:scaleType="centerInside"
-                android:layout_weight="1"
-                android:paddingLeft="@dimen/paddingLeft"
-                android:paddingRight="@dimen/paddingRight"
-                android:background="@null"
-                android:onClick="toggleButtonPressed"
-                android:src="@drawable/fan_control_circ_off" />
+            <ImageButton
+                    android:id="@+id/fan_up_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:paddingRight="@dimen/paddingRight"
+                    android:paddingLeft="@dimen/paddingLeft"
+                    android:background="@null"
+                    android:onClick="toggleButtonPressed"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/fan_dir_up_off"/>
 
-        <ImageButton
-                android:id="@+id/defrost_rear_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:scaleType="centerInside"
-                android:layout_weight="1"
-                android:paddingLeft="@dimen/paddingLeft"
-                android:background="@null"
-                android:onClick="toggleButtonPressed"
-                android:src="@drawable/defrost_rear_off" />
+            <ImageView
+                    android:id="@+id/logo_graphic"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnSpan="3"
+                    android:layout_row="1"
+                    android:layout_weight="3"
+                    android:adjustViewBounds="true"
+                    android:paddingRight="@dimen/paddingRight"
+                    android:paddingLeft="@dimen/paddingLeft"
+                    android:layout_marginTop="40dp"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/jlr_logo_color"/>
 
-    </LinearLayout>
+            <ImageButton
+                    android:id="@+id/defrost_front_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="clip_horizontal"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:paddingRight="@dimen/paddingRight"
+                    android:paddingLeft="@dimen/paddingLeft"
+                    android:background="@null"
+                    android:onClick="toggleButtonPressed"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/defrost_front_off"/>
+        </LinearLayout>
 
-    <RelativeLayout
-            android:id="@+id/layout_bottom_row_buttons"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="@dimen/marginBottom"
-            android:layout_below="@id/linear_layout_mid_row_buttons" >
+    </GridLayout>
 
-        <ImageButton
-                android:id="@+id/fan_up_button"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:scaleType="centerInside"
-                android:layout_alignParentLeft="true"
-                android:background="@null"
-                android:onClick="toggleButtonPressed"
-                android:src="@drawable/fan_dir_up_off" />
-
-        <ImageButton
-                android:id="@+id/defrost_front_button"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:scaleType="centerInside"
-                android:layout_alignParentRight="true"
-                android:background="@null"
-                android:onClick="toggleButtonPressed"
-                android:src="@drawable/defrost_front_off" />
-
-    </RelativeLayout>
-
-    <ImageView
-            android:id="@+id/logo_graphic"
-            android:layout_width="175dp"
-            android:layout_height="wrap_content"
-            android:scaleType="centerInside"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:src="@drawable/jlr_logo_color" />
-
-</RelativeLayout>
+</LinearLayout>

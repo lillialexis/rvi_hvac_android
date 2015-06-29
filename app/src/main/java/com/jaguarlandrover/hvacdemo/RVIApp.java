@@ -67,7 +67,8 @@ public class RVIApp
     }
 
     public void updateService(String service) {
-        RPCRequest request = new RPCRequest("message", getService(service));
-        RVIRemoteConnectionManager.sendRviRequest(request);
+        //RPCRequest request = new RPCRequest("message", getService(service));
+        RVIServiceInvokeJSONObject serviceInvokeJSONObject = new RVIServiceInvokeJSONObject(getService(service));
+        RVIRemoteConnectionManager.sendRviRequest(serviceInvokeJSONObject);
     }
 }

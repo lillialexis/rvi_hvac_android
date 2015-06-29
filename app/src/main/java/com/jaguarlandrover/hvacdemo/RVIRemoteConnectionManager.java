@@ -14,9 +14,11 @@ package com.jaguarlandrover.hvacdemo;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+import android.util.Log;
+
 public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.RemoteConnectionListener
 {
-    private final static String TAG = "HVACDemo:RVIRemoteConnectionManager";
+    private final static String TAG = "HVACDemo:RVIRemoteCo...";
 
     private static RVIRemoteConnectionManager ourInstance = new RVIRemoteConnectionManager();
 
@@ -48,12 +50,14 @@ public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.
         remoteConnection.connect();
     }
 
-    public static void sendRviRequest(RPCRequest request) {
+    public static void sendRviRequest(RVIServiceInvokeJSONObject serviceInvokeJSONObject) {
+        Log.d(TAG, Util.getMethodName());
+
         RVIRemoteConnectionInterface remoteConnection = ourInstance.selectConnectedRemoteConnection();
 
         if (remoteConnection == null) return;
 
-        remoteConnection.sendRviRequest(request);
+        remoteConnection.sendRviRequest(serviceInvokeJSONObject);
     }
 
     private RVIRemoteConnectionInterface selectConnectedRemoteConnection() {

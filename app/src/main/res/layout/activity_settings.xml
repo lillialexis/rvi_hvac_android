@@ -24,29 +24,128 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"/>
 
+
+    <Space
+            android:layout_width="match_parent"
+            android:layout_height="0px"
+            android:id="@+id/vin_spacer"
+            android:layout_below="@+id/vin_edit_text"/>
+
     <TextView
             android:text="Server URL"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/vin_edit_text"
+            android:layout_below="@+id/vin_spacer"
+            android:layout_marginTop="@dimen/settings_textview_top_margin"
             android:id="@+id/server_url_label"/>
 
     <EditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/proxy_server_url_edit_text"
+            android:id="@+id/server_url_edit_text"
             android:layout_below="@+id/server_url_label"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"/>
 
+    <TextView
+            android:text="Server Port"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/server_url_edit_text"
+            android:layout_marginTop="@dimen/settings_textview_top_margin"
+            android:id="@+id/server_port_label"/>
+
+    <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/server_port_edit_text"
+            android:layout_below="@+id/server_port_label"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"/>
+
+
+    <Space
+            android:layout_width="match_parent"
+            android:layout_height="20px"
+            android:id="@+id/server_spacer"
+            android:layout_below="@+id/server_port_edit_text"/>
+
+    <TextView
+            android:text="Proxy Server URL"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="@dimen/settings_textview_top_margin"
+            android:layout_below="@+id/server_spacer"
+            android:id="@+id/proxy_server_url_label"
+            android:visibility="gone"/>
+
+    <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/proxy_server_url_edit_text"
+            android:layout_below="@+id/proxy_server_url_label"
+            android:layout_marginStart="@dimen/settings_proxy_entry_left_margin"
+            android:layout_marginLeft="@dimen/settings_proxy_entry_left_margin"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:visibility="gone"/>
+
+    <TextView
+            android:text="Proxy Server Port"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/settings_proxy_entry_left_margin"
+            android:layout_marginLeft="@dimen/settings_proxy_entry_left_margin"
+            android:layout_marginTop="@dimen/settings_textview_top_margin"
+            android:layout_below="@+id/proxy_server_url_edit_text"
+            android:id="@+id/proxy_server_port_label"
+            android:visibility="gone"/>
+
+    <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/proxy_server_port_edit_text"
+            android:layout_below="@+id/proxy_server_port_label"
+            android:layout_marginStart="@dimen/settings_proxy_entry_left_margin"
+            android:layout_marginLeft="@dimen/settings_proxy_entry_left_margin"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:visibility="gone"/>
+
+
+    <Switch
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/use_proxy_server_switch_text"
+            android:layout_marginTop="@dimen/settings_textview_top_margin"
+            android:id="@+id/proxy_server_switch"
+            android:layout_below="@+id/proxy_server_port_edit_text"
+            android:layout_centerHorizontal="true"/>
+
+
+    <Space
+            android:layout_width="match_parent"
+            android:layout_height="0px"
+            android:id="@+id/proxy_server_spacer"
+            android:layout_below="@+id/proxy_server_switch"/>
+
+
     <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Submit"
             android:id="@+id/settings_submit_button"
-            android:layout_below="@+id/proxy_server_url_edit_text"
+            android:layout_below="@+id/proxy_server_spacer"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:onClick="settingsSubmitButtonClicked"/>

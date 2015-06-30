@@ -110,7 +110,6 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
 
             try {
                 mSocket = new Socket(dstAddress, dstPort);
-                //mSocket = new Socket("192.168.6.86", 8817);
 
                 publishProgress(ConnectAndListenTask.CONNECTION_UPDATE, ConnectAndListenTask.CONNECTION_DID_SUCCEED);
 

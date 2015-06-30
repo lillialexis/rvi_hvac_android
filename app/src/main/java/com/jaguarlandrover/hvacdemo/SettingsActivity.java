@@ -14,30 +14,80 @@ package com.jaguarlandrover.hvacdemo;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-import android.content.SharedPreferences;
+import android.nfc.tech.MifareUltralight;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.Switch;
+import android.widget.TextView;
 
 
 public class SettingsActivity extends ActionBarActivity
 {
+    EditText mVinEditText;
+
+    TextView mUrlLabel;
+    EditText mUrlEditText;
+    TextView mPortLabel;
+    EditText mPortEditText;
+
+    TextView mProxyUrlLabel;
+    EditText mProxyUrlEditText;
+    TextView mProxyPortLabel;
+    EditText mProxyPortEditText;
+
+    Switch   mUsingProxySwitch;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        String vinString = HVACManager.getVin();
-        String urlString = HVACManager.getProxyUrl();
+        String vinString       = HVACManager.getVin();
 
-        EditText vin = (EditText) findViewById(R.id.vin_edit_text);
-        EditText url = (EditText) findViewById(R.id.proxy_server_url_edit_text);
+        String urlString       = HVACManager.getServerUrl();
+        String portString      = HVACManager.getServerPort().toString();
 
-        vin.setText(vinString);
-        url.setText(urlString);
+        String proxyUrlString  = HVACManager.getProxyServerUrl();
+        String proxyPortString = HVACManager.getProxyServerPort().toString();
+
+        boolean usingProxyServer = HVACManager.getUsingProxyServer();
+
+        mVinEditText  = (EditText) findViewById(R.id.vin_edit_text);
+
+        mUrlLabel     = (TextView) findViewById(R.id.server_url_label);
+        mUrlEditText  = (EditText) findViewById(R.id.server_url_edit_text);
+        mPortLabel    = (TextView) findViewById(R.id.server_port_label);
+        mPortEditText = (EditText) findViewById(R.id.server_port_edit_text);
+
+        mProxyUrlLabel     = (TextView) findViewById(R.id.proxy_server_url_label);
+        mProxyUrlEditText  = (EditText) findViewById(R.id.proxy_server_url_edit_text);
+        mProxyPortLabel    = (TextView) findViewById(R.id.proxy_server_port_label);
+        mProxyPortEditText = (EditText) findViewById(R.id.proxy_server_port_edit_text);
+
+        mUsingProxySwitch  = (Switch) findViewById(R.id.proxy_server_switch);
+
+        mVinEditText.setText(vinString);
+        mUrlEditText.setText(urlString);
+        mPortEditText.setText(portString);
+
+        mProxyUrlEditText.setText(proxyUrlString);
+        mProxyPortEditText.setText(proxyPortString);
+
+        mUsingProxySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+
+            public void onCheckedChanged(CompoundButton usingProxySwitch, boolean isChecked) {
+                updateUsingProxyServer(isChecked);
+            }
+        });
+
+        mUsingProxySwitch.setChecked(usingProxyServer);
     }
 
     @Override
@@ -63,14 +113,53 @@ public class SettingsActivity extends ActionBarActivity
         return super.onOptionsItemSelected(item);
     }
 
+    public void updateUsingProxyServer(boolean isChecked) {
+
+
+        if (isChecked) {
+            mUrlLabel.setEnabled(false);
+            mUrlEditText.setEnabled(false);
+            mPortLabel.setEnabled(false);
+            mPortEditText.setEnabled(false);
+
+            mProxyUrlEditText.setVisibility(View.VISIBLE);
+            mProxyUrlLabel.setVisibility(View.VISIBLE);
+            mProxyPortEditText.setVisibility(View.VISIBLE);
+            mProxyPortLabel.setVisibility(View.VISIBLE);
+
+        } else {
+            mUrlLabel.setEnabled(true);
+            mUrlEditText.setEnabled(true);
+            mPortLabel.setEnabled(true);
+            mPortEditText.setEnabled(true);
+
+            mProxyUrlEditText.setVisibility(View.GONE);
+            mProxyUrlLabel.setVisibility(View.GONE);
+            mProxyPortEditText.setVisibility(View.GONE);
+            mProxyPortLabel.setVisibility(View.GONE);
+        }
+
+        HVACManager.setUsingProxyServer(isChecked);
+    }
+
     public void settingsSubmitButtonClicked(View view) {
         // TODO: Validate input (correct URLs, etc.)
 
-        EditText vin = (EditText) findViewById(R.id.vin_edit_text);
-        EditText url = (EditText) findViewById(R.id.proxy_server_url_edit_text);
+        EditText vinEditText  = (EditText) findViewById(R.id.vin_edit_text);
 
-        HVACManager.setVin(vin.getText().toString().trim());
-        HVACManager.setProxyUrl(url.getText().toString().trim());
+        EditText urlEditText  = (EditText) findViewById(R.id.server_url_edit_text);
+        EditText portEditText = (EditText) findViewById(R.id.server_port_edit_text);
+
+        EditText proxyUrlEditText  = (EditText) findViewById(R.id.proxy_server_url_edit_text);
+        EditText proxyPortEditText = (EditText) findViewById(R.id.proxy_server_port_edit_text);
+
+        HVACManager.setVin(vinEditText.getText().toString().trim());
+
+        HVACManager.setServerUrl(urlEditText.getText().toString().trim());
+        HVACManager.setServerPort(Integer.parseInt((portEditText.getText().toString().trim())));
+
+        HVACManager.setProxyServerUrl(proxyUrlEditText.getText().toString().trim());
+        HVACManager.setProxyServerPort(Integer.parseInt(proxyPortEditText.getText().toString().trim()));
 
         finish();
     }

@@ -46,12 +46,40 @@ public class HVACManager
             ourInstance.mRVIApp.setVin(vin);
     }
 
-    public static String getProxyUrl() {
+    public static String getServerUrl() {
+        SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
+        return sharedPref.getString(HVACApplication.getContext().getResources().getString(R.string.server_url_prefs_string), "");
+    }
+
+    public static void setServerUrl(String serverUrl) {
+        SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(HVACApplication.getContext().getString(R.string.server_url_prefs_string), serverUrl);
+        editor.apply();
+
+        RVIRemoteConnectionManager.setServerUrl(serverUrl);
+    }
+
+    public static Integer getServerPort() {
+        SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
+        return sharedPref.getInt(HVACApplication.getContext().getResources().getString(R.string.server_port_prefs_string), 0);
+    }
+
+    public static void setServerPort(Integer serverPort) {
+        SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt(HVACApplication.getContext().getString(R.string.server_port_prefs_string), serverPort);
+        editor.apply();
+
+        RVIRemoteConnectionManager.setServerPort(serverPort);
+    }
+
+    public static String getProxyServerUrl() {
         SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
         return sharedPref.getString(HVACApplication.getContext().getResources().getString(R.string.proxy_server_url_prefs_string), "");
     }
 
-    public static void setProxyUrl(String proxyUrl) {
+    public static void setProxyServerUrl(String proxyUrl) {
         SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(HVACApplication.getContext().getString(R.string.proxy_server_url_prefs_string), proxyUrl);
@@ -60,15 +88,57 @@ public class HVACManager
         RVIRemoteConnectionManager.setProxyServerUrl(proxyUrl);
     }
 
+    public static Integer getProxyServerPort() {
+        SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
+        return sharedPref.getInt(HVACApplication.getContext().getResources().getString(R.string.proxy_server_port_prefs_string), 0);
+    }
+
+    public static void setProxyServerPort(Integer proxyPort) {
+        SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt(HVACApplication.getContext().getString(R.string.proxy_server_port_prefs_string), proxyPort);
+        editor.apply();
+
+        RVIRemoteConnectionManager.setProxyServerPort(proxyPort);
+    }
+
+    public static boolean getUsingProxyServer() {
+        SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
+        return sharedPref.getBoolean(HVACApplication.getContext().getResources()
+                                                    .getString(R.string.using_proxy_server_prefs_string), false);
+    }
+
+    public static void setUsingProxyServer(boolean usingProxyServer) {
+        SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(HVACApplication.getContext()
+                                         .getString(R.string.using_proxy_server_prefs_string), usingProxyServer);
+        editor.apply();
+
+        RVIRemoteConnectionManager.setUsingProxyServer(usingProxyServer);
+    }
+
     public static boolean isRviConfigured() {
-        if (getVin()      == null || getVin().isEmpty())      return false;
-        if (getProxyUrl() == null || getProxyUrl().isEmpty()) return false;
+        if (getVin()        == null || getVin().isEmpty())       return false;
+        if (getServerUrl()  == null || getServerUrl().isEmpty()) return false;
+        if (getServerPort() == 0)                                return false;
+
+        if (getUsingProxyServer()) {
+            if (getProxyServerUrl()  == null || getProxyServerUrl().isEmpty()) return false;
+            if (getProxyServerPort() == 0)                                     return false;
+        }
 
         return true;
     }
 
     public static void start() {
-        RVIRemoteConnectionManager.setProxyServerUrl(getProxyUrl());
+        RVIRemoteConnectionManager.setServerUrl(getServerUrl());
+        RVIRemoteConnectionManager.setServerPort(getServerPort());
+
+        RVIRemoteConnectionManager.setProxyServerUrl(getProxyServerUrl());
+        RVIRemoteConnectionManager.setProxyServerPort(getProxyServerPort());
+
+        RVIRemoteConnectionManager.setUsingProxyServer(getUsingProxyServer());
 
         ourInstance.mRVIApp = new RVIApp(RVI_APP_NAME, RVI_DOMAIN, getVin());
 
@@ -79,5 +149,4 @@ public class HVACManager
         ourInstance.mRVIApp.getService(service).setValue(value);
         ourInstance.mRVIApp.updateService(service);
     }
-
 }

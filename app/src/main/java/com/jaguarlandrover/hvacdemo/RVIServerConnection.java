@@ -7,7 +7,7 @@ package com.jaguarlandrover.hvacdemo;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVIProxyServerConnection.java
+ * File:    RVIServerConnection.java
  * Project: HVACDemo
  *
  * Created by Lilli Szafranski on 5/19/15.
@@ -15,22 +15,23 @@ package com.jaguarlandrover.hvacdemo;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import android.os.AsyncTask;
-
-import android.util.Base64;
 import android.util.Log;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
-import java.net.*;
-
-public class RVIProxyServerConnection implements RVIRemoteConnectionInterface
+public class RVIServerConnection implements RVIRemoteConnectionInterface
 {
-    private final static String TAG = "HVACDemo:RVIProxySer...";
+    private final static String TAG = "HVACDemo:RVIServerCo...";
     private RemoteConnectionListener mRemoteConnectionListener;
 
     //public static final int SERVER_PORT = 8807;
-    private String  mProxyServerUrl;
-    private Integer mProxyServerPort;
+    private String  mServerUrl;
+    private Integer mServerPort;
 
     Socket mSocket;
 
@@ -56,7 +57,7 @@ public class RVIProxyServerConnection implements RVIRemoteConnectionInterface
 
     @Override
     public boolean isEnabled() {
-        return !(mProxyServerUrl == null || mProxyServerUrl.isEmpty());
+        return !(mServerUrl == null || mServerUrl.isEmpty());
     }
 
     @Override
@@ -80,10 +81,9 @@ public class RVIProxyServerConnection implements RVIRemoteConnectionInterface
     }
 
     private void connectSocket() {
-        Log.d(TAG, "Connecting the socket...");
+        Log.d(TAG, "Connecting the socket: " + mServerUrl + ":" + mServerPort);
 
-
-        ConnectAndListenTask connectAndAuthorizeTask = new ConnectAndListenTask(mProxyServerUrl, mProxyServerPort);
+        ConnectAndListenTask connectAndAuthorizeTask = new ConnectAndListenTask(mServerUrl, mServerPort);
         connectAndAuthorizeTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
     }
@@ -109,8 +109,8 @@ public class RVIProxyServerConnection implements RVIRemoteConnectionInterface
             Log.d(TAG, "Starting auth sequence...");
 
             try {
-                //mSocket = new Socket(dstAddress, dstPort);
-                mSocket = new Socket("192.168.6.86", 8817);
+                mSocket = new Socket(dstAddress, dstPort);
+                //mSocket = new Socket("192.168.6.86", 8817);
 
                 publishProgress(ConnectAndListenTask.CONNECTION_UPDATE, ConnectAndListenTask.CONNECTION_DID_SUCCEED);
 
@@ -217,20 +217,20 @@ public class RVIProxyServerConnection implements RVIRemoteConnectionInterface
         }
     }
 
-    public String getProxyServerUrl() {
-        return mProxyServerUrl;
+    public String getServerUrl() {
+        return mServerUrl;
     }
 
-    public void setProxyServerUrl(String proxyServerUrl) {
-        mProxyServerUrl = proxyServerUrl;
+    public void setServerUrl(String serverUrl) {
+        mServerUrl = serverUrl;
     }
 
-    public Integer getProxyServerPort() {
-        return mProxyServerPort;
+    public Integer getServerPort() {
+        return mServerPort;
     }
 
-    public void setProxyServerPort(Integer proxyServerPort) {
-        mProxyServerPort = proxyServerPort;
+    public void setServerPort(Integer serverPort) {
+        mServerPort = serverPort;
     }
 
 }

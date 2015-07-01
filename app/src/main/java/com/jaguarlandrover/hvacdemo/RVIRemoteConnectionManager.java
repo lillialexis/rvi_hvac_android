@@ -24,16 +24,17 @@ public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.
 
     private boolean mUsingProxyServer;
 
+    private RVIServerConnection    mProxyServerConnection;
+    private RVIBluetoothConnection mBluetoothConnection;
+    private RVIServerConnection    mDirectServerConnection;
+
+    private RVIListener mListener;
+
     private RVIRemoteConnectionManager() {
         mProxyServerConnection  = new RVIServerConnection();
         mBluetoothConnection    = new RVIBluetoothConnection();
         mDirectServerConnection = new RVIServerConnection();
     }
-
-    //private RVIProxyServerConnection mProxyServerConnection;
-    private RVIServerConnection    mProxyServerConnection;
-    private RVIBluetoothConnection mBluetoothConnection;
-    private RVIServerConnection    mDirectServerConnection;
 
     public static void startListening() {
         ourInstance.closeConnections();
@@ -90,27 +91,27 @@ public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.
 
     @Override
     public void onRemoteConnectionDidConnect() {
-
+        mListener.onRVIDidConnect();
     }
 
     @Override
     public void onRemoteConnectionDidFailToConnect(Error error) {
-
+        mListener.onRVIDidFailToConnect(error);
     }
 
     @Override
     public void onRemoteConnectionDidReceiveData(String data) {
-
+        mListener.onRVIDidReceiveData(data);
     }
 
     @Override
     public void onDidSendDataToRemoteConnection() {
-
+        mListener.onRVIDidSendData();
     }
 
     @Override
     public void onDidFailToSendDataToRemoteConnection(Error error) {
-
+        mListener.onRVIDidFailToSendData(error);
     }
 
     public static void setServerUrl(String serverUrl) {
@@ -131,5 +132,13 @@ public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.
 
     public static void setUsingProxyServer(boolean usingProxyServer) {
         RVIRemoteConnectionManager.ourInstance.mUsingProxyServer = usingProxyServer;
+    }
+
+    public static RVIListener getListener() {
+        return RVIRemoteConnectionManager.ourInstance.mListener;
+    }
+
+    public static void setListener(RVIListener listener) {
+        RVIRemoteConnectionManager.ourInstance.mListener = listener;
     }
 }

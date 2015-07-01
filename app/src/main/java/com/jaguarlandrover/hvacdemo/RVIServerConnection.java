@@ -29,7 +29,6 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
     private final static String TAG = "HVACDemo:RVIServerCo...";
     private RemoteConnectionListener mRemoteConnectionListener;
 
-    //public static final int SERVER_PORT = 8807;
     private String  mServerUrl;
     private Integer mServerPort;
 
@@ -118,6 +117,8 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
                 String authorizeMessage = new RVIAuthJSONObject().jsonString();
                 new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, authorizeMessage);
 
+                String serviceAnnounceMessage = "{\"tid\":1,\"cmd\":\"au\",\"addr\":\"0.0.0.0\",\"port\":0,\"ver\":\"1.0\",\"cert\":\"\",\"sign\":\"\"}{\"tid\":1,\"cmd\":\"sa\",\"stat\":\"av\",\"svcs\":[\"jlr.com/android/987654321/hvac/unsubscribe\",\"jlr.com/android/987654321/hvac/subscribe\",\"jlr.com/android/987654321/hvac/defrost_max\",\"jlr.com/android/987654321/hvac/defrost_front\",\"jlr.com/android/987654321/hvac/airflow_direction\",\"jlr.com/android/987654321/hvac/seat_heat_left\",\"jlr.com/android/987654321/hvac/seat_heat_right\",\"jlr.com/android/987654321/hvac/hazard\",\"jlr.com/android/987654321/hvac/temp_right\",\"jlr.com/android/987654321/hvac/temp_left\",\"jlr.com/android/987654321/hvac/defrost_rear\",\"jlr.com/android/987654321/hvac/fan_speed\",\"jlr.com/android/987654321/hvac/fan\",\"jlr.com/android/987654321/hvac/air_circ\"],\"sign\":\"\"}";
+                new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, serviceAnnounceMessage);
 
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
                 byte[] buffer = new byte[1024];
@@ -134,10 +135,19 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
 
                     // TODO: Buffer data for a complete json object
 
+                    int lengthOfJsonObject = getLengthOfJsonObject(byteArrayOutputStream.toString("UTF-8"));
+
+                    if (lengthOfJsonObject == bytesRead) {
                     publishProgress(ConnectAndListenTask.DATA_UPDATE, byteArrayOutputStream.toString("UTF-8"));
+                        byteArrayOutputStream.reset();
+                    } else if (lengthOfJsonObject < bytesRead && lengthOfJsonObject > 0) {
+                        publishProgress(ConnectAndListenTask.DATA_UPDATE, byteArrayOutputStream.toString("UTF-8").substring(0, lengthOfJsonObject - 1));
+                        byteArrayOutputStream.reset();
 
-
-                    byteArrayOutputStream.reset();
+                        byteArrayOutputStream.write(buffer, lengthOfJsonObject - 1, bytesRead - lengthOfJsonObject);
+                    } else {
+                        ;
+                    }
                 }
             } catch (UnknownHostException e) {
                 e.printStackTrace();
@@ -160,6 +170,21 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
                 }
             }
             return null;
+        }
+
+        // TODO: This method assumes that all strings start with a '{'
+        private int getLengthOfJsonObject(String serverMessage) {
+            int numberOfOpens  = 0;
+            int numberOfCloses = 0;
+
+            for (int i = 0; i < serverMessage.length(); i++) {
+                if (serverMessage.charAt(i) == '{') numberOfOpens++;
+                else if (serverMessage.charAt(i) == '}') numberOfCloses++;
+
+                if (numberOfOpens == numberOfCloses) return i;
+            }
+
+            return -1;
         }
 
         @Override

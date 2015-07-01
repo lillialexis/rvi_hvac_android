@@ -27,7 +27,40 @@ public class HVACManager
 
     private static HVACManager ourInstance = new HVACManager();
 
-    private HVACManager() {}
+    private HVACManager() {
+        RVIRemoteConnectionManager.setListener(new RVIListener()
+        {
+            @Override
+            public void onRVIDidConnect() {
+                updateService("subscribe", "{\"node\":\"jlr.com/android/987654321/\"}"); // TODO: Make dynamic, obvs
+            }
+
+            @Override
+            public void onRVIDidFailToConnect(Error error) {
+
+            }
+
+            @Override
+            public void onRVIDidDisconnect() {
+
+            }
+
+            @Override
+            public void onRVIDidReceiveData(String data) {
+
+            }
+
+            @Override
+            public void onRVIDidSendData() {
+
+            }
+
+            @Override
+            public void onRVIDidFailToSendData(Error error) {
+
+            }
+        });
+    }
 
     private RVIApp mRVIApp;
 

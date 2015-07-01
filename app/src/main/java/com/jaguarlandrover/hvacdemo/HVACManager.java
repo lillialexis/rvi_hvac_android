@@ -16,9 +16,12 @@ package com.jaguarlandrover.hvacdemo;
 
 import android.content.SharedPreferences;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import static android.content.Context.MODE_PRIVATE;
 
-public class HVACManager
+public class HVACManager implements RVIApp.RVIAppListener
 {
     private final static String TAG = "HVACDemo:HVACManager";
 
@@ -27,36 +30,36 @@ public class HVACManager
 
     private static HVACManager ourInstance = new HVACManager();
 
+    private final static ArrayList<String> serviceIdentifiers =
+            new ArrayList<>(Arrays.asList(
+                    "air_circ",
+                    "airflow_direction",
+                    "defrost_front",
+                    "defrost_rear",
+                    "fan_speed",
+                    "seat_heat_left",
+                    "seat_heat_right",
+                    "temp_left",
+                    "temp_right",
+                    "subscribe",
+                    "unsubscribe"
+            ));
+
     private HVACManager() {
-        RVIRemoteConnectionManager.setListener(new RVIListener()
+        RVINode.setListener(new RVINode.RVINodeListener()
         {
             @Override
-            public void onRVIDidConnect() {
+            public void rviNodeDidConnect() {
                 updateService("subscribe", "{\"node\":\"jlr.com/android/987654321/\"}"); // TODO: Make dynamic, obvs
             }
 
             @Override
-            public void onRVIDidFailToConnect(Error error) {
+            public void rviNodeDidFailToConnect() {
 
             }
 
             @Override
-            public void onRVIDidDisconnect() {
-
-            }
-
-            @Override
-            public void onRVIDidReceiveData(String data) {
-
-            }
-
-            @Override
-            public void onRVIDidSendData() {
-
-            }
-
-            @Override
-            public void onRVIDidFailToSendData(Error error) {
+            public void rviNodeDidDisconnect() {
 
             }
         });
@@ -76,7 +79,7 @@ public class HVACManager
         editor.apply();
 
         if (ourInstance.mRVIApp != null)
-            ourInstance.mRVIApp.setVin(vin);
+            ourInstance.mRVIApp.setRemotePrefix(vin);
     }
 
     public static String getServerUrl() {
@@ -173,13 +176,20 @@ public class HVACManager
 
         RVIRemoteConnectionManager.setUsingProxyServer(getUsingProxyServer());
 
-        ourInstance.mRVIApp = new RVIApp(RVI_APP_NAME, RVI_DOMAIN, getVin());
+        ourInstance.mRVIApp = new RVIApp(RVI_APP_NAME, RVI_DOMAIN, "/vin/" + getVin(), serviceIdentifiers);
+        ourInstance.mRVIApp.setListener(ourInstance);
 
-        RVIRemoteConnectionManager.startListening();
+        RVINode.connect();
+        RVINode.addApp(ourInstance.mRVIApp);
     }
 
     public static void updateService(String service, String value) {
         ourInstance.mRVIApp.getService(service).setValue(value);
         ourInstance.mRVIApp.updateService(service);
+    }
+
+    @Override
+    public void onServiceUpdated(RVIService service) {
+
     }
 }

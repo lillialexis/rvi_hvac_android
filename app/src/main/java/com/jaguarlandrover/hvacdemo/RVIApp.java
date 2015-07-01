@@ -20,55 +20,88 @@ public class RVIApp
 {
     private final static String TAG = "HVACDemo:RVIApp";
 
-    private String mAppName;
+    private String mAppIdentifier;
     private String mDomain;
-    private String mVin;
+    private String mRemotePrefix;
 
-    private String mBackend;
+    private String mLocalPrefix;
 
     private ArrayList<RVIService> mServices;
 
-    public RVIApp(String appName, String domain, String vin) {
-        mAppName  = appName;
-        mDomain   = domain;
-        mVin      = "/vin/" + vin;
-
-        mBackend  = "/android/987654321"; // TODO: Generate randomly
-
-        mServices = new ArrayList<>();
+    public interface RVIAppListener {
+        public void onServiceUpdated(RVIService service);
     }
 
-    public RVIService getService(String name) {
+    private RVIAppListener mListener;
+
+    public RVIApp(String appIdentifier, String domain, String remotePrefix, ArrayList<String> services) {
+        mAppIdentifier = appIdentifier;
+        mDomain        = domain;
+        mRemotePrefix  = remotePrefix;
+
+        mLocalPrefix   = "/android/987654321"; // TODO: Generate randomly
+
+        mServices      = makeServices(services);
+    }
+
+    private ArrayList<RVIService> makeServices(ArrayList<String>serviceIdentifiers) {
+        ArrayList<RVIService> services = new ArrayList<>(serviceIdentifiers.size());
+        for (String serviceIdentifier : serviceIdentifiers)
+            services.add(makeService(serviceIdentifier));
+
+        return services;
+    }
+
+    private RVIService makeService(String serviceIdentifier) {
+        return new RVIService(serviceIdentifier, mAppIdentifier, mDomain, mRemotePrefix, mLocalPrefix);
+    }
+
+    public RVIService getService(String serviceIdentifier) {
         for (RVIService service : mServices)
-            if (service.getServiceName().equals(name) || service.getServiceName().equals("/" + name))
+            if (service.getServiceIdentifier().equals(serviceIdentifier) || service.getServiceIdentifier()
+                                                                                   .equals("/" + serviceIdentifier))
                 return service;
 
-        RVIService service = new RVIService(name, mAppName, mDomain, mVin, mBackend);
-        mServices.add(service);
+        return null;
+    }
 
-        return service;
+    public void updateService(String service) {
+        //RPCRequest request = new RPCRequest("message", getService(service));
+        RVIDlinkReceivePacket serviceInvokeJSONObject = new RVIDlinkReceivePacket(getService(service));
+        RVIRemoteConnectionManager.sendPacket(serviceInvokeJSONObject);
+    }
+
+    public void serviceUpdated(RVIService service) {
+        RVIService ourService = getService(service.getServiceIdentifier());
+
+        ourService.setValue(service.getValue());
+
+        mListener.onServiceUpdated(ourService);
     }
 
     public String getDomain() {
         return mDomain;
     }
 
-    public String getVin() {
-        return mVin;
+    public String getRemotePrefix() {
+        return mRemotePrefix;
     }
 
-    public void setVin(String vin) {
-        mVin = vin;
+    public void setRemotePrefix(String remotePrefix) {
+        mRemotePrefix = remotePrefix;
         mServices.removeAll(mServices);
+    }
+
+
+    public RVIAppListener getListener() {
+        return mListener;
+    }
+
+    public void setListener(RVIAppListener listener) {
+        mListener = listener;
     }
 
     public ArrayList<RVIService> getServices() {
         return mServices;
-    }
-
-    public void updateService(String service) {
-        //RPCRequest request = new RPCRequest("message", getService(service));
-        RVIServiceInvokeJSONObject serviceInvokeJSONObject = new RVIServiceInvokeJSONObject(getService(service));
-        RVIRemoteConnectionManager.sendRviRequest(serviceInvokeJSONObject);
     }
 }

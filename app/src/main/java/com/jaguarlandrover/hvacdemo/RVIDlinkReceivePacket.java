@@ -7,7 +7,7 @@ package com.jaguarlandrover.hvacdemo;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVIServiceInvokeJSONObject.java
+ * File:    RVIDlinkReceivePacket.java
  * Project: HVACDemo
  *
  * Created by Lilli Szafranski on 6/15/15.
@@ -15,13 +15,13 @@ package com.jaguarlandrover.hvacdemo;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import android.util.Base64;
+import com.google.gson.Gson;
 
 import java.util.HashMap;
-import java.util.Random;
 
-public class RVIServiceInvokeJSONObject extends RVIJSONObject
+public class RVIDlinkReceivePacket extends RVIDlinkPacket
 {
-    private final static String TAG = "HVACDemo:RVIServiceInvokeJSONObject";
+    private final static String TAG = "HVACDemo:RVIDlinkReceivePacket";
 
     /**
      * The mod parameter.
@@ -43,30 +43,24 @@ public class RVIServiceInvokeJSONObject extends RVIJSONObject
         return jsonHash;
     }
 
-//    /**
-//     * Serializes request object into json string
-//     */
-//    public String jsonString() {
-//        HashMap<String, Object> requestHash = new HashMap<>(4);
-//
-//
-//        Gson gson = new Gson();
-//        return gson.toJson(requestHash);
-//    }
-
     /**
-     * Helper method to get a service invoke json object
+     * Helper method to get a receive dlink json object
      *
-     * @param service Some parameters to send along with the request, either named, un-named, or nil
+     * @param service The service that is getting invoked
      */
-    public RVIServiceInvokeJSONObject(RVIService service) {
-        super();
+    public RVIDlinkReceivePacket(RVIService service) {
+        super(Command.RECEIVE);
 
-        mCmd = "rcv";
-
-        mMod = "proto_json_rpc";
+        mMod      = "proto_json_rpc";
         mService  = service;
     }
 
+    public RVIDlinkReceivePacket(HashMap jsonHash) {
+        super(Command.RECEIVE, jsonHash);
+
+        mMod     = (String) jsonHash.get("mod");
+
+        mService = new RVIService(new String(Base64.decode((String)jsonHash.get("data"), Base64.DEFAULT)));
+    }
 
 }

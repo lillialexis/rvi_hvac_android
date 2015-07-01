@@ -35,18 +35,11 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
     Socket mSocket;
 
     @Override
-    public void sendRviRequest(RVIServiceInvokeJSONObject serviceInvokeJSONObject) {
+    public void sendRviRequest(RVIDlinkPacket dlinkPacket) {
         if (!isConnected() || !isEnabled()) // TODO: Call error on listener
             return;
 
-//        String data = "{\"tid\":1,\n" +
-//                "\"cmd\":\"rcv\",\n" +
-//                "\"mod\":\"proto_json_rpc\",\n" +
-//                "\"data\":\"" + Base64.encodeToString(request.jsonString().getBytes(), Base64.DEFAULT) + "\"}";
-
-        String data = serviceInvokeJSONObject.jsonString();
-
-        new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, data);
+        new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, dlinkPacket.jsonString());
     }
 
     @Override
@@ -114,11 +107,11 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
 
                 //String authorizeMessage = "{\"tid\":1,\"cmd\":\"au\",\"addr\":\"0.0.0.0\",\"port\":0,\"ver\":\"1.0\",\"cert\":\"\",\"sign\":\"\"}"; // TODO: Abstract this out, obvs
 
-                String authorizeMessage = new RVIAuthJSONObject().jsonString();
-                new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, authorizeMessage);
-
-                String serviceAnnounceMessage = "{\"tid\":1,\"cmd\":\"au\",\"addr\":\"0.0.0.0\",\"port\":0,\"ver\":\"1.0\",\"cert\":\"\",\"sign\":\"\"}{\"tid\":1,\"cmd\":\"sa\",\"stat\":\"av\",\"svcs\":[\"jlr.com/android/987654321/hvac/unsubscribe\",\"jlr.com/android/987654321/hvac/subscribe\",\"jlr.com/android/987654321/hvac/defrost_max\",\"jlr.com/android/987654321/hvac/defrost_front\",\"jlr.com/android/987654321/hvac/airflow_direction\",\"jlr.com/android/987654321/hvac/seat_heat_left\",\"jlr.com/android/987654321/hvac/seat_heat_right\",\"jlr.com/android/987654321/hvac/hazard\",\"jlr.com/android/987654321/hvac/temp_right\",\"jlr.com/android/987654321/hvac/temp_left\",\"jlr.com/android/987654321/hvac/defrost_rear\",\"jlr.com/android/987654321/hvac/fan_speed\",\"jlr.com/android/987654321/hvac/fan\",\"jlr.com/android/987654321/hvac/air_circ\"],\"sign\":\"\"}";
-                new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, serviceAnnounceMessage);
+//                String authorizeMessage = new RVIDlinkAuthPacket().jsonString();
+//                new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, authorizeMessage);
+//
+//                String serviceAnnounceMessage = "{\"tid\":1,\"cmd\":\"sa\",\"stat\":\"av\",\"svcs\":[\"jlr.com/android/987654321/hvac/unsubscribe\",\"jlr.com/android/987654321/hvac/subscribe\",\"jlr.com/android/987654321/hvac/defrost_max\",\"jlr.com/android/987654321/hvac/defrost_front\",\"jlr.com/android/987654321/hvac/airflow_direction\",\"jlr.com/android/987654321/hvac/seat_heat_left\",\"jlr.com/android/987654321/hvac/seat_heat_right\",\"jlr.com/android/987654321/hvac/hazard\",\"jlr.com/android/987654321/hvac/temp_right\",\"jlr.com/android/987654321/hvac/temp_left\",\"jlr.com/android/987654321/hvac/defrost_rear\",\"jlr.com/android/987654321/hvac/fan_speed\",\"jlr.com/android/987654321/hvac/fan\",\"jlr.com/android/987654321/hvac/air_circ\"],\"sign\":\"\"}";
+//                new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, serviceAnnounceMessage);
 
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
                 byte[] buffer = new byte[1024];
@@ -137,15 +130,24 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
 
                     int lengthOfJsonObject = getLengthOfJsonObject(byteArrayOutputStream.toString("UTF-8"));
 
-                    if (lengthOfJsonObject == bytesRead) {
-                    publishProgress(ConnectAndListenTask.DATA_UPDATE, byteArrayOutputStream.toString("UTF-8"));
+                    //Log.d(TAG, "Length of json object: " + lengthOfJsonObject);
+
+                    if (lengthOfJsonObject == bytesRead) { /* Current data is 1 json object */
+                        publishProgress(ConnectAndListenTask.DATA_UPDATE, byteArrayOutputStream.toString("UTF-8"));
                         byteArrayOutputStream.reset();
+
+                        //Log.d(TAG, "AAAAAAA Current response: " + byteArrayOutputStream.toString("UTF-8"));
+
                     } else if (lengthOfJsonObject < bytesRead && lengthOfJsonObject > 0) {
                         publishProgress(ConnectAndListenTask.DATA_UPDATE, byteArrayOutputStream.toString("UTF-8").substring(0, lengthOfJsonObject - 1));
                         byteArrayOutputStream.reset();
 
-                        byteArrayOutputStream.write(buffer, lengthOfJsonObject - 1, bytesRead - lengthOfJsonObject);
+                        byteArrayOutputStream.write(buffer, lengthOfJsonObject, bytesRead - lengthOfJsonObject);
+
+                        //Log.d(TAG, "BBBBBBB Current response: " + byteArrayOutputStream.toString("UTF-8"));
+
                     } else {
+                        //Log.d(TAG, "CCCCCCC Current response: " + byteArrayOutputStream.toString("UTF-8"));
                         ;
                     }
                 }
@@ -181,7 +183,7 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
                 if (serverMessage.charAt(i) == '{') numberOfOpens++;
                 else if (serverMessage.charAt(i) == '}') numberOfCloses++;
 
-                if (numberOfOpens == numberOfCloses) return i;
+                if (numberOfOpens == numberOfCloses) return i + 1;
             }
 
             return -1;
@@ -194,12 +196,14 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
             String updateType = params[0];
 
             if (updateType.equals(CONNECTION_UPDATE)) {
+
                 String updateOutcome = params[1];
                 if (updateOutcome.equals(CONNECTION_DID_SUCCEED))
                     mRemoteConnectionListener.onRemoteConnectionDidConnect();
-                else
+                else /* updateOutcome.equals(CONNECTION_DID_FAIL) */
                     mRemoteConnectionListener.onRemoteConnectionDidFailToConnect(new Error(params[2]));
-            } else {
+
+            } else { /* updateType.equals(DATA_UPDATE) */
                 String data = params[1];
 
                 mRemoteConnectionListener.onRemoteConnectionDidReceiveData(data);

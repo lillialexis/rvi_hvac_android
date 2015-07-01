@@ -16,7 +16,7 @@ package com.jaguarlandrover.hvacdemo;
 
 public interface RVIRemoteConnectionInterface
 {
-    void sendRviRequest(RVIServiceInvokeJSONObject serviceInvokeJSONObject);
+    void sendRviRequest(RVIDlinkPacket dlinkPacket);
 
     boolean isConnected();
     boolean isEnabled();

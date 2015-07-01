@@ -7,21 +7,18 @@ package com.jaguarlandrover.hvacdemo;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVIAuthJSONObject.java
+ * File:    RVIDlinkAuthPacket.java
  * Project: HVACDemo
  *
  * Created by Lilli Szafranski on 6/15/15.
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-import android.util.Base64;
-
-import java.math.MathContext;
 import java.util.HashMap;
 
-public class RVIAuthJSONObject extends RVIJSONObject
+public class RVIDlinkAuthPacket extends RVIDlinkPacket
 {
-    private final static String TAG = "HVACDemo:RVIAuthJSONObject";
+    private final static String TAG = "HVACDemo:RVIDlinkAuthPacket";
 
     private String mAddr;
 
@@ -31,8 +28,6 @@ public class RVIAuthJSONObject extends RVIJSONObject
 
     private String mCert;
 
-    private String mSign;
-
     protected HashMap<String, Object> jsonHash() {
         HashMap<String, Object> jsonHash = super.jsonHash();
 
@@ -40,35 +35,29 @@ public class RVIAuthJSONObject extends RVIJSONObject
         jsonHash.put("port", mPort);
         jsonHash.put("ver",  mVer);
         jsonHash.put("cert", mCert);
-        jsonHash.put("sign", mSign);
 
         return jsonHash;
     }
 
-//    /**
-//     * Serializes request object into json string
-//     */
-//    public String jsonString() {
-//        HashMap<String, Object> requestHash = new HashMap<>(4);
-//
-//
-//        Gson gson = new Gson();
-//        return gson.toJson(requestHash);
-//    }
-
     /**
      * Helper method to get an authorization json object
      */
-    public RVIAuthJSONObject() {
-        super();
-
-        mCmd  = "au";
+    public RVIDlinkAuthPacket() {
+        super(Command.AUTHORIZE);
 
         mAddr = "0.0.0.0";
         mPort = 0;
         mVer  = "1.0";
         mCert = "";
-        mSign = "";
+    }
+
+    public RVIDlinkAuthPacket(HashMap jsonHash) {
+        super(Command.AUTHORIZE, jsonHash);
+
+        mAddr = (String)  jsonHash.get("addr");
+        mPort = (Integer) jsonHash.get("port");
+        mVer  = (String)  jsonHash.get("ver");
+        mCert = (String)  jsonHash.get("cert");
     }
 
 }

@@ -17,58 +17,84 @@ package com.jaguarlandrover.hvacdemo;
 import android.util.Log;
 import com.google.gson.Gson;
 
-import javax.xml.validation.Validator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.prefs.BackingStoreException;
 
 public class RVIService
 {
     private final static String TAG = "HVACDemo:RVIService";
 
-    private String mServiceName;
+    private String mServiceIdentifier;
 
-    private String mAppName;
+    private String mAppIdentifier;
     private String mDomain;
-    private String mVin;
-    private String mBackend;
 
-    private String mValue;
+    private String mLocalPrefix;
+    private String mRemotePrefix;
 
-    public RVIService(String serviceName, String appName, String domain, String vin, String backend) {
-        mServiceName = "/" + serviceName;
-        mAppName     = appName;
-        mDomain      = domain;
-        mVin         = vin;
-        mBackend     = backend;
+    private Object mValue;
+
+    public RVIService(String serviceIdentifier, String appIdentifier, String domain, String remotePrefix, String localPrefix) {
+        mServiceIdentifier = "/" + serviceIdentifier;
+        mAppIdentifier     = appIdentifier;
+        mDomain            = domain;
+        mRemotePrefix      = remotePrefix;
+        mLocalPrefix       = localPrefix; // TODO: This concept is HVAC specific; extract to an hvac-layer class
     }
 
-    public String getValue() {
+    public RVIService(String jsonString) {
+        Gson gson = new Gson();
+        HashMap jsonHash = gson.fromJson(jsonString, HashMap.class);
+
+        String[] serviceParts = ((String) jsonHash.get("service")).split("/");
+
+        if (serviceParts.length != 5) return;
+
+        mDomain            = serviceParts[0];
+        mRemotePrefix      = serviceParts[1] + "/" + serviceParts[2];
+        mAppIdentifier     = serviceParts[3];
+        mServiceIdentifier = serviceParts[4];
+
+        HashMap parameters = ((ArrayList<HashMap>) jsonHash.get("parameters")).get(0);
+
+        // TODO: Why are parameters arrays of object, not just an object?
+
+        mValue = parameters.get("value"); // TODO: This concept is HVAC specific; extract to an hvac-layer class
+    }
+
+    public Object getValue() {
         return mValue;
     }
 
-    public void setValue(String mValue) {
+    public void setValue(Object mValue) {
         this.mValue = mValue;
     }
 
-    public String getServiceName() {
-        return mServiceName;
+    public String getServiceIdentifier() {
+        return mServiceIdentifier;
+    }
+
+    public String getFullyQualifiedLocalServiceName() {
+        return mDomain + mLocalPrefix + mAppIdentifier + mServiceIdentifier;
+    }
+
+    public String getFullyQualifiedRemoteServiceName() {
+        return mDomain + mRemotePrefix + mAppIdentifier + mServiceIdentifier;
     }
 
     public Object generateRequestParams() {
         HashMap<String, Object> params = new HashMap<>(4);
-        HashMap<String, String> subParams = new HashMap<>(2);
+        HashMap<String, Object> subParams = new HashMap<>(2);
 
-        subParams.put("sending_node", mDomain + mBackend);
+        subParams.put("sending_node", mDomain + mLocalPrefix); // TODO: This concept is HVAC specific; extract to an hvac-layer class
         subParams.put("value", mValue);
 
-        params.put("service", mDomain + mVin + mAppName + mServiceName);
+        params.put("service", getFullyQualifiedRemoteServiceName());
         params.put("parameters", Arrays.asList(subParams));
         params.put("timeout", System.currentTimeMillis() + 5000);
         params.put("signature", "signature");
         params.put("certificate", "certificate");
-
 
         return params;
     }

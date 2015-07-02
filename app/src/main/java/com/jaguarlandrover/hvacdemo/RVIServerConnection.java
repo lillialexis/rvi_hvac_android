@@ -75,44 +75,59 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
     private void connectSocket() {
         Log.d(TAG, "Connecting the socket: " + mServerUrl + ":" + mServerPort);
 
-        ConnectAndListenTask connectAndAuthorizeTask = new ConnectAndListenTask(mServerUrl, mServerPort);
+        ConnectTask connectAndAuthorizeTask = new ConnectTask(mServerUrl, mServerPort);
         connectAndAuthorizeTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
     }
 
-    public class ConnectAndListenTask extends AsyncTask<Void, String, Void> {
-
+    public class ConnectTask extends AsyncTask<Void, String, Void> {
         String dstAddress;
-        int dstPort;
-        String response = "";
+        int    dstPort;
 
-        private final static String CONNECTION_UPDATE = "CONNECTION_UPDATE";
-        private final static String DATA_UPDATE       = "DATA_UPDATE";
-        private final static String CONNECTION_DID_SUCCEED = "CONNECTION_DID_SUCCEED";
-        private final static String CONNECTION_DID_FAIL    = "CONNECTION_DID_FAIL";
-
-        ConnectAndListenTask(String addr, int port){
+        ConnectTask(String addr, int port) {
            dstAddress = addr;
            dstPort = port;
         }
 
         @Override
         protected Void doInBackground(Void... params) {
-            Log.d(TAG, "Starting auth sequence...");
 
             try {
                 mSocket = new Socket(dstAddress, dstPort);
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
 
-                publishProgress(ConnectAndListenTask.CONNECTION_UPDATE, ConnectAndListenTask.CONNECTION_DID_SUCCEED);
+                mRemoteConnectionListener.onRemoteConnectionDidFailToConnect(new Error("UnknownHostException: " + e
+                        .toString()));
 
-                //String authorizeMessage = "{\"tid\":1,\"cmd\":\"au\",\"addr\":\"0.0.0.0\",\"port\":0,\"ver\":\"1.0\",\"cert\":\"\",\"sign\":\"\"}"; // TODO: Abstract this out, obvs
+            } catch (IOException e) {
+                e.printStackTrace();
 
-//                String authorizeMessage = new RVIDlinkAuthPacket().jsonString();
-//                new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, authorizeMessage);
-//
-//                String serviceAnnounceMessage = "{\"tid\":1,\"cmd\":\"sa\",\"stat\":\"av\",\"svcs\":[\"jlr.com/android/987654321/hvac/unsubscribe\",\"jlr.com/android/987654321/hvac/subscribe\",\"jlr.com/android/987654321/hvac/defrost_max\",\"jlr.com/android/987654321/hvac/defrost_front\",\"jlr.com/android/987654321/hvac/airflow_direction\",\"jlr.com/android/987654321/hvac/seat_heat_left\",\"jlr.com/android/987654321/hvac/seat_heat_right\",\"jlr.com/android/987654321/hvac/hazard\",\"jlr.com/android/987654321/hvac/temp_right\",\"jlr.com/android/987654321/hvac/temp_left\",\"jlr.com/android/987654321/hvac/defrost_rear\",\"jlr.com/android/987654321/hvac/fan_speed\",\"jlr.com/android/987654321/hvac/fan\",\"jlr.com/android/987654321/hvac/air_circ\"],\"sign\":\"\"}";
-//                new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, serviceAnnounceMessage);
+                mRemoteConnectionListener.onRemoteConnectionDidFailToConnect(new Error("IOException: " + e.toString()));
 
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+
+            // TODO: Does the input buffer stream cache data in the case that my async thread sends the auth command before the listener is set up?
+            ListenTask listenTask = new ListenTask();
+            listenTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+            mRemoteConnectionListener.onRemoteConnectionDidConnect();
+        }
+    }
+
+    public class ListenTask extends AsyncTask<Void, String, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            Log.d(TAG, "Listening on socket...");
+
+            try {
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
                 byte[] buffer = new byte[1024];
 
@@ -121,93 +136,29 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
 
                 while ((bytesRead = inputStream.read(buffer)) != -1) {
                     byteArrayOutputStream.write(buffer, 0, bytesRead);
-                    response += byteArrayOutputStream.toString("UTF-8");
 
                     Log.d(TAG, "Bytes read: " + bytesRead);
                     Log.d(TAG, "Response so far: " + byteArrayOutputStream.toString("UTF-8"));
 
-                    // TODO: Buffer data for a complete json object
-
-                    int lengthOfJsonObject = getLengthOfJsonObject(byteArrayOutputStream.toString("UTF-8"));
-
-                    //Log.d(TAG, "Length of json object: " + lengthOfJsonObject);
-
-                    if (lengthOfJsonObject == bytesRead) { /* Current data is 1 json object */
-                        publishProgress(ConnectAndListenTask.DATA_UPDATE, byteArrayOutputStream.toString("UTF-8"));
-                        byteArrayOutputStream.reset();
-
-                        //Log.d(TAG, "AAAAAAA Current response: " + byteArrayOutputStream.toString("UTF-8"));
-
-                    } else if (lengthOfJsonObject < bytesRead && lengthOfJsonObject > 0) {
-                        publishProgress(ConnectAndListenTask.DATA_UPDATE, byteArrayOutputStream.toString("UTF-8").substring(0, lengthOfJsonObject - 1));
-                        byteArrayOutputStream.reset();
-
-                        byteArrayOutputStream.write(buffer, lengthOfJsonObject, bytesRead - lengthOfJsonObject);
-
-                        //Log.d(TAG, "BBBBBBB Current response: " + byteArrayOutputStream.toString("UTF-8"));
-
-                    } else {
-                        //Log.d(TAG, "CCCCCCC Current response: " + byteArrayOutputStream.toString("UTF-8"));
-                        ;
-                    }
+                    publishProgress(byteArrayOutputStream.toString("UTF-8"));
+                    byteArrayOutputStream.reset();
                 }
-            } catch (UnknownHostException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-                response = "UnknownHostException: " + e.toString();
 
-                publishProgress(ConnectAndListenTask.CONNECTION_UPDATE, ConnectAndListenTask.CONNECTION_DID_FAIL, response);
-            } catch (IOException e) {
-                e.printStackTrace();
-                response = "IOException: " + e.toString();
-
-                publishProgress(ConnectAndListenTask.CONNECTION_UPDATE, ConnectAndListenTask.CONNECTION_DID_FAIL, response);
-            } finally {
-                if (mSocket != null) {
-                    try {
-                        mSocket.close();
-                    } catch (IOException e) {
-
-                        e.printStackTrace();
-                    }
-                }
+                publishProgress("Exception: " + e.toString());
             }
+
             return null;
-        }
-
-        // TODO: This method assumes that all strings start with a '{'
-        private int getLengthOfJsonObject(String serverMessage) {
-            int numberOfOpens  = 0;
-            int numberOfCloses = 0;
-
-            for (int i = 0; i < serverMessage.length(); i++) {
-                if (serverMessage.charAt(i) == '{') numberOfOpens++;
-                else if (serverMessage.charAt(i) == '}') numberOfCloses++;
-
-                if (numberOfOpens == numberOfCloses) return i + 1;
-            }
-
-            return -1;
         }
 
         @Override
         protected void onProgressUpdate(String... params) {
             super.onProgressUpdate(params);
 
-            String updateType = params[0];
+            String data = params[0];
 
-            if (updateType.equals(CONNECTION_UPDATE)) {
-
-                String updateOutcome = params[1];
-                if (updateOutcome.equals(CONNECTION_DID_SUCCEED))
-                    mRemoteConnectionListener.onRemoteConnectionDidConnect();
-                else /* updateOutcome.equals(CONNECTION_DID_FAIL) */
-                    mRemoteConnectionListener.onRemoteConnectionDidFailToConnect(new Error(params[2]));
-
-            } else { /* updateType.equals(DATA_UPDATE) */
-                String data = params[1];
-
-                mRemoteConnectionListener.onRemoteConnectionDidReceiveData(data);
-            }
+            mRemoteConnectionListener.onRemoteConnectionDidReceiveData(data);
         }
 
         @Override

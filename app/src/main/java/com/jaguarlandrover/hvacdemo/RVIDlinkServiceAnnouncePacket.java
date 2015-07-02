@@ -28,11 +28,11 @@ public class RVIDlinkServiceAnnouncePacket extends RVIDlinkPacket
     private ArrayList<String> mServices;
 
     protected HashMap<String, Object> jsonHash() {
-        Gson gson = new Gson();
+//        Gson gson = new Gson();
         HashMap<String, Object> jsonHash = super.jsonHash();
 
         jsonHash.put("stat", mStatus);
-        jsonHash.put("svcs", gson.toJson(mServices));
+        jsonHash.put("svcs", mServices);
 
         return jsonHash;
     }

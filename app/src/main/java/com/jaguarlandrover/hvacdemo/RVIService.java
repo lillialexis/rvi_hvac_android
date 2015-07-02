@@ -87,7 +87,7 @@ public class RVIService
         HashMap<String, Object> params = new HashMap<>(4);
         HashMap<String, Object> subParams = new HashMap<>(2);
 
-        subParams.put("sending_node", mDomain + mLocalPrefix); // TODO: This concept is HVAC specific; extract to an hvac-layer class
+        subParams.put("sending_node", mDomain + mLocalPrefix + "/"); // TODO: This concept is HVAC specific; extract to an hvac-layer class
         subParams.put("value", mValue);
 
         params.put("service", getFullyQualifiedRemoteServiceName());

@@ -26,7 +26,6 @@ public interface RVIRemoteConnectionInterface
 
     void setRemoteConnectionListener(RemoteConnectionListener remoteConnectionListener); // TODO: Probably bad architecture to expect interface implementations to correctly set and use an
                                                                                          // TODO, cont: instance of the RemoteConnectionListener. Not sure what the best Java paradigm would be in this case
-
     public interface RemoteConnectionListener
     {
         public void onRemoteConnectionDidConnect();

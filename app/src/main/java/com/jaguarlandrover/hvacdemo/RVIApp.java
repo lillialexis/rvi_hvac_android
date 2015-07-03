@@ -28,7 +28,8 @@ public class RVIApp
 
     private ArrayList<RVIService> mServices;
 
-    public interface RVIAppListener {
+    public interface RVIAppListener
+    {
         public void onServiceUpdated(RVIService service);
     }
 
@@ -36,15 +37,15 @@ public class RVIApp
 
     public RVIApp(String appIdentifier, String domain, String remotePrefix, ArrayList<String> services) {
         mAppIdentifier = appIdentifier;
-        mDomain        = domain;
-        mRemotePrefix  = remotePrefix;
+        mDomain = domain;
+        mRemotePrefix = remotePrefix;
 
-        mLocalPrefix   = "/android/987654321"; // TODO: Generate randomly
+        mLocalPrefix = "/android/987654321"; // TODO: Generate randomly
 
-        mServices      = makeServices(services);
+        mServices = makeServices(services);
     }
 
-    private ArrayList<RVIService> makeServices(ArrayList<String>serviceIdentifiers) {
+    private ArrayList<RVIService> makeServices(ArrayList<String> serviceIdentifiers) {
         ArrayList<RVIService> services = new ArrayList<>(serviceIdentifiers.size());
         for (String serviceIdentifier : serviceIdentifiers)
             services.add(makeService(serviceIdentifier));
@@ -103,5 +104,13 @@ public class RVIApp
 
     public ArrayList<RVIService> getServices() {
         return mServices;
+    }
+
+    public String getAppIdentifier() {
+        return mAppIdentifier;
+    }
+
+    public void setAppIdentifier(String appIdentifier) {
+        mAppIdentifier = appIdentifier;
     }
 }

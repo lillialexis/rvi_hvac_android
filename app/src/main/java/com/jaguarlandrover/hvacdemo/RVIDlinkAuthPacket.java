@@ -55,7 +55,7 @@ public class RVIDlinkAuthPacket extends RVIDlinkPacket
         super(Command.AUTHORIZE, jsonHash);
 
         mAddr = (String)  jsonHash.get("addr");
-        mPort = (Integer) jsonHash.get("port");
+        mPort = ((Double) jsonHash.get("port")).intValue();
         mVer  = (String)  jsonHash.get("ver");
         mCert = (String)  jsonHash.get("cert");
     }

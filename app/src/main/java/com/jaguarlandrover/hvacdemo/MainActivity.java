@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 
 
-public class MainActivity extends ActionBarActivity
+public class MainActivity extends ActionBarActivity implements HVACManager.HVACManagerListener
 {
     private final static String TAG = "HVACDemo:MainActivity";
 
@@ -79,6 +79,7 @@ public class MainActivity extends ActionBarActivity
     protected void onResume() {
         super.onResume();
 
+        HVACManager.setListener(this);
         if (!HVACManager.isRviConfigured())
             startActivity(new Intent(this, SettingsActivity.class));
         else
@@ -259,5 +260,23 @@ public class MainActivity extends ActionBarActivity
 
         HVACManager.updateService((String) mButtonServices.get(seatTempButton.getId()),
                                   Integer.toString(mSeatTempValues.get(newSeatTempState)));
+    }
+
+    @Override
+    public void onServiceUpdated(String serviceIdentifier, Object value) {
+
+        if (serviceIdentifier.equals("air_circ")) {
+
+        } else if (serviceIdentifier.equals("airflow_direction")) {
+        } else if (serviceIdentifier.equals("defrost_front")) {
+
+        } else if (serviceIdentifier.equals("defrost_rear")) {
+        } else if (serviceIdentifier.equals("fan_speed")) {
+        } else if (serviceIdentifier.equals("seat_heat_left")) {
+
+        } else if (serviceIdentifier.equals("seat_heat_right")) {
+        } else if (serviceIdentifier.equals("temp_left")) {
+        } else if (serviceIdentifier.equals("temp_right")) {
+        }
     }
 }

@@ -16,6 +16,7 @@ package com.jaguarlandrover.hvacdemo;
 
 import android.util.Log;
 import com.google.gson.Gson;
+import com.google.gson.internal.LinkedTreeMap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,10 +38,10 @@ public class RVIService
 
     public RVIService(String serviceIdentifier, String appIdentifier, String domain, String remotePrefix, String localPrefix) {
         mServiceIdentifier = "/" + serviceIdentifier;
-        mAppIdentifier     = appIdentifier;
-        mDomain            = domain;
-        mRemotePrefix      = remotePrefix;
-        mLocalPrefix       = localPrefix; // TODO: This concept is HVAC specific; extract to an hvac-layer class
+        mAppIdentifier = appIdentifier;
+        mDomain = domain;
+        mRemotePrefix = remotePrefix;
+        mLocalPrefix = localPrefix; // TODO: This concept is HVAC specific; extract to an hvac-layer class
     }
 
     public RVIService(String jsonString) {
@@ -51,12 +52,12 @@ public class RVIService
 
         if (serviceParts.length != 5) return;
 
-        mDomain            = serviceParts[0];
-        mRemotePrefix      = serviceParts[1] + "/" + serviceParts[2];
-        mAppIdentifier     = serviceParts[3];
+        mDomain = serviceParts[0];
+        mRemotePrefix = serviceParts[1] + "/" + serviceParts[2];
+        mAppIdentifier = serviceParts[3];
         mServiceIdentifier = serviceParts[4];
 
-        HashMap parameters = ((ArrayList<HashMap>) jsonHash.get("parameters")).get(0);
+        LinkedTreeMap<Object, Object> parameters = ((ArrayList<LinkedTreeMap>) jsonHash.get("parameters")).get(0);
 
         // TODO: Why are parameters arrays of object, not just an object?
 
@@ -105,5 +106,13 @@ public class RVIService
         Log.d(TAG, "Service json: " + gson.toJson(generateRequestParams()));
 
         return gson.toJson(generateRequestParams());
+    }
+
+    public String getAppIdentifier() {
+        return mAppIdentifier;
+    }
+
+    public void setAppIdentifier(String appIdentifier) {
+        mAppIdentifier = appIdentifier;
     }
 }

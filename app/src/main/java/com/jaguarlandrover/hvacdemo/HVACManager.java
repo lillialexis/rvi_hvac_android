@@ -45,6 +45,12 @@ public class HVACManager implements RVIApp.RVIAppListener
                     "unsubscribe"
             ));
 
+    private HVACManagerListener mListener;
+
+    public interface HVACManagerListener {
+        void onServiceUpdated(String service, Object value);
+    }
+
     private HVACManager() {
         RVINode.setListener(new RVINode.RVINodeListener()
         {
@@ -190,6 +196,14 @@ public class HVACManager implements RVIApp.RVIAppListener
 
     @Override
     public void onServiceUpdated(RVIService service) {
+        mListener.onServiceUpdated(service.getServiceIdentifier(), service.getValue());
+    }
 
+    public static HVACManagerListener getListener() {
+        return ourInstance.mListener;
+    }
+
+    public static void setListener(HVACManagerListener listener) {
+        ourInstance.mListener = listener;
     }
 }

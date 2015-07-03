@@ -63,4 +63,11 @@ public class RVIDlinkReceivePacket extends RVIDlinkPacket
         mService = new RVIService(new String(Base64.decode((String)jsonHash.get("data"), Base64.DEFAULT)));
     }
 
+    public RVIService getService() {
+        return mService;
+    }
+
+    public void setService(RVIService service) {
+        mService = service;
+    }
 }

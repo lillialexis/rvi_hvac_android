@@ -15,8 +15,11 @@ package com.jaguarlandrover.hvacdemo;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import android.util.Log;
+import com.google.gson.Gson;
 
-public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.RemoteConnectionListener
+import java.util.HashMap;
+
+public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.RemoteConnectionListener, RVIDataParser.RVIDataParserListener
 {
     private final static String TAG = "HVACDemo:RVIRemoteCo...";
 
@@ -28,9 +31,13 @@ public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.
     private RVIBluetoothConnection mBluetoothConnection;
     private RVIServerConnection    mDirectServerConnection;
 
-    private RVIRemoteConnectionListener mListener;
+    private RVIDataParser mDataParser;
+
+    private RVIRemoteConnectionManagerListener mListener;
 
     private RVIRemoteConnectionManager() {
+        mDataParser = new RVIDataParser(this);
+
         mProxyServerConnection = new RVIServerConnection();
         mBluetoothConnection = new RVIBluetoothConnection();
         mDirectServerConnection = new RVIServerConnection();
@@ -51,6 +58,7 @@ public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.
 
     public static void disconnect() {
         ourInstance.closeConnections();
+        ourInstance.mDataParser.clear();
         ourInstance.mListener.onRVIDidDisconnect();
     }
 
@@ -106,17 +114,22 @@ public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.
 
     @Override
     public void onRemoteConnectionDidReceiveData(String data) {
-        mListener.onRVIDidReceiveData(data);
+        mDataParser.parseData(data);
     }
 
     @Override
     public void onDidSendDataToRemoteConnection() {
-        mListener.onRVIDidSendData();
+        mListener.onRVIDidSendPacket();
     }
 
     @Override
     public void onDidFailToSendDataToRemoteConnection(Error error) {
-        mListener.onRVIDidFailToSendData(error);
+        mListener.onRVIDidFailToSendPacket(error);
+    }
+
+    @Override
+    public void onPacketParsed(RVIDlinkPacket packet) {
+        mListener.onRVIDidReceivePacket(packet);
     }
 
     public static void setServerUrl(String serverUrl) {
@@ -139,11 +152,11 @@ public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.
         RVIRemoteConnectionManager.ourInstance.mUsingProxyServer = usingProxyServer;
     }
 
-    public static RVIRemoteConnectionListener getListener() {
+    public static RVIRemoteConnectionManagerListener getListener() {
         return RVIRemoteConnectionManager.ourInstance.mListener;
     }
 
-    public static void setListener(RVIRemoteConnectionListener listener) {
+    public static void setListener(RVIRemoteConnectionManagerListener listener) {
         RVIRemoteConnectionManager.ourInstance.mListener = listener;
     }
 }

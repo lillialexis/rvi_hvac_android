@@ -14,6 +14,7 @@ package com.jaguarlandrover.hvacdemo;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+import android.util.Log;
 import com.google.gson.Gson;
 
 import java.util.HashMap;
@@ -40,14 +41,14 @@ public class RVIDlinkPacket
     /**
      * The TID.
      */
-    protected Integer mTid;
+    protected Integer mTid = 0;
 
     /**
      * The cmd that was used in the request.
      */
     protected Command mCmd;
 
-    protected String mSig;
+    protected String  mSig = null;
 
     private static Integer tidCounter = 0;
 
@@ -83,8 +84,13 @@ public class RVIDlinkPacket
     public RVIDlinkPacket(Command command, HashMap jsonHash) {
         mCmd = command;
 
-        mTid = (Integer) jsonHash.get("tid");
-        mSig = (String)  jsonHash.get("sign"); // TODO: Push for sign->sig
+        Log.d(TAG, jsonHash.keySet().toString() + jsonHash.values().toString());
+
+        if (jsonHash.containsKey("tid"))
+            mTid = ((Double) jsonHash.get("tid")).intValue();
+
+        if (jsonHash.containsKey("sign"))
+            mSig = (String) jsonHash.get("sign"); // TODO: Push for sign->sig
 
     }
 }

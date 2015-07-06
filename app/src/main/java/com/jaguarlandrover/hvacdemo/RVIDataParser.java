@@ -17,6 +17,7 @@ package com.jaguarlandrover.hvacdemo;
 import android.util.Log;
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class RVIDataParser
@@ -31,60 +32,101 @@ public class RVIDataParser
         void onPacketParsed(RVIDlinkPacket packet);
     }
 
+    public interface RVIDataParserTestCaseListener
+    {
+        void onJsonStringParsed(String jsonString);
+
+        void onJsonObjectParsed(Object jsonObject);
+    }
+
     public RVIDataParser(RVIDataParserListener listener) {
         mDataParserListener = listener;
     }
 
-    // TODO: This method assumes that all strings start with a '{'
+    /**
+     *
+     * @param  buffer String to parse out JSON objects from
+     * @return        The length of the first JSON object found, 0 if it is an incomplete object,
+     *                -1 if the string does not start with a '{' or an '['
+     */
     private int getLengthOfJsonObject(String buffer) {
+        if (buffer.charAt(0) != '{' && buffer.charAt(0) != '[') return -1;
+
         int numberOfOpens  = 0;
         int numberOfCloses = 0;
 
+        char open  = buffer.charAt(0) == '{' ? '{' : '[';
+        char close = buffer.charAt(0) == '{' ? '}' : ']';
+
         for (int i = 0; i < buffer.length(); i++) {
-            if (buffer.charAt(i) == '{') numberOfOpens++;
-            else if (buffer.charAt(i) == '}') numberOfCloses++;
+            if (buffer.charAt(i) == open) numberOfOpens++;
+            else if (buffer.charAt(i) == close) numberOfCloses++;
 
             if (numberOfOpens == numberOfCloses) return i + 1;
         }
 
-        return -1;
+        return 0;
     }
 
     private RVIDlinkPacket stringToPacket(String string) {
         Log.d(TAG, "Parsing json blob: " + string);
-        Gson gson = new Gson();
-        HashMap jsonHash = gson.fromJson(string, HashMap.class);
 
-//        String command = (String) jsonHash.get("cmd");
-//
-//        if (command.equals(RVIDlinkPacket.Command.AUTHORIZE.strVal())) {
-//            return new RVIDlinkAuthPacket(jsonHash);
-//        } else if (command.equals(RVIDlinkPacket.Command.SERVICE_ANNOUNCE.strVal())) {
-//            return new RVIDlinkServiceAnnouncePacket(jsonHash);
-//        } else if (command.equals(RVIDlinkPacket.Command.RECEIVE.strVal())) {
-//            return new RVIDlinkReceivePacket(jsonHash);
-//        } else {
-//            return null;
-//        }
-        return null;
+        if (mDataParserListener instanceof RVIDataParserTestCaseListener)
+            ((RVIDataParserTestCaseListener) mDataParserListener).onJsonStringParsed(string);
+
+        Gson gson = new Gson();
+        HashMap jsonHash;
+
+        try {
+            jsonHash = gson.fromJson(string, HashMap.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        if (mDataParserListener instanceof RVIDataParserTestCaseListener)
+            ((RVIDataParserTestCaseListener) mDataParserListener).onJsonObjectParsed(jsonHash);
+
+        String command = (String) jsonHash.get("cmd");
+
+        if (command == null)
+            return null;
+
+        if (command.equals(RVIDlinkPacket.Command.AUTHORIZE.strVal())) {
+            return new RVIDlinkAuthPacket(jsonHash);
+        } else if (command.equals(RVIDlinkPacket.Command.SERVICE_ANNOUNCE.strVal())) {
+            return new RVIDlinkServiceAnnouncePacket(jsonHash);
+        } else if (command.equals(RVIDlinkPacket.Command.RECEIVE.strVal())) {
+            return new RVIDlinkReceivePacket(jsonHash);
+        } else {
+            return null;
+        }
     }
 
     private String recurse(String buffer) {
         int lengthOfString     = buffer.length();
         int lengthOfJsonObject = getLengthOfJsonObject(buffer);
 
+        RVIDlinkPacket packet;
+
         if (lengthOfJsonObject == lengthOfString) { /* Current data is 1 json object */
-            mDataParserListener.onPacketParsed(stringToPacket(buffer));
+            if ((packet = stringToPacket(buffer)) != null)
+                mDataParserListener.onPacketParsed(packet);
 
             return "";
 
         } else if (lengthOfJsonObject < lengthOfString && lengthOfJsonObject > 0) { /* Current data is more than 1 json object */
-            mDataParserListener.onPacketParsed(stringToPacket(buffer.substring(0, lengthOfJsonObject - 1)));
+            if ((packet = stringToPacket(buffer.substring(0, lengthOfJsonObject))) != null)
+                mDataParserListener.onPacketParsed(packet);
 
             return recurse(buffer.substring(lengthOfJsonObject));
 
-        } else { /* Current data is less than 1 json object */
+        } else if (lengthOfJsonObject == 0) { /* Current data is less than 1 json object */
             return buffer;
+
+        } else { /* There was an error */
+            return null;
+
         }
     }
 
@@ -96,5 +138,10 @@ public class RVIDataParser
 
     public void clear() {
         mBuffer = null;
+    }
+
+    @Override
+    public String toString() {
+        return mBuffer == null ? "" : mBuffer;
     }
 }

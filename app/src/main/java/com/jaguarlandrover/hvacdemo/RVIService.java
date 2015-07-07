@@ -37,7 +37,7 @@ public class RVIService
     private Object mValue;
 
     public RVIService(String serviceIdentifier, String appIdentifier, String domain, String remotePrefix, String localPrefix) {
-        mServiceIdentifier = "/" + serviceIdentifier;
+        mServiceIdentifier = serviceIdentifier;
         mAppIdentifier = appIdentifier;
         mDomain = domain;
         mRemotePrefix = remotePrefix;

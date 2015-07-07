@@ -97,7 +97,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
                 Log.d(TAG, Util.getMethodName());
 
                 HVACManager.updateService((String) mControlToServices.get(seekBar.getId()),
-                                          Integer.toString(progress));
+                        Integer.toString(progress));
             }
 
             @Override
@@ -222,7 +222,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
             case R.id.fan_up_button:
             case R.id.fan_right_button:
                 HVACManager.updateService((String) mControlToServices.get(toggleButton.getId()),
-                                          Integer.toString(getAirflowDirectionValue()));
+                        Integer.toString(getAirflowDirectionValue()));
                 break;
 
             case R.id.defrost_rear_button:
@@ -230,7 +230,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
             case R.id.circ_button:
 
                 HVACManager.updateService((String) mControlToServices.get(toggleButton.getId()),
-                                          Boolean.toString(toggleButton.isSelected()));
+                        Boolean.toString(toggleButton.isSelected()));
                 break;
 
             case R.id.ac_button:
@@ -267,7 +267,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
         seatTempButton.setImageResource((Integer) mSeatTempImages.get(seatTempButton.getId()).get(newSeatTempState));
 
         HVACManager.updateService((String) mControlToServices.get(seatTempButton.getId()),
-                                  Integer.toString(mSeatTempValues.get(newSeatTempState)));
+                Integer.toString(mSeatTempValues.get(newSeatTempState)));
     }
 
     public void setSeatTempImageFromValue(ImageButton seatTempButton, Integer value) {
@@ -276,44 +276,61 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
     }
 
     @Override
-    public void onServiceUpdated(String serviceIdentifier, Object value) {
+    public void onServiceUpdated(String serviceIdentifierString, Object value) {
 
         Integer id;
         View view;
 
-        if ((id = (Integer) mServicesToControls.get(serviceIdentifier)) != null)
+        HVACServiceIdentifier serviceIdentifier = HVACServiceIdentifier.get(serviceIdentifierString);
+        if ((id = (Integer) mServicesToControls.get(serviceIdentifierString)) != null)
             view = findViewById(id);
         else
             return;
 
         switch (serviceIdentifier) {
-            case "/air_circ":
-            case "/defrost_front":
-            case "/defrost_rear":
+            case AC:
+            case AIR_CIRC:
+            case DEFROST_FRONT:
+            case DEFROST_REAR:
                 view.setSelected(Boolean.parseBoolean((String) value));
 
                 break;
 
-            case "/airflow_direction":
+            case AIRFLOW_DIRECTION:
                 setAirflowDirectionButtons(Integer.parseInt((String) value));
 
                 break;
 
-            case "/fan_speed":
+            case FAN_SPEED:
                 ((SeekBar) view).setProgress(Integer.parseInt((String) value));
 
                 break;
 
-            case "/seat_heat_left":
-            case "/seat_heat_right":
+            case SEAT_HEAT_LEFT:
+            case SEAT_HEAT_RIGHT:
                 setSeatTempImageFromValue((ImageButton) view, Integer.parseInt((String) value));
 
                 break;
 
-            case "/temp_left":
-            case "/temp_right":
+            case HAZARD:
+                break;
+            case TEMP_LEFT:
+            case TEMP_RIGHT:
                 ((NumberPicker) view).setValue(Integer.parseInt((String) value));
 
+                break;
+
+            case DEFROST_MAX:
+                // TODO: All that other shit
+                break;
+
+            case AUTO:
+                // TODO: All that other shit
+                break;
+
+            case SUBSCRIBE:
+            case UNSUBSCRIBE:
+            case NONE:
                 break;
         }
     }

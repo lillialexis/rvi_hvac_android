@@ -50,7 +50,7 @@ public class RPCRequest
     private RPCRequestListener mListener;
 
     /**
-     * Serializes request object into json string
+     * Serializes request object into json strVal
      */
     public String jsonString() {
         HashMap<String, Object> requestHash = new HashMap<>(4);

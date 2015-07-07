@@ -15,8 +15,11 @@ package com.jaguarlandrover.hvacdemo;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import android.util.Log;
+import com.google.gson.Gson;
 
-public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.RemoteConnectionListener
+import java.util.HashMap;
+
+public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.RemoteConnectionListener, RVIDataParser.RVIDataParserListener
 {
     private final static String TAG = "HVACDemo:RVIRemoteCo...";
 
@@ -24,18 +27,23 @@ public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.
 
     private boolean mUsingProxyServer;
 
-    private RVIRemoteConnectionManager() {
-        mProxyServerConnection  = new RVIServerConnection();
-        mBluetoothConnection    = new RVIBluetoothConnection();
-        mDirectServerConnection = new RVIServerConnection();
-    }
-
-    //private RVIProxyServerConnection mProxyServerConnection;
     private RVIServerConnection    mProxyServerConnection;
     private RVIBluetoothConnection mBluetoothConnection;
     private RVIServerConnection    mDirectServerConnection;
 
-    public static void startListening() {
+    private RVIDataParser mDataParser;
+
+    private RVIRemoteConnectionManagerListener mListener;
+
+    private RVIRemoteConnectionManager() {
+        mDataParser = new RVIDataParser(this);
+
+        mProxyServerConnection = new RVIServerConnection();
+        mBluetoothConnection = new RVIBluetoothConnection();
+        mDirectServerConnection = new RVIServerConnection();
+    }
+
+    public static void connect() {
         ourInstance.closeConnections();
 
         RVIRemoteConnectionInterface remoteConnection = ourInstance.selectEnabledRemoteConnection();
@@ -48,14 +56,20 @@ public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.
         remoteConnection.connect();
     }
 
-    public static void sendRviRequest(RVIServiceInvokeJSONObject serviceInvokeJSONObject) {
+    public static void disconnect() {
+        ourInstance.closeConnections();
+        ourInstance.mDataParser.clear();
+        ourInstance.mListener.onRVIDidDisconnect();
+    }
+
+    public static void sendPacket(RVIDlinkPacket dlinkPacket) {
         Log.d(TAG, Util.getMethodName());
 
         RVIRemoteConnectionInterface remoteConnection = ourInstance.selectConnectedRemoteConnection();
 
-        if (remoteConnection == null) return;
+        if (remoteConnection == null) return; // TODO: Implement a cache to send out stuff after a connection has been established
 
-        remoteConnection.sendRviRequest(serviceInvokeJSONObject);
+        remoteConnection.sendRviRequest(dlinkPacket);
     }
 
     private RVIRemoteConnectionInterface selectConnectedRemoteConnection() {
@@ -90,27 +104,32 @@ public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.
 
     @Override
     public void onRemoteConnectionDidConnect() {
-
+        mListener.onRVIDidConnect();
     }
 
     @Override
     public void onRemoteConnectionDidFailToConnect(Error error) {
-
+        mListener.onRVIDidFailToConnect(error);
     }
 
     @Override
     public void onRemoteConnectionDidReceiveData(String data) {
-
+        mDataParser.parseData(data);
     }
 
     @Override
     public void onDidSendDataToRemoteConnection() {
-
+        mListener.onRVIDidSendPacket();
     }
 
     @Override
     public void onDidFailToSendDataToRemoteConnection(Error error) {
+        mListener.onRVIDidFailToSendPacket(error);
+    }
 
+    @Override
+    public void onPacketParsed(RVIDlinkPacket packet) {
+        mListener.onRVIDidReceivePacket(packet);
     }
 
     public static void setServerUrl(String serverUrl) {
@@ -131,5 +150,13 @@ public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.
 
     public static void setUsingProxyServer(boolean usingProxyServer) {
         RVIRemoteConnectionManager.ourInstance.mUsingProxyServer = usingProxyServer;
+    }
+
+    public static RVIRemoteConnectionManagerListener getListener() {
+        return RVIRemoteConnectionManager.ourInstance.mListener;
+    }
+
+    public static void setListener(RVIRemoteConnectionManagerListener listener) {
+        RVIRemoteConnectionManager.ourInstance.mListener = listener;
     }
 }

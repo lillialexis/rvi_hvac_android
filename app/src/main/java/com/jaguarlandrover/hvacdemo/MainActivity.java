@@ -15,7 +15,6 @@ package com.jaguarlandrover.hvacdemo;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import android.content.Intent;
-import android.media.Image;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,14 +30,15 @@ import java.util.HashMap;
 import java.util.List;
 
 
-public class MainActivity extends ActionBarActivity
+public class MainActivity extends ActionBarActivity implements HVACManager.HVACManagerListener
 {
     private final static String TAG = "HVACDemo:MainActivity";
 
     private final Handler mHandler = new Handler();
     private Runnable mRunnable;
 
-    private HashMap<Integer, Object>  mButtonServices;
+    private HashMap<Integer, Object> mControlToServices;
+    private HashMap<String, Object>  mServicesToControls;
 
     private HashMap<Integer, Integer> mButtonImagesOff;
     private HashMap<Integer, Integer> mButtonImagesOn;
@@ -61,11 +61,13 @@ public class MainActivity extends ActionBarActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mButtonServices  = MainActivityUtil.initializeButtonServices();
-        mButtonImagesOff = MainActivityUtil.initializeButtonOffHashMap();
-        mButtonImagesOn  = MainActivityUtil.initializeButtonOnHashMap();
+        mControlToServices = MainActivityUtil.initializeControlServices();
+        mServicesToControls = MainActivityUtil.initializeServiceControls();
 
-        mSeatTempImages  = MainActivityUtil.initializeSeatTempHashArray();
+        mButtonImagesOff = MainActivityUtil.initializeButtonOffHashMap();
+        mButtonImagesOn = MainActivityUtil.initializeButtonOnHashMap();
+
+        mSeatTempImages = MainActivityUtil.initializeSeatTempHashArray();
 
         mHazardButton = (ImageButton) findViewById(R.id.hazard_button);
 
@@ -79,6 +81,7 @@ public class MainActivity extends ActionBarActivity
     protected void onResume() {
         super.onResume();
 
+        HVACManager.setListener(this);
         if (!HVACManager.isRviConfigured())
             startActivity(new Intent(this, SettingsActivity.class));
         else
@@ -93,7 +96,7 @@ public class MainActivity extends ActionBarActivity
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 Log.d(TAG, Util.getMethodName());
 
-                HVACManager.updateService((String) mButtonServices.get(seekBar.getId()),
+                HVACManager.updateService((String) mControlToServices.get(seekBar.getId()),
                                           Integer.toString(progress));
             }
 
@@ -124,7 +127,7 @@ public class MainActivity extends ActionBarActivity
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
                 Log.d(TAG, Util.getMethodName());
 
-                HVACManager.updateService("temp_left", Integer.toString(newVal));
+                HVACManager.updateService((String) mControlToServices.get(picker.getId()), Integer.toString(newVal));
             }
         });
     }
@@ -218,7 +221,7 @@ public class MainActivity extends ActionBarActivity
             case R.id.fan_down_button:
             case R.id.fan_up_button:
             case R.id.fan_right_button:
-                HVACManager.updateService((String) mButtonServices.get(toggleButton.getId()),
+                HVACManager.updateService((String) mControlToServices.get(toggleButton.getId()),
                                           Integer.toString(getAirflowDirectionValue()));
                 break;
 
@@ -226,7 +229,7 @@ public class MainActivity extends ActionBarActivity
             case R.id.defrost_front_button:
             case R.id.circ_button:
 
-                HVACManager.updateService((String) mButtonServices.get(toggleButton.getId()),
+                HVACManager.updateService((String) mControlToServices.get(toggleButton.getId()),
                                           Boolean.toString(toggleButton.isSelected()));
                 break;
 
@@ -244,6 +247,12 @@ public class MainActivity extends ActionBarActivity
                ((findViewById(R.id.fan_up_button)).isSelected()    ? 4 : 0);
     }
 
+    private void setAirflowDirectionButtons (Integer value) {
+        findViewById(R.id.fan_down_button) .setSelected(value % 2 == 1);
+        findViewById(R.id.fan_right_button).setSelected(value % 4 == 2);
+        findViewById(R.id.fan_up_button)   .setSelected(value % 8 == 4);
+    }
+
     public void seatTempButtonPressed(View view) {
         Log.d(TAG, Util.getMethodName());
 
@@ -257,7 +266,55 @@ public class MainActivity extends ActionBarActivity
 
         seatTempButton.setImageResource((Integer) mSeatTempImages.get(seatTempButton.getId()).get(newSeatTempState));
 
-        HVACManager.updateService((String) mButtonServices.get(seatTempButton.getId()),
+        HVACManager.updateService((String) mControlToServices.get(seatTempButton.getId()),
                                   Integer.toString(mSeatTempValues.get(newSeatTempState)));
+    }
+
+    public void setSeatTempImageFromValue(ImageButton seatTempButton, Integer value) {
+        int index = mSeatTempValues.indexOf(value);
+        seatTempButton.setImageResource((Integer) mSeatTempImages.get(seatTempButton.getId()).get(index));
+    }
+
+    @Override
+    public void onServiceUpdated(String serviceIdentifier, Object value) {
+
+        Integer id;
+        View view;
+
+        if ((id = (Integer) mServicesToControls.get(serviceIdentifier)) != null)
+            view = findViewById(id);
+        else
+            return;
+
+        switch (serviceIdentifier) {
+            case "/air_circ":
+            case "/defrost_front":
+            case "/defrost_rear":
+                view.setSelected(Boolean.parseBoolean((String) value));
+
+                break;
+
+            case "/airflow_direction":
+                setAirflowDirectionButtons(Integer.parseInt((String) value));
+
+                break;
+
+            case "/fan_speed":
+                ((SeekBar) view).setProgress(Integer.parseInt((String) value));
+
+                break;
+
+            case "/seat_heat_left":
+            case "/seat_heat_right":
+                setSeatTempImageFromValue((ImageButton) view, Integer.parseInt((String) value));
+
+                break;
+
+            case "/temp_left":
+            case "/temp_right":
+                ((NumberPicker) view).setValue(Integer.parseInt((String) value));
+
+                break;
+        }
     }
 }

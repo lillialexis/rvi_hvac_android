@@ -29,25 +29,17 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
     private final static String TAG = "HVACDemo:RVIServerCo...";
     private RemoteConnectionListener mRemoteConnectionListener;
 
-    //public static final int SERVER_PORT = 8807;
     private String  mServerUrl;
     private Integer mServerPort;
 
     Socket mSocket;
 
     @Override
-    public void sendRviRequest(RVIServiceInvokeJSONObject serviceInvokeJSONObject) {
+    public void sendRviRequest(RVIDlinkPacket dlinkPacket) {
         if (!isConnected() || !isEnabled()) // TODO: Call error on listener
             return;
 
-//        String data = "{\"tid\":1,\n" +
-//                "\"cmd\":\"rcv\",\n" +
-//                "\"mod\":\"proto_json_rpc\",\n" +
-//                "\"data\":\"" + Base64.encodeToString(request.jsonString().getBytes(), Base64.DEFAULT) + "\"}";
-
-        String data = serviceInvokeJSONObject.jsonString();
-
-        new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, data);
+        new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, dlinkPacket.toJsonString());
     }
 
     @Override
@@ -83,42 +75,60 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
     private void connectSocket() {
         Log.d(TAG, "Connecting the socket: " + mServerUrl + ":" + mServerPort);
 
-        ConnectAndListenTask connectAndAuthorizeTask = new ConnectAndListenTask(mServerUrl, mServerPort);
+        ConnectTask connectAndAuthorizeTask = new ConnectTask(mServerUrl, mServerPort);
         connectAndAuthorizeTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
     }
 
-    public class ConnectAndListenTask extends AsyncTask<Void, String, Void> {
-
+    public class ConnectTask extends AsyncTask<Void, String, Void> {
         String dstAddress;
-        int dstPort;
-        String response = "";
+        int    dstPort;
 
-        private final static String CONNECTION_UPDATE = "CONNECTION_UPDATE";
-        private final static String DATA_UPDATE       = "DATA_UPDATE";
-        private final static String CONNECTION_DID_SUCCEED = "CONNECTION_DID_SUCCEED";
-        private final static String CONNECTION_DID_FAIL    = "CONNECTION_DID_FAIL";
-
-        ConnectAndListenTask(String addr, int port){
+        ConnectTask(String addr, int port) {
            dstAddress = addr;
            dstPort = port;
         }
 
         @Override
         protected Void doInBackground(Void... params) {
-            Log.d(TAG, "Starting auth sequence...");
 
             try {
                 mSocket = new Socket(dstAddress, dstPort);
 
-                publishProgress(ConnectAndListenTask.CONNECTION_UPDATE, ConnectAndListenTask.CONNECTION_DID_SUCCEED);
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
 
-                //String authorizeMessage = "{\"tid\":1,\"cmd\":\"au\",\"addr\":\"0.0.0.0\",\"port\":0,\"ver\":\"1.0\",\"cert\":\"\",\"sign\":\"\"}"; // TODO: Abstract this out, obvs
+                mRemoteConnectionListener.onRemoteConnectionDidFailToConnect(new Error("UnknownHostException: " + e
+                        .toString()));
 
-                String authorizeMessage = new RVIAuthJSONObject().jsonString();
-                new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, authorizeMessage);
+            } catch (IOException e) {
+                e.printStackTrace();
 
+                mRemoteConnectionListener.onRemoteConnectionDidFailToConnect(new Error("IOException: " + e.toString()));
 
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+
+            // TODO: Does the input buffer stream cache data in the case that my async thread sends the auth command before the listener is set up?
+            ListenTask listenTask = new ListenTask();
+            listenTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+            mRemoteConnectionListener.onRemoteConnectionDidConnect();
+        }
+    }
+
+    public class ListenTask extends AsyncTask<Void, String, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            Log.d(TAG, "Listening on socket...");
+
+            try {
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
                 byte[] buffer = new byte[1024];
 
@@ -127,38 +137,19 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
 
                 while ((bytesRead = inputStream.read(buffer)) != -1) {
                     byteArrayOutputStream.write(buffer, 0, bytesRead);
-                    response += byteArrayOutputStream.toString("UTF-8");
 
                     Log.d(TAG, "Bytes read: " + bytesRead);
                     Log.d(TAG, "Response so far: " + byteArrayOutputStream.toString("UTF-8"));
 
-                    // TODO: Buffer data for a complete json object
-
-                    publishProgress(ConnectAndListenTask.DATA_UPDATE, byteArrayOutputStream.toString("UTF-8"));
-
-
+                    publishProgress(byteArrayOutputStream.toString("UTF-8"));
                     byteArrayOutputStream.reset();
                 }
-            } catch (UnknownHostException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-                response = "UnknownHostException: " + e.toString();
 
-                publishProgress(ConnectAndListenTask.CONNECTION_UPDATE, ConnectAndListenTask.CONNECTION_DID_FAIL, response);
-            } catch (IOException e) {
-                e.printStackTrace();
-                response = "IOException: " + e.toString();
-
-                publishProgress(ConnectAndListenTask.CONNECTION_UPDATE, ConnectAndListenTask.CONNECTION_DID_FAIL, response);
-            } finally {
-                if (mSocket != null) {
-                    try {
-                        mSocket.close();
-                    } catch (IOException e) {
-
-                        e.printStackTrace();
-                    }
-                }
+                publishProgress("Exception: " + e.toString());
             }
+
             return null;
         }
 
@@ -166,19 +157,9 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
         protected void onProgressUpdate(String... params) {
             super.onProgressUpdate(params);
 
-            String updateType = params[0];
+            String data = params[0];
 
-            if (updateType.equals(CONNECTION_UPDATE)) {
-                String updateOutcome = params[1];
-                if (updateOutcome.equals(CONNECTION_DID_SUCCEED))
-                    mRemoteConnectionListener.onRemoteConnectionDidConnect();
-                else
-                    mRemoteConnectionListener.onRemoteConnectionDidFailToConnect(new Error(params[2]));
-            } else {
-                String data = params[1];
-
-                mRemoteConnectionListener.onRemoteConnectionDidReceiveData(data);
-            }
+            mRemoteConnectionListener.onRemoteConnectionDidReceiveData(data);
         }
 
         @Override

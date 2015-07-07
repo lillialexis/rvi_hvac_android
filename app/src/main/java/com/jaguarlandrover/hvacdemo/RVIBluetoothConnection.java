@@ -21,7 +21,7 @@ public class RVIBluetoothConnection implements RVIRemoteConnectionInterface
     private RemoteConnectionListener mRemoteConnectionListener;
 
     @Override
-    public void sendRviRequest(RVIServiceInvokeJSONObject serviceInvokeJSONObject) {
+    public void sendRviRequest(RVIDlinkPacket dlinkPacket) {
         return;
     }
 

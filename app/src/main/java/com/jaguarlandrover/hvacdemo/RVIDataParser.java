@@ -75,32 +75,46 @@ public class RVIDataParser
             ((RVIDataParserTestCaseListener) mDataParserListener).onJsonStringParsed(string);
 
         Gson gson = new Gson();
-        HashMap jsonHash;
+        //HashMap jsonHash;
+        RVIDlinkPacket packet;
 
         try {
-            jsonHash = gson.fromJson(string, HashMap.class);
+        //    jsonHash = gson.fromJson(string, HashMap.class);
+            packet = gson.fromJson(string, RVIDlinkPacket.class);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
 
         if (mDataParserListener instanceof RVIDataParserTestCaseListener)
-            ((RVIDataParserTestCaseListener) mDataParserListener).onJsonObjectParsed(jsonHash);
+            //((RVIDataParserTestCaseListener) mDataParserListener).onJsonObjectParsed(jsonHash);
+            ((RVIDataParserTestCaseListener) mDataParserListener).onJsonObjectParsed(packet);
 
-        String command = (String) jsonHash.get("cmd");
+        //String command = (String) jsonHash.get("cmd");
+        RVIDlinkPacket.Command command = packet.mCmd;
 
         if (command == null)
             return null;
 
-        if (command.equals(RVIDlinkPacket.Command.AUTHORIZE.strVal())) {
-            return new RVIDlinkAuthPacket(jsonHash);
-        } else if (command.equals(RVIDlinkPacket.Command.SERVICE_ANNOUNCE.strVal())) {
-            return new RVIDlinkServiceAnnouncePacket(jsonHash);
-        } else if (command.equals(RVIDlinkPacket.Command.RECEIVE.strVal())) {
-            return new RVIDlinkReceivePacket(jsonHash);
+        if (command == RVIDlinkPacket.Command.AUTHORIZE) {
+            return gson.fromJson(string, RVIDlinkAuthPacket.class);
+        } else if (command == RVIDlinkPacket.Command.SERVICE_ANNOUNCE) {
+            return gson.fromJson(string, RVIDlinkServiceAnnouncePacket.class);
+        } else if (command == RVIDlinkPacket.Command.RECEIVE) {
+            return gson.fromJson(string, RVIDlinkReceivePacket.class);
         } else {
             return null;
         }
+
+//        if (command.equals(RVIDlinkPacket.Command.AUTHORIZE.strVal())) {
+//            return new RVIDlinkAuthPacket(jsonHash);
+//        } else if (command.equals(RVIDlinkPacket.Command.SERVICE_ANNOUNCE.strVal())) {
+//            return new RVIDlinkServiceAnnouncePacket(jsonHash);
+//        } else if (command.equals(RVIDlinkPacket.Command.RECEIVE.strVal())) {
+//            return new RVIDlinkReceivePacket(jsonHash);
+//        } else {
+//            return null;
+//        }
     }
 
     private String recurse(String buffer) {

@@ -34,17 +34,6 @@ public class RVIDlinkAuthPacket extends RVIDlinkPacket
     @SerializedName("cert")
     private String mCert;
 
-//    protected HashMap<String, Object> jsonHash() {
-//        HashMap<String, Object> jsonHash = super.jsonHash();
-//
-//        jsonHash.put("addr", mAddr);
-//        jsonHash.put("port", mPort);
-//        jsonHash.put("ver", mVer);
-//        jsonHash.put("cert", mCert);
-//
-//        return jsonHash;
-//    }
-
     /**
      * Helper method to get an authorization json object
      */

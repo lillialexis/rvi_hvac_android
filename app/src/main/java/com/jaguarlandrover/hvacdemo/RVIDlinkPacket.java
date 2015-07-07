@@ -36,10 +36,6 @@ public class RVIDlinkPacket
         Command(String string) {
             mString = string;
         }
-
-        String strVal() {
-            return mString;
-        }
     }
 
     /**
@@ -59,24 +55,16 @@ public class RVIDlinkPacket
 
     private static Integer tidCounter = 0;
 
-//    protected HashMap<String, Object> jsonHash() {
-//        HashMap<String, Object> jsonHash = new HashMap<>(4);
-//
-//        jsonHash.put("cmd", mCmd.strVal());
-//
-//        jsonHash.put("tid", mTid);
-//        jsonHash.put("sign", mSig);
-//
-//        return jsonHash;
-//    }
-
     /**
      * Serializes the object into json strVal
      */
-    // TODO: Are there json serialization interfaces that this class can implement that
-    protected String jsonString() {
+    protected String toJsonString() {
         Gson gson = new Gson();
         return gson.toJson(this);//jsonHash());
+    }
+
+    protected RVIDlinkPacket() {
+
     }
 
     /**

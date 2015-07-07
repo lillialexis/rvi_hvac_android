@@ -39,14 +39,8 @@ public class RVIDlinkReceivePacket extends RVIDlinkPacket
     @SerializedName("data")
     private String mData;
 
-//    protected HashMap<String, Object> jsonHash() {
-//        HashMap<String, Object> jsonHash = super.jsonHash();
-//
-//        jsonHash.put("mod", mMod);
-//        jsonHash.put("data", Base64.encodeToString(mService.jsonString().getBytes(), Base64.DEFAULT));
-//
-//        return jsonHash;
-//    }
+    public RVIDlinkReceivePacket() {
+    }
 
     /**
      * Helper method to get a receive dlink json object
@@ -70,6 +64,9 @@ public class RVIDlinkReceivePacket extends RVIDlinkPacket
     }
 
     public RVIService getService() {
+        if (mService == null && mData != null)
+            mService = new RVIService(new String(Base64.decode(mData, Base64.DEFAULT)));
+
         return mService;
     }
 

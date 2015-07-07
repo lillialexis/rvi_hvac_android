@@ -149,7 +149,7 @@ public class RVIDlinkPacketTest extends AndroidTestCase
     public final void testJsonString() {
         mPacket = new RVIDlinkPacket(RVIDlinkPacket.Command.AUTHORIZE);
 
-        Log.d(TAG, mPacket.jsonString());
+        Log.d(TAG, mPacket.toJsonString());
 
     }
 }

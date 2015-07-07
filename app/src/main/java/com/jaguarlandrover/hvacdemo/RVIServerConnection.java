@@ -39,7 +39,7 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
         if (!isConnected() || !isEnabled()) // TODO: Call error on listener
             return;
 
-        new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, dlinkPacket.jsonString());
+        new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, dlinkPacket.toJsonString());
     }
 
     @Override

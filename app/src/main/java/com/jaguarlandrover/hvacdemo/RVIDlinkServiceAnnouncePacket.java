@@ -30,22 +30,15 @@ public class RVIDlinkServiceAnnouncePacket extends RVIDlinkPacket
     @SerializedName("svcs")
     private ArrayList<String> mServices;
 
-//    protected HashMap<String, Object> jsonHash() {
-////        Gson gson = new Gson();
-//        HashMap<String, Object> jsonHash = super.jsonHash();
-//
-//        jsonHash.put("stat", mStatus);
-//        jsonHash.put("svcs", mServices);
-//
-//        return jsonHash;
-//    }
-
     ArrayList<String> getServiceFQNames(ArrayList<RVIService> services) {
         ArrayList<String> newList = new ArrayList<>(services.size());
         for (RVIService service : services)
             newList.add(service.getFullyQualifiedLocalServiceName());
 
         return newList;
+    }
+
+    public RVIDlinkServiceAnnouncePacket() {
     }
 
     /**

@@ -75,11 +75,9 @@ public class RVIDataParser
             ((RVIDataParserTestCaseListener) mDataParserListener).onJsonStringParsed(string);
 
         Gson gson = new Gson();
-        //HashMap jsonHash;
         RVIDlinkPacket packet;
 
         try {
-        //    jsonHash = gson.fromJson(string, HashMap.class);
             packet = gson.fromJson(string, RVIDlinkPacket.class);
         } catch (Exception e) {
             e.printStackTrace();
@@ -87,10 +85,8 @@ public class RVIDataParser
         }
 
         if (mDataParserListener instanceof RVIDataParserTestCaseListener)
-            //((RVIDataParserTestCaseListener) mDataParserListener).onJsonObjectParsed(jsonHash);
             ((RVIDataParserTestCaseListener) mDataParserListener).onJsonObjectParsed(packet);
 
-        //String command = (String) jsonHash.get("cmd");
         RVIDlinkPacket.Command command = packet.mCmd;
 
         if (command == null)
@@ -105,16 +101,6 @@ public class RVIDataParser
         } else {
             return null;
         }
-
-//        if (command.equals(RVIDlinkPacket.Command.AUTHORIZE.strVal())) {
-//            return new RVIDlinkAuthPacket(jsonHash);
-//        } else if (command.equals(RVIDlinkPacket.Command.SERVICE_ANNOUNCE.strVal())) {
-//            return new RVIDlinkServiceAnnouncePacket(jsonHash);
-//        } else if (command.equals(RVIDlinkPacket.Command.RECEIVE.strVal())) {
-//            return new RVIDlinkReceivePacket(jsonHash);
-//        } else {
-//            return null;
-//        }
     }
 
     private String recurse(String buffer) {

@@ -112,7 +112,11 @@ public class RVIService
         return mAppIdentifier;
     }
 
-    public void setAppIdentifier(String appIdentifier) {
-        mAppIdentifier = appIdentifier;
+    public String getRemotePrefix() {
+        return mRemotePrefix;
+    }
+
+    public void setRemotePrefix(String remotePrefix) {
+        mRemotePrefix = remotePrefix;
     }
 }

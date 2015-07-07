@@ -14,7 +14,10 @@ package com.jaguarlandrover.hvacdemo;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+import android.content.Context;
+
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class RVIApp
 {
@@ -35,12 +38,13 @@ public class RVIApp
 
     private RVIAppListener mListener;
 
-    public RVIApp(String appIdentifier, String domain, String remotePrefix, ArrayList<String> services) {
+    public RVIApp(Context context, String appIdentifier, String domain, String remotePrefix, ArrayList<String> services) {
         mAppIdentifier = appIdentifier;
         mDomain = domain;
         mRemotePrefix = remotePrefix;
 
-        mLocalPrefix = "/android/987654321"; // TODO: Generate randomly
+        mLocalPrefix = RVINode.getLocalServicePrefix(context);
+                //"/android/" + UUID.randomUUID().toString();//987654321"; // TODO: Generate randomly
 
         mServices = makeServices(services);
     }
@@ -89,7 +93,10 @@ public class RVIApp
 
     public void setRemotePrefix(String remotePrefix) {
         mRemotePrefix = remotePrefix;
-        mServices.removeAll(mServices);
+        //mServices.removeAll(mServices);
+
+        for (RVIService service : mServices)
+            service.setRemotePrefix(remotePrefix);
     }
 
 

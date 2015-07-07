@@ -16,6 +16,7 @@ package com.jaguarlandrover.hvacdemo;
 
 import android.util.Base64;
 import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
 
 import java.util.HashMap;
 
@@ -27,21 +28,25 @@ public class RVIDlinkReceivePacket extends RVIDlinkPacket
      * The mod parameter.
      * This client is only using 'proto_json_rpc' at the moment.
      */
+    @SerializedName("mod")
     private String mMod;
 
     /**
      * The RVIService used to create the request params
      */
-    private RVIService mService;
+    private transient RVIService mService;
 
-    protected HashMap<String, Object> jsonHash() {
-        HashMap<String, Object> jsonHash = super.jsonHash();
+    @SerializedName("data")
+    private String mData;
 
-        jsonHash.put("mod", mMod);
-        jsonHash.put("data", Base64.encodeToString(mService.jsonString().getBytes(), Base64.DEFAULT));
-
-        return jsonHash;
-    }
+//    protected HashMap<String, Object> jsonHash() {
+//        HashMap<String, Object> jsonHash = super.jsonHash();
+//
+//        jsonHash.put("mod", mMod);
+//        jsonHash.put("data", Base64.encodeToString(mService.jsonString().getBytes(), Base64.DEFAULT));
+//
+//        return jsonHash;
+//    }
 
     /**
      * Helper method to get a receive dlink json object
@@ -51,14 +56,15 @@ public class RVIDlinkReceivePacket extends RVIDlinkPacket
     public RVIDlinkReceivePacket(RVIService service) {
         super(Command.RECEIVE);
 
-        mMod      = "proto_json_rpc";
-        mService  = service;
+        mMod = "proto_json_rpc";
+        mService = service; // TODO: With this paradigm, if one of the parameters of mService changes, mData string will still be the same.
+        mData = Base64.encodeToString(mService.jsonString().getBytes(), Base64.DEFAULT);
     }
 
     public RVIDlinkReceivePacket(HashMap jsonHash) {
         super(Command.RECEIVE, jsonHash);
 
-        mMod     = (String) jsonHash.get("mod");
+        mMod = (String) jsonHash.get("mod");
 
         mService = new RVIService(new String(Base64.decode((String)jsonHash.get("data"), Base64.DEFAULT)));
     }

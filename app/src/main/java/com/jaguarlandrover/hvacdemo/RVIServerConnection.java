@@ -93,8 +93,8 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
         protected Void doInBackground(Void... params) {
 
             try {
-                //mSocket = new Socket(dstAddress, dstPort);
-                mSocket = new Socket("127.0.0.1", 50001);
+                mSocket = new Socket(dstAddress, dstPort);
+
             } catch (UnknownHostException e) {
                 e.printStackTrace();
 

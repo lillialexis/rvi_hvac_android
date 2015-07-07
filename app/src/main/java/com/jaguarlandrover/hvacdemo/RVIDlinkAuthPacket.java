@@ -14,30 +14,36 @@ package com.jaguarlandrover.hvacdemo;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.HashMap;
 
 public class RVIDlinkAuthPacket extends RVIDlinkPacket
 {
     private final static String TAG = "HVACDemo:RVIDlinkAuthPacket";
 
+    @SerializedName("addr")
     private String mAddr;
 
+    @SerializedName("port")
     private Integer mPort;
 
+    @SerializedName("ver")
     private String mVer;
 
+    @SerializedName("cert")
     private String mCert;
 
-    protected HashMap<String, Object> jsonHash() {
-        HashMap<String, Object> jsonHash = super.jsonHash();
-
-        jsonHash.put("addr", mAddr);
-        jsonHash.put("port", mPort);
-        jsonHash.put("ver",  mVer);
-        jsonHash.put("cert", mCert);
-
-        return jsonHash;
-    }
+//    protected HashMap<String, Object> jsonHash() {
+//        HashMap<String, Object> jsonHash = super.jsonHash();
+//
+//        jsonHash.put("addr", mAddr);
+//        jsonHash.put("port", mPort);
+//        jsonHash.put("ver", mVer);
+//        jsonHash.put("cert", mCert);
+//
+//        return jsonHash;
+//    }
 
     /**
      * Helper method to get an authorization json object
@@ -47,7 +53,7 @@ public class RVIDlinkAuthPacket extends RVIDlinkPacket
 
         mAddr = "0.0.0.0";
         mPort = 0;
-        mVer  = "1.0";
+        mVer = "1.0";
         mCert = "";
     }
 

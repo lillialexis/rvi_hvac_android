@@ -15,6 +15,7 @@ package com.jaguarlandrover.hvacdemo;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,19 +24,21 @@ public class RVIDlinkServiceAnnouncePacket extends RVIDlinkPacket
 {
     private final static String TAG = "HVACDemo:RVIDlinkServiceAnnouncePacket";
 
+    @SerializedName("stat")
     private String mStatus;
 
+    @SerializedName("svcs")
     private ArrayList<String> mServices;
 
-    protected HashMap<String, Object> jsonHash() {
-//        Gson gson = new Gson();
-        HashMap<String, Object> jsonHash = super.jsonHash();
-
-        jsonHash.put("stat", mStatus);
-        jsonHash.put("svcs", mServices);
-
-        return jsonHash;
-    }
+//    protected HashMap<String, Object> jsonHash() {
+////        Gson gson = new Gson();
+//        HashMap<String, Object> jsonHash = super.jsonHash();
+//
+//        jsonHash.put("stat", mStatus);
+//        jsonHash.put("svcs", mServices);
+//
+//        return jsonHash;
+//    }
 
     ArrayList<String> getServiceFQNames(ArrayList<RVIService> services) {
         ArrayList<String> newList = new ArrayList<>(services.size());

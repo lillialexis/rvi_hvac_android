@@ -16,6 +16,7 @@ package com.jaguarlandrover.hvacdemo;
 
 import android.util.Log;
 import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
 
 import java.util.HashMap;
 
@@ -25,67 +26,81 @@ public class RVIDlinkPacket
 
     protected enum Command
     {
-        AUTHORIZE         ("au"),
-        SERVICE_ANNOUNCE  ("sa"),
-        RECEIVE           ("rcv"),
-        PING              ("ping");
+        @SerializedName("au")   AUTHORIZE("au"),
+        @SerializedName("sa")   SERVICE_ANNOUNCE("sa"),
+        @SerializedName("rcv")  RECEIVE("rcv"),
+        @SerializedName("ping") PING("ping");
 
         private final String mString;
+
         Command(String string) {
             mString = string;
         }
 
-        String strVal() { return mString; }
+        String strVal() {
+            return mString;
+        }
     }
 
     /**
      * The TID.
      */
-    protected Integer mTid = 0;
+    @SerializedName("tid")
+    protected Integer mTid = null;
 
     /**
      * The cmd that was used in the request.
      */
-    protected Command mCmd;
+    @SerializedName("cmd")
+    protected Command mCmd = null;
 
-    protected String  mSig = null;
+    @SerializedName("sign")
+    protected String mSig = null;
 
     private static Integer tidCounter = 0;
 
-    protected HashMap<String, Object> jsonHash() {
-        HashMap<String, Object> jsonHash = new HashMap<>(4);
-
-        jsonHash.put("cmd",  mCmd.strVal());
-
-        jsonHash.put("tid",  mTid);
-        jsonHash.put("sign", mSig);
-
-        return jsonHash;
-    }
+//    protected HashMap<String, Object> jsonHash() {
+//        HashMap<String, Object> jsonHash = new HashMap<>(4);
+//
+//        jsonHash.put("cmd", mCmd.strVal());
+//
+//        jsonHash.put("tid", mTid);
+//        jsonHash.put("sign", mSig);
+//
+//        return jsonHash;
+//    }
 
     /**
      * Serializes the object into json strVal
      */
-    public String jsonString() {
+    // TODO: Are there json serialization interfaces that this class can implement that
+    protected String jsonString() {
         Gson gson = new Gson();
-        return gson.toJson(jsonHash());
+        return gson.toJson(this);//jsonHash());
     }
 
     /**
      * Base constructor of the RVIDlinkPacket
      */
     protected RVIDlinkPacket(Command command) {
+        if (command == null) {
+          throw new IllegalArgumentException("Command can't be null");
+        }
+
         mCmd = command;
 
         mTid = tidCounter++;
         mSig = "";
     }
 
-    public RVIDlinkPacket(Command command, HashMap jsonHash) {
+    protected RVIDlinkPacket(Command command, HashMap jsonHash) {
+        if (command == null || jsonHash == null)  {
+          throw new IllegalArgumentException("Constructor arguments can't be null");
+        }
+
         mCmd = command;
 
-        Log.d(TAG, jsonHash.keySet().toString() + jsonHash.values().toString());
-
+        // TODO: What other args should be required?
         if (jsonHash.containsKey("tid"))
             mTid = ((Double) jsonHash.get("tid")).intValue();
 

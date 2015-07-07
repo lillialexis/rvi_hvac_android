@@ -53,9 +53,9 @@ public class RVIService
         if (serviceParts.length != 5) return;
 
         mDomain = serviceParts[0];
-        mRemotePrefix = serviceParts[1] + "/" + serviceParts[2];
-        mAppIdentifier = serviceParts[3];
-        mServiceIdentifier = serviceParts[4];
+        mRemotePrefix = "/" + serviceParts[1] + "/" + serviceParts[2];
+        mAppIdentifier = "/" + serviceParts[3];
+        mServiceIdentifier = "/" + serviceParts[4];
 
         LinkedTreeMap<Object, Object> parameters = ((ArrayList<LinkedTreeMap>) jsonHash.get("parameters")).get(0);
 

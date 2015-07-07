@@ -70,9 +70,11 @@ public class MainActivityUtil
         return hm;
     }
 
-    public static HashMap<Integer, Object> initializeButtonServices() {
+    public static HashMap<Integer, Object> initializeControlServices() {
         HashMap<Integer, Object> hm = new HashMap<>();
 
+        hm.put(R.id.left_temp_picker,             "temp_left");
+        hm.put(R.id.right_temp_picker,            "temp_right");
         hm.put(R.id.fan_power_seekbar,            "fan_speed");
         hm.put(R.id.fan_down_button,              "airflow_direction");
         hm.put(R.id.fan_right_button,             "airflow_direction");
@@ -95,4 +97,20 @@ public class MainActivityUtil
 
         return hm;
     }
+
+    public static HashMap<String, Object> initializeServiceControls() {
+        HashMap<String, Object> hm = new HashMap<>();
+
+        hm.put("/temp_left",         R.id.left_temp_picker);
+        hm.put("/temp_right",        R.id.right_temp_picker);
+        hm.put("/fan_speed",         R.id.fan_power_seekbar);
+        hm.put("/defrost_rear",      R.id.defrost_rear_button);
+        hm.put("/defrost_front",     R.id.defrost_front_button);
+        hm.put("/seat_heat_left",    R.id.left_seat_temp_button);
+        hm.put("/seat_heat_right",   R.id.right_seat_temp_button);
+        hm.put("/air_circ",          R.id.circ_button);
+
+        return hm;
+    }
+
 }

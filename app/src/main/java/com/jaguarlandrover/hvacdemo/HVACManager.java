@@ -14,6 +14,7 @@ package com.jaguarlandrover.hvacdemo;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+import android.content.Context;
 import android.content.SharedPreferences;
 
 import java.util.ArrayList;
@@ -27,6 +28,9 @@ public class HVACManager implements RVIApp.RVIAppListener
 
     private final static String RVI_DOMAIN   = "jlr.com";
     private final static String RVI_APP_NAME = "/hvac";
+
+    private static Context applicationContext = HVACApplication.getContext();
+    private static RVIApp rviApp;
 
     private static HVACManager ourInstance = new HVACManager();
 
@@ -47,7 +51,8 @@ public class HVACManager implements RVIApp.RVIAppListener
 
     private HVACManagerListener mListener;
 
-    public interface HVACManagerListener {
+    public interface HVACManagerListener
+    {
         void onServiceUpdated(String service, Object value);
     }
 
@@ -56,7 +61,8 @@ public class HVACManager implements RVIApp.RVIAppListener
         {
             @Override
             public void rviNodeDidConnect() {
-                updateService("subscribe", "{\"node\":\"jlr.com/android/987654321/\"}"); // TODO: Make dynamic, obvs
+                updateService("subscribe", "{\"node\":\"" + RVI_DOMAIN + RVINode
+                        .getLocalServicePrefix(applicationContext) + "/\"}");
             }
 
             @Override
@@ -71,91 +77,101 @@ public class HVACManager implements RVIApp.RVIAppListener
         });
     }
 
-    private RVIApp mRVIApp;
+    private static SharedPreferences getPrefs() {
+        return applicationContext
+                .getSharedPreferences(applicationContext.getString(R.string.hvac_shared_prefs_string), MODE_PRIVATE);
+    }
+
+    private static String getStringFromPrefs(String key, String defaultValue) {
+        return getPrefs().getString(key, defaultValue);
+    }
+
+    private static Integer getIntFromPrefs(String key, Integer defaultValue) {
+        return getPrefs().getInt(key, defaultValue);
+    }
+
+    private static Boolean getBoolFromPrefs(String key, Boolean defaultValue) {
+        return getPrefs().getBoolean(key, defaultValue);
+    }
+
+    private static void putStringInPrefs(String key, String value) {
+        SharedPreferences sharedPref = getPrefs();
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(key, value);
+        editor.apply();
+    }
+
+    private static void putIntInPrefs(String key, Integer value) {
+        SharedPreferences sharedPref = getPrefs();
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt(key, value);
+        editor.apply();
+    }
+
+    private static void putBoolInPrefs(String key, Boolean value) {
+        SharedPreferences sharedPref = getPrefs();
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(key, value);
+        editor.apply();
+    }
 
     public static String getVin() {
-        SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
-        return sharedPref.getString(HVACApplication.getContext().getResources().getString(R.string.vehicle_vin_prefs_string), "");
+        return getStringFromPrefs(applicationContext.getResources().getString(R.string.vehicle_vin_prefs_string), "");
     }
 
     public static void setVin(String vin) {
-        SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(HVACApplication.getContext().getString(R.string.vehicle_vin_prefs_string), vin);
-        editor.apply();
+        putStringInPrefs(applicationContext.getString(R.string.vehicle_vin_prefs_string), vin);
 
-        if (ourInstance.mRVIApp != null)
-            ourInstance.mRVIApp.setRemotePrefix(vin);
+        if (rviApp != null)
+            rviApp.setRemotePrefix(vin);
     }
 
     public static String getServerUrl() {
-        SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
-        return sharedPref.getString(HVACApplication.getContext().getResources().getString(R.string.server_url_prefs_string), "");
+        return getStringFromPrefs(applicationContext.getResources().getString(R.string.server_url_prefs_string), "");
     }
 
     public static void setServerUrl(String serverUrl) {
-        SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(HVACApplication.getContext().getString(R.string.server_url_prefs_string), serverUrl);
-        editor.apply();
+        putStringInPrefs(applicationContext.getString(R.string.server_url_prefs_string), serverUrl);
 
         RVIRemoteConnectionManager.setServerUrl(serverUrl);
     }
 
     public static Integer getServerPort() {
-        SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
-        return sharedPref.getInt(HVACApplication.getContext().getResources().getString(R.string.server_port_prefs_string), 0);
+        return getIntFromPrefs(applicationContext.getResources().getString(R.string.server_port_prefs_string), 0);
     }
 
     public static void setServerPort(Integer serverPort) {
-        SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putInt(HVACApplication.getContext().getString(R.string.server_port_prefs_string), serverPort);
-        editor.apply();
+        putIntInPrefs(applicationContext.getString(R.string.server_port_prefs_string), serverPort);
 
         RVIRemoteConnectionManager.setServerPort(serverPort);
     }
 
     public static String getProxyServerUrl() {
-        SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
-        return sharedPref.getString(HVACApplication.getContext().getResources().getString(R.string.proxy_server_url_prefs_string), "");
+        return getStringFromPrefs(applicationContext.getResources().getString(R.string.proxy_server_url_prefs_string), "");
     }
 
     public static void setProxyServerUrl(String proxyUrl) {
-        SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(HVACApplication.getContext().getString(R.string.proxy_server_url_prefs_string), proxyUrl);
-        editor.apply();
+        putStringInPrefs(applicationContext.getString(R.string.proxy_server_url_prefs_string), proxyUrl);
 
         RVIRemoteConnectionManager.setProxyServerUrl(proxyUrl);
     }
 
     public static Integer getProxyServerPort() {
-        SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
-        return sharedPref.getInt(HVACApplication.getContext().getResources().getString(R.string.proxy_server_port_prefs_string), 0);
+        return getIntFromPrefs(applicationContext.getResources().getString(R.string.proxy_server_port_prefs_string), 0);
     }
 
     public static void setProxyServerPort(Integer proxyPort) {
-        SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putInt(HVACApplication.getContext().getString(R.string.proxy_server_port_prefs_string), proxyPort);
-        editor.apply();
+        putIntInPrefs(applicationContext.getString(R.string.proxy_server_port_prefs_string), proxyPort);
 
         RVIRemoteConnectionManager.setProxyServerPort(proxyPort);
     }
 
     public static boolean getUsingProxyServer() {
-        SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
-        return sharedPref.getBoolean(HVACApplication.getContext().getResources()
-                                                    .getString(R.string.using_proxy_server_prefs_string), false);
+        return getBoolFromPrefs(applicationContext.getResources().getString(R.string.using_proxy_server_prefs_string), false);
     }
 
     public static void setUsingProxyServer(boolean usingProxyServer) {
-        SharedPreferences sharedPref = HVACApplication.getContext().getSharedPreferences("hvacConfig", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putBoolean(HVACApplication.getContext()
-                                         .getString(R.string.using_proxy_server_prefs_string), usingProxyServer);
-        editor.apply();
+        putBoolInPrefs(applicationContext.getString(R.string.using_proxy_server_prefs_string), usingProxyServer);
 
         RVIRemoteConnectionManager.setUsingProxyServer(usingProxyServer);
     }
@@ -182,16 +198,19 @@ public class HVACManager implements RVIApp.RVIAppListener
 
         RVIRemoteConnectionManager.setUsingProxyServer(getUsingProxyServer());
 
-        ourInstance.mRVIApp = new RVIApp(RVI_APP_NAME, RVI_DOMAIN, "/vin/" + getVin(), serviceIdentifiers);
-        ourInstance.mRVIApp.setListener(ourInstance);
+        if (rviApp != null)
+            RVINode.removeApp(rviApp);
 
+        rviApp = new RVIApp(applicationContext, RVI_APP_NAME, RVI_DOMAIN, "/vin/" + getVin(), serviceIdentifiers);
+        rviApp.setListener(ourInstance);
+
+        RVINode.addApp(rviApp);
         RVINode.connect();
-        RVINode.addApp(ourInstance.mRVIApp);
     }
 
     public static void updateService(String service, String value) {
-        ourInstance.mRVIApp.getService(service).setValue(value);
-        ourInstance.mRVIApp.updateService(service);
+        rviApp.getService(service).setValue(value);
+        rviApp.updateService(service);
     }
 
     @Override

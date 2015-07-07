@@ -14,7 +14,16 @@ package com.jaguarlandrover.hvacdemo;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.util.Base64;
+
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.UUID;
+
+import static android.content.Context.MODE_PRIVATE;
 
 public class RVINode implements RVIRemoteConnectionManagerListener
 {
@@ -25,7 +34,7 @@ public class RVINode implements RVIRemoteConnectionManagerListener
         RVIRemoteConnectionManager.setListener(this);
     }
 
-    private ArrayList<RVIApp> mAllApps = new ArrayList<>();
+    private static HashSet<RVIApp> allApps = new HashSet<>();
 
     public static RVINodeListener getListener() {
         return ourInstance.mListener;
@@ -60,19 +69,21 @@ public class RVINode implements RVIRemoteConnectionManagerListener
         RVIRemoteConnectionManager.disconnect();
     }
 
+    // TODO: Change allApps to a set, to remove duplication
     public static void addApp(RVIApp app) {
-        RVINode.ourInstance.mAllApps.add(app);
-        RVINode.ourInstance.announceServices();
+        RVINode.allApps.add(app);
+        RVINode.announceServices();
     }
 
     public static void removeApp(RVIApp app) {
-        RVINode.ourInstance.mAllApps.remove(app);
-        RVINode.ourInstance.announceServices();
+        RVINode.allApps.remove(app);
+        RVINode.announceServices();
     }
 
-    private void announceServices() {
+    // TODO: Change all services to a set, to remove duplication
+    private static void announceServices() {
         ArrayList<RVIService> allServices = new ArrayList<>();
-        for (RVIApp app : mAllApps)
+        for (RVIApp app : allApps)
             allServices.addAll(app.getServices());
 
         RVIRemoteConnectionManager.sendPacket(new RVIDlinkServiceAnnouncePacket(allServices));
@@ -104,7 +115,7 @@ public class RVINode implements RVIRemoteConnectionManagerListener
         if (packet.getClass().equals(RVIDlinkReceivePacket.class)) {
             RVIService service = ((RVIDlinkReceivePacket) packet).getService();
 
-            for (RVIApp app : mAllApps) {
+            for (RVIApp app : allApps) {
                 if (app.getAppIdentifier().equals(service.getAppIdentifier())) {
                     app.serviceUpdated(service);
                 }
@@ -120,5 +131,40 @@ public class RVINode implements RVIRemoteConnectionManagerListener
     @Override
     public void onRVIDidFailToSendPacket(Error error) {
 
+    }
+
+    private final static String SHARED_PREFS_STRING         = "com.rvisdk.settings";
+    private final static String LOCAL_SERVICE_PREFIX_STRING = "localServicePrefix";
+
+    // TODO: Test and verify this function
+    private static String uuidB58String() {
+        UUID uuid = UUID.randomUUID();
+        String b64Str;
+
+        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+        bb.putLong(uuid.getMostSignificantBits());
+        bb.putLong(uuid.getLeastSignificantBits());
+
+        b64Str = Base64.encodeToString(bb.array(), Base64.DEFAULT);
+        b64Str = b64Str.split("=")[0];
+
+        b64Str = b64Str.replace('+', 'P');
+        b64Str = b64Str.replace('/', 'S'); /* Reduces likelihood of uniqueness but stops non-alphanumeric characters from screwing up any urls or anything */
+
+        return b64Str;
+    }
+
+    public static String getLocalServicePrefix(Context context) {
+        SharedPreferences sharedPrefs = context.getSharedPreferences(SHARED_PREFS_STRING, MODE_PRIVATE);
+        String localServicePrefix;
+
+        if ((localServicePrefix = sharedPrefs.getString(LOCAL_SERVICE_PREFIX_STRING, null)) == null)
+            localServicePrefix = "/android/" + uuidB58String();
+
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.putString(LOCAL_SERVICE_PREFIX_STRING, localServicePrefix);
+        editor.apply();
+
+        return localServicePrefix;
     }
 }

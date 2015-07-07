@@ -138,9 +138,6 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
                 while ((bytesRead = inputStream.read(buffer)) != -1) {
                     byteArrayOutputStream.write(buffer, 0, bytesRead);
 
-                    Log.d(TAG, "Bytes read: " + bytesRead);
-                    Log.d(TAG, "Response so far: " + byteArrayOutputStream.toString("UTF-8"));
-
                     publishProgress(byteArrayOutputStream.toString("UTF-8"));
                     byteArrayOutputStream.reset();
                 }

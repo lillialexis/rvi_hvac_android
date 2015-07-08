@@ -16,13 +16,12 @@ package com.jaguarlandrover.hvacdemo;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.CompoundButton;
-import android.widget.EditText;
-import android.widget.Switch;
-import android.widget.TextView;
+import android.view.inputmethod.EditorInfo;
+import android.widget.*;
 
 
 public class SettingsActivity extends ActionBarActivity
@@ -41,27 +40,29 @@ public class SettingsActivity extends ActionBarActivity
 
     Switch   mUsingProxySwitch;
 
+    Button   mSubmitButton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        String vinString       = HVACManager.getVin();
+        String vinString = HVACManager.getVin();
 
-        String urlString       = HVACManager.getServerUrl();
-        String portString      = HVACManager.getServerPort().toString();
+        String urlString = HVACManager.getServerUrl();
+        String portString = HVACManager.getServerPort().toString();
 
-        String proxyUrlString  = HVACManager.getProxyServerUrl();
+        String proxyUrlString = HVACManager.getProxyServerUrl();
         String proxyPortString = HVACManager.getProxyServerPort().toString();
 
         boolean usingProxyServer = HVACManager.getUsingProxyServer();
 
-        mVinEditText  = (EditText) findViewById(R.id.vin_edit_text);
+        mVinEditText = (EditText) findViewById(R.id.vin_edit_text);
 
-        mUrlLabel     = (TextView) findViewById(R.id.server_url_label);
-        mUrlEditText  = (EditText) findViewById(R.id.server_url_edit_text);
-        mPortLabel    = (TextView) findViewById(R.id.server_port_label);
+        mUrlLabel = (TextView) findViewById(R.id.server_url_label);
+        mUrlEditText = (EditText) findViewById(R.id.server_url_edit_text);
+        mPortLabel = (TextView) findViewById(R.id.server_port_label);
         mPortEditText = (EditText) findViewById(R.id.server_port_edit_text);
 
         mProxyUrlLabel     = (TextView) findViewById(R.id.proxy_server_url_label);
@@ -71,12 +72,32 @@ public class SettingsActivity extends ActionBarActivity
 
         mUsingProxySwitch  = (Switch) findViewById(R.id.proxy_server_switch);
 
+        mSubmitButton = (Button) findViewById(R.id.settings_submit_button);
+
         mVinEditText.setText(vinString);
         mUrlEditText.setText(urlString);
         mPortEditText.setText(portString);
 
         mProxyUrlEditText.setText(proxyUrlString);
         mProxyPortEditText.setText(proxyPortString);
+
+        EditText.OnEditorActionListener enterListener = new EditText.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    if (actionId == EditorInfo.IME_ACTION_DONE) {
+                        mSubmitButton.performClick();
+                        return true;
+                    }
+                    return false;
+                }
+            };
+
+        mVinEditText.setOnEditorActionListener(enterListener);
+        mUrlEditText.setOnEditorActionListener(enterListener);
+        mPortEditText.setOnEditorActionListener(enterListener);
+
+        mProxyUrlEditText.setOnEditorActionListener(enterListener);
+        mProxyPortEditText.setOnEditorActionListener(enterListener);
 
         mUsingProxySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
         {
@@ -166,5 +187,6 @@ public class SettingsActivity extends ActionBarActivity
     public void settingsCancelButtonClicked(View view) {
         finish();
     }
+
 
 }

@@ -171,7 +171,7 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
         protected Void doInBackground(String... params) {
 
             String data = params[0];
-            Log.d(TAG, "Sending data: " + data);
+            Log.d(TAG, "Sending packet: " + data);
 
             DataOutputStream wr = null;
 

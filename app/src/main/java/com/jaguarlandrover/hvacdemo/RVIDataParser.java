@@ -69,7 +69,7 @@ public class RVIDataParser
     }
 
     private RVIDlinkPacket stringToPacket(String string) {
-        Log.d(TAG, "Parsing json blob: " + string);
+        Log.d(TAG, "Received packet: " + string);
 
         if (mDataParserListener instanceof RVIDataParserTestCaseListener)
             ((RVIDataParserTestCaseListener) mDataParserListener).onJsonStringParsed(string);

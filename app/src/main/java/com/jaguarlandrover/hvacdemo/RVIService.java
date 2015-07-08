@@ -37,7 +37,7 @@ public class RVIService
     private Object mValue;
 
     public RVIService(String serviceIdentifier, String appIdentifier, String domain, String remotePrefix, String localPrefix) {
-        mServiceIdentifier = "/" + serviceIdentifier;
+        mServiceIdentifier = serviceIdentifier;
         mAppIdentifier = appIdentifier;
         mDomain = domain;
         mRemotePrefix = remotePrefix;
@@ -45,6 +45,8 @@ public class RVIService
     }
 
     public RVIService(String jsonString) {
+        Log.d(TAG, "Service data: " + jsonString);
+
         Gson gson = new Gson();
         HashMap jsonHash = gson.fromJson(jsonString, HashMap.class);
 
@@ -103,7 +105,7 @@ public class RVIService
     public String jsonString() {
         Gson gson = new Gson();
 
-        Log.d(TAG, "Service json: " + gson.toJson(generateRequestParams()));
+        Log.d(TAG, "Service data: " + gson.toJson(generateRequestParams()));
 
         return gson.toJson(generateRequestParams());
     }

@@ -96,8 +96,8 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 Log.d(TAG, Util.getMethodName());
 
-                HVACManager.updateService((String) mControlToServices.get(seekBar.getId()),
-                                          Integer.toString(progress));
+                if (fromUser)
+                    HVACManager.updateService((String) mControlToServices.get(seekBar.getId()), Integer.toString(progress));
             }
 
             @Override
@@ -191,19 +191,30 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
             mHandler.removeCallbacks(mRunnable);
     }
 
-    public void hazardButtonPressed(View view) {
-        Log.d(TAG, Util.getMethodName());
-
-        mHazardsAreFlashing = !mHazardsAreFlashing;
+    private void toggleHazardButtonFlashing(boolean shouldBeFlashing) {
+        mHazardsAreFlashing = shouldBeFlashing;
 
         if (mHazardsAreFlashing) {
             startAnimation();
-        } else { // if (!mHazardsAreFlashing)
+        } else { /* if (!mHazardsAreFlashing) */
             stopAnimation();
             mHazardButton.setImageResource(R.drawable.hazard_off);
         }
+    }
+
+    public void hazardButtonPressed(View view) {
+        Log.d(TAG, Util.getMethodName());
+
+        toggleHazardButtonFlashing(!mHazardsAreFlashing);
 
         HVACManager.updateService("hazard", Boolean.toString(mHazardsAreFlashing));
+    }
+
+    public void updateToggleButtonImage(ImageButton toggleButton) {
+        if (toggleButton.isSelected())
+            toggleButton.setImageResource(mButtonImagesOn.get(toggleButton.getId()));
+        else
+            toggleButton.setImageResource(mButtonImagesOff.get(toggleButton.getId()));
     }
 
     public void toggleButtonPressed(View view) {
@@ -212,17 +223,14 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
         ImageButton toggleButton = (ImageButton) view;
         toggleButton.setSelected(!toggleButton.isSelected());
 
-        if (toggleButton.isSelected())
-            toggleButton.setImageResource(mButtonImagesOn.get(toggleButton.getId()));
-        else
-            toggleButton.setImageResource(mButtonImagesOff.get(toggleButton.getId()));
+        updateToggleButtonImage(toggleButton);
 
         switch (toggleButton.getId()) {
             case R.id.fan_down_button:
             case R.id.fan_up_button:
             case R.id.fan_right_button:
                 HVACManager.updateService((String) mControlToServices.get(toggleButton.getId()),
-                                          Integer.toString(getAirflowDirectionValue()));
+                        Integer.toString(getAirflowDirectionValue()));
                 break;
 
             case R.id.defrost_rear_button:
@@ -230,7 +238,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
             case R.id.circ_button:
 
                 HVACManager.updateService((String) mControlToServices.get(toggleButton.getId()),
-                                          Boolean.toString(toggleButton.isSelected()));
+                        Boolean.toString(toggleButton.isSelected()));
                 break;
 
             case R.id.ac_button:
@@ -247,10 +255,17 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
                ((findViewById(R.id.fan_up_button)).isSelected()    ? 4 : 0);
     }
 
+
     private void setAirflowDirectionButtons (Integer value) {
-        findViewById(R.id.fan_down_button) .setSelected(value % 2 == 1);
-        findViewById(R.id.fan_right_button).setSelected(value % 4 == 2);
-        findViewById(R.id.fan_up_button)   .setSelected(value % 8 == 4);
+
+        findViewById(R.id.fan_down_button) .setSelected(value % 2 == 1); value /= 2;
+        findViewById(R.id.fan_right_button).setSelected(value % 2 == 1); value /= 2;
+        findViewById(R.id.fan_up_button)   .setSelected(value % 2 == 1);
+
+
+        updateToggleButtonImage((ImageButton) findViewById(R.id.fan_down_button));
+        updateToggleButtonImage((ImageButton) findViewById(R.id.fan_right_button));
+        updateToggleButtonImage((ImageButton) findViewById(R.id.fan_up_button));
     }
 
     public void seatTempButtonPressed(View view) {
@@ -267,7 +282,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
         seatTempButton.setImageResource((Integer) mSeatTempImages.get(seatTempButton.getId()).get(newSeatTempState));
 
         HVACManager.updateService((String) mControlToServices.get(seatTempButton.getId()),
-                                  Integer.toString(mSeatTempValues.get(newSeatTempState)));
+                Integer.toString(mSeatTempValues.get(newSeatTempState)));
     }
 
     public void setSeatTempImageFromValue(ImageButton seatTempButton, Integer value) {
@@ -276,44 +291,65 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
     }
 
     @Override
-    public void onServiceUpdated(String serviceIdentifier, Object value) {
+    public void onServiceUpdated(String serviceIdentifierString, Object value) {
 
         Integer id;
-        View view;
+        View view = null;
 
-        if ((id = (Integer) mServicesToControls.get(serviceIdentifier)) != null)
+        HVACServiceIdentifier serviceIdentifier = HVACServiceIdentifier.get(serviceIdentifierString);
+        if ((id = (Integer) mServicesToControls.get(serviceIdentifierString)) != null)
             view = findViewById(id);
-        else
-            return;
 
         switch (serviceIdentifier) {
-            case "/air_circ":
-            case "/defrost_front":
-            case "/defrost_rear":
-                view.setSelected(Boolean.parseBoolean((String) value));
+            case AC:
+            case AIR_CIRC:
+            case DEFROST_FRONT:
+            case DEFROST_REAR:
+                if (view != null) {
+                    view.setSelected(Boolean.parseBoolean((String) value));
+                    updateToggleButtonImage((ImageButton) view);
+                }
 
                 break;
 
-            case "/airflow_direction":
+            case AIRFLOW_DIRECTION:
                 setAirflowDirectionButtons(Integer.parseInt((String) value));
 
                 break;
 
-            case "/fan_speed":
-                ((SeekBar) view).setProgress(Integer.parseInt((String) value));
+            case FAN_SPEED:
+                if (view != null) ((SeekBar) view).setProgress(Integer.parseInt((String) value));
 
                 break;
 
-            case "/seat_heat_left":
-            case "/seat_heat_right":
+            case SEAT_HEAT_LEFT:
+            case SEAT_HEAT_RIGHT:
                 setSeatTempImageFromValue((ImageButton) view, Integer.parseInt((String) value));
 
                 break;
 
-            case "/temp_left":
-            case "/temp_right":
-                ((NumberPicker) view).setValue(Integer.parseInt((String) value));
+            case HAZARD:
+                toggleHazardButtonFlashing(Boolean.parseBoolean((String) value));
 
+                break;
+
+            case TEMP_LEFT:
+            case TEMP_RIGHT:
+                if (view != null) ((NumberPicker) view).setValue(Integer.parseInt((String) value));
+
+                break;
+
+            case DEFROST_MAX:
+                // TODO: All that other shit
+                break;
+
+            case AUTO:
+                // TODO: All that other shit
+                break;
+
+            case SUBSCRIBE:
+            case UNSUBSCRIBE:
+            case NONE:
                 break;
         }
     }

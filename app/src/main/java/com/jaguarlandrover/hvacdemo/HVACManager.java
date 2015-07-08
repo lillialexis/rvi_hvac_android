@@ -36,17 +36,21 @@ public class HVACManager implements RVIApp.RVIAppListener
 
     private final static ArrayList<String> serviceIdentifiers =
             new ArrayList<>(Arrays.asList(
-                    "air_circ",
-                    "airflow_direction",
-                    "defrost_front",
-                    "defrost_rear",
-                    "fan_speed",
-                    "seat_heat_left",
-                    "seat_heat_right",
-                    "temp_left",
-                    "temp_right",
-                    "subscribe",
-                    "unsubscribe"
+                    HVACServiceIdentifier.HAZARD.value(),
+                    HVACServiceIdentifier.TEMP_LEFT.value(),
+                    HVACServiceIdentifier.TEMP_RIGHT.value(),
+                    HVACServiceIdentifier.SEAT_HEAT_LEFT.value(),
+                    HVACServiceIdentifier.SEAT_HEAT_RIGHT.value(),
+                    HVACServiceIdentifier.FAN_SPEED.value(),
+                    HVACServiceIdentifier.AIRFLOW_DIRECTION.value(),
+                    HVACServiceIdentifier.DEFROST_REAR.value(),
+                    HVACServiceIdentifier.DEFROST_FRONT.value(),
+                    HVACServiceIdentifier.DEFROST_MAX.value(),
+                    HVACServiceIdentifier.AIR_CIRC.value(),
+                    HVACServiceIdentifier.AC.value(),
+                    HVACServiceIdentifier.AUTO.value(),
+                    HVACServiceIdentifier.SUBSCRIBE.value(),
+                    HVACServiceIdentifier.UNSUBSCRIBE.value()
             ));
 
     private HVACManagerListener mListener;
@@ -61,7 +65,7 @@ public class HVACManager implements RVIApp.RVIAppListener
         {
             @Override
             public void rviNodeDidConnect() {
-                updateService("subscribe", "{\"node\":\"" + RVI_DOMAIN + RVINode
+                updateService("/subscribe", "{\"node\":\"" + RVI_DOMAIN + RVINode
                         .getLocalServicePrefix(applicationContext) + "/\"}");
             }
 
@@ -147,7 +151,8 @@ public class HVACManager implements RVIApp.RVIAppListener
     }
 
     public static String getProxyServerUrl() {
-        return getStringFromPrefs(applicationContext.getResources().getString(R.string.proxy_server_url_prefs_string), "");
+        return getStringFromPrefs(applicationContext.getResources()
+                                                    .getString(R.string.proxy_server_url_prefs_string), "");
     }
 
     public static void setProxyServerUrl(String proxyUrl) {
@@ -167,7 +172,8 @@ public class HVACManager implements RVIApp.RVIAppListener
     }
 
     public static boolean getUsingProxyServer() {
-        return getBoolFromPrefs(applicationContext.getResources().getString(R.string.using_proxy_server_prefs_string), false);
+        return getBoolFromPrefs(applicationContext.getResources()
+                                                  .getString(R.string.using_proxy_server_prefs_string), false);
     }
 
     public static void setUsingProxyServer(boolean usingProxyServer) {

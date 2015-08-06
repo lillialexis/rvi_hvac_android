@@ -138,7 +138,7 @@ public class HVACManager implements VehicleApplication.VehicleApplicationListene
     public static void setServerUrl(String serverUrl) {
         putStringInPrefs(applicationContext.getString(R.string.server_url_prefs_string), serverUrl);
 
-        RemoteConnectionManager.setServerUrl(serverUrl);
+        //RemoteConnectionManager.setServerUrl(serverUrl);
     }
 
     public static Integer getServerPort() {
@@ -148,7 +148,7 @@ public class HVACManager implements VehicleApplication.VehicleApplicationListene
     public static void setServerPort(Integer serverPort) {
         putIntInPrefs(applicationContext.getString(R.string.server_port_prefs_string), serverPort);
 
-        RemoteConnectionManager.setServerPort(serverPort);
+        //RemoteConnectionManager.setServerPort(serverPort);
     }
 
     public static String getProxyServerUrl() {
@@ -159,7 +159,7 @@ public class HVACManager implements VehicleApplication.VehicleApplicationListene
     public static void setProxyServerUrl(String proxyUrl) {
         putStringInPrefs(applicationContext.getString(R.string.proxy_server_url_prefs_string), proxyUrl);
 
-        RemoteConnectionManager.setProxyServerUrl(proxyUrl);
+        //RemoteConnectionManager.setProxyServerUrl(proxyUrl);
     }
 
     public static Integer getProxyServerPort() {
@@ -169,7 +169,7 @@ public class HVACManager implements VehicleApplication.VehicleApplicationListene
     public static void setProxyServerPort(Integer proxyPort) {
         putIntInPrefs(applicationContext.getString(R.string.proxy_server_port_prefs_string), proxyPort);
 
-        RemoteConnectionManager.setProxyServerPort(proxyPort);
+        //RemoteConnectionManager.setProxyServerPort(proxyPort);
     }
 
     public static boolean getUsingProxyServer() {
@@ -180,7 +180,7 @@ public class HVACManager implements VehicleApplication.VehicleApplicationListene
     public static void setUsingProxyServer(boolean usingProxyServer) {
         putBoolInPrefs(applicationContext.getString(R.string.using_proxy_server_prefs_string), usingProxyServer);
 
-        RemoteConnectionManager.setUsingProxyServer(usingProxyServer);
+        //RemoteConnectionManager.setUsingProxyServer(usingProxyServer);
     }
 
     public static boolean isRviConfigured() {
@@ -197,13 +197,14 @@ public class HVACManager implements VehicleApplication.VehicleApplicationListene
     }
 
     public static void start() {
-        RemoteConnectionManager.setServerUrl(getServerUrl());
-        RemoteConnectionManager.setServerPort(getServerPort());
+        if (getUsingProxyServer()) {
+            RemoteConnectionManager.setServerUrl(getProxyServerUrl());
+            RemoteConnectionManager.setServerPort(getProxyServerPort());
 
-        RemoteConnectionManager.setProxyServerUrl(getProxyServerUrl());
-        RemoteConnectionManager.setProxyServerPort(getProxyServerPort());
-
-        RemoteConnectionManager.setUsingProxyServer(getUsingProxyServer());
+        } else {
+            RemoteConnectionManager.setServerUrl(getServerUrl());
+            RemoteConnectionManager.setServerPort(getServerPort());
+        }
 
         if (mVehicleApplication != null)
             RemoteVehicleNode.removeApp(mVehicleApplication);

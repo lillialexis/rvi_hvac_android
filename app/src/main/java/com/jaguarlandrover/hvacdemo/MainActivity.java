@@ -119,7 +119,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
         picker.setMaxValue(29);
 
         picker.setWrapSelectorWheel(false);
-        picker.setDisplayedValues( new String[] { "LO", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "HI" } );
+        picker.setDisplayedValues( new String[] { "LO", "16˚", "17˚", "18˚", "19˚", "20˚", "21˚", "22˚", "23˚", "24˚", "25˚", "26˚", "27˚", "28˚", "HI" } );
 
         picker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener()
         {

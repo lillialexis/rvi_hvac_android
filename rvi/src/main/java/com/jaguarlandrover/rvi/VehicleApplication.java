@@ -1,4 +1,4 @@
-package com.jaguarlandrover.hvacdemo;
+package com.jaguarlandrover.rvi;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Copyright (c) 2015 Jaguar Land Rover.
@@ -7,8 +7,8 @@ package com.jaguarlandrover.hvacdemo;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVIApp.java
- * Project: HVACDemo
+ * File:    VehicleApplication.java
+ * Project: RVI SDK
  *
  * Created by Lilli Szafranski on 5/19/15.
  *
@@ -17,11 +17,10 @@ package com.jaguarlandrover.hvacdemo;
 import android.content.Context;
 
 import java.util.ArrayList;
-import java.util.UUID;
 
-public class RVIApp
+public class VehicleApplication
 {
-    private final static String TAG = "HVACDemo:RVIApp";
+    private final static String TAG = "RVI:VehicleApplication";
 
     private String mAppIdentifier;
     private String mDomain;
@@ -29,40 +28,40 @@ public class RVIApp
 
     private String mLocalPrefix;
 
-    private ArrayList<RVIService> mServices;
+    private ArrayList<VehicleService> mServices;
 
     public interface RVIAppListener
     {
-        public void onServiceUpdated(RVIService service);
+        public void onServiceUpdated(VehicleService service);
     }
 
     private RVIAppListener mListener;
 
-    public RVIApp(Context context, String appIdentifier, String domain, String remotePrefix, ArrayList<String> services) {
+    public VehicleApplication(Context context, String appIdentifier, String domain, String remotePrefix, ArrayList<String> services) {
         mAppIdentifier = appIdentifier;
         mDomain = domain;
         mRemotePrefix = remotePrefix;
 
-        mLocalPrefix = RVINode.getLocalServicePrefix(context);
-                //"/android/" + UUID.randomUUID().toString();//987654321"; // TODO: Generate randomly
+        mLocalPrefix = RemoteVehicleNode.getLocalServicePrefix(context);
+        //"/android/" + UUID.randomUUID().toString();//987654321"; // TODO: Generate randomly
 
         mServices = makeServices(services);
     }
 
-    private ArrayList<RVIService> makeServices(ArrayList<String> serviceIdentifiers) {
-        ArrayList<RVIService> services = new ArrayList<>(serviceIdentifiers.size());
+    private ArrayList<VehicleService> makeServices(ArrayList<String> serviceIdentifiers) {
+        ArrayList<VehicleService> services = new ArrayList<>(serviceIdentifiers.size());
         for (String serviceIdentifier : serviceIdentifiers)
             services.add(makeService(serviceIdentifier));
 
         return services;
     }
 
-    private RVIService makeService(String serviceIdentifier) {
-        return new RVIService(serviceIdentifier, mAppIdentifier, mDomain, mRemotePrefix, mLocalPrefix);
+    private VehicleService makeService(String serviceIdentifier) {
+        return new VehicleService(serviceIdentifier, mAppIdentifier, mDomain, mRemotePrefix, mLocalPrefix);
     }
 
-    public RVIService getService(String serviceIdentifier) {
-        for (RVIService service : mServices)
+    public VehicleService getService(String serviceIdentifier) {
+        for (VehicleService service : mServices)
             if (service.getServiceIdentifier().equals(serviceIdentifier) || service.getServiceIdentifier()
                                                                                    .equals("/" + serviceIdentifier))
                 return service;
@@ -71,12 +70,12 @@ public class RVIApp
     }
 
     public void updateService(String service) {
-        RVIDlinkReceivePacket serviceInvokeJSONObject = new RVIDlinkReceivePacket(getService(service));
-        RVIRemoteConnectionManager.sendPacket(serviceInvokeJSONObject);
+        DlinkReceivePacket serviceInvokeJSONObject = new DlinkReceivePacket(getService(service));
+        RemoteConnectionManager.sendPacket(serviceInvokeJSONObject);
     }
 
-    public void serviceUpdated(RVIService service) {
-        RVIService ourService = getService(service.getServiceIdentifier());
+    public void serviceUpdated(VehicleService service) {
+        VehicleService ourService = getService(service.getServiceIdentifier());
 
         ourService.setValue(service.getValue());
 
@@ -95,7 +94,7 @@ public class RVIApp
         mRemotePrefix = remotePrefix;
         //mServices.removeAll(mServices);
 
-        for (RVIService service : mServices)
+        for (VehicleService service : mServices)
             service.setRemotePrefix(remotePrefix);
     }
 
@@ -108,7 +107,7 @@ public class RVIApp
         mListener = listener;
     }
 
-    public ArrayList<RVIService> getServices() {
+    public ArrayList<VehicleService> getServices() {
         return mServices;
     }
 

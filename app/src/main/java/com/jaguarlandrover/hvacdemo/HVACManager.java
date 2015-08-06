@@ -16,13 +16,14 @@ package com.jaguarlandrover.hvacdemo;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import com.jaguarlandrover.rvi.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import static android.content.Context.MODE_PRIVATE;
 
-public class HVACManager implements RVIApp.RVIAppListener
+public class HVACManager implements VehicleApplication.RVIAppListener
 {
     private final static String TAG = "HVACDemo:HVACManager";
 
@@ -30,7 +31,7 @@ public class HVACManager implements RVIApp.RVIAppListener
     private final static String RVI_APP_NAME = "/hvac";
 
     private static Context applicationContext = HVACApplication.getContext();
-    private static RVIApp rviApp;
+    private static VehicleApplication rviApp;
 
     private static HVACManager ourInstance = new HVACManager();
 
@@ -61,11 +62,11 @@ public class HVACManager implements RVIApp.RVIAppListener
     }
 
     private HVACManager() {
-        RVINode.setListener(new RVINode.RVINodeListener()
+        RemoteVehicleNode.setListener(new RemoteVehicleNode.RVINodeListener()
         {
             @Override
             public void rviNodeDidConnect() {
-                updateService("/subscribe", "{\"node\":\"" + RVI_DOMAIN + RVINode
+                updateService("/subscribe", "{\"node\":\"" + RVI_DOMAIN + RemoteVehicleNode
                         .getLocalServicePrefix(applicationContext) + "/\"}");
             }
 
@@ -137,7 +138,7 @@ public class HVACManager implements RVIApp.RVIAppListener
     public static void setServerUrl(String serverUrl) {
         putStringInPrefs(applicationContext.getString(R.string.server_url_prefs_string), serverUrl);
 
-        RVIRemoteConnectionManager.setServerUrl(serverUrl);
+        RemoteConnectionManager.setServerUrl(serverUrl);
     }
 
     public static Integer getServerPort() {
@@ -147,7 +148,7 @@ public class HVACManager implements RVIApp.RVIAppListener
     public static void setServerPort(Integer serverPort) {
         putIntInPrefs(applicationContext.getString(R.string.server_port_prefs_string), serverPort);
 
-        RVIRemoteConnectionManager.setServerPort(serverPort);
+        RemoteConnectionManager.setServerPort(serverPort);
     }
 
     public static String getProxyServerUrl() {
@@ -158,7 +159,7 @@ public class HVACManager implements RVIApp.RVIAppListener
     public static void setProxyServerUrl(String proxyUrl) {
         putStringInPrefs(applicationContext.getString(R.string.proxy_server_url_prefs_string), proxyUrl);
 
-        RVIRemoteConnectionManager.setProxyServerUrl(proxyUrl);
+        RemoteConnectionManager.setProxyServerUrl(proxyUrl);
     }
 
     public static Integer getProxyServerPort() {
@@ -168,7 +169,7 @@ public class HVACManager implements RVIApp.RVIAppListener
     public static void setProxyServerPort(Integer proxyPort) {
         putIntInPrefs(applicationContext.getString(R.string.proxy_server_port_prefs_string), proxyPort);
 
-        RVIRemoteConnectionManager.setProxyServerPort(proxyPort);
+        RemoteConnectionManager.setProxyServerPort(proxyPort);
     }
 
     public static boolean getUsingProxyServer() {
@@ -179,7 +180,7 @@ public class HVACManager implements RVIApp.RVIAppListener
     public static void setUsingProxyServer(boolean usingProxyServer) {
         putBoolInPrefs(applicationContext.getString(R.string.using_proxy_server_prefs_string), usingProxyServer);
 
-        RVIRemoteConnectionManager.setUsingProxyServer(usingProxyServer);
+        RemoteConnectionManager.setUsingProxyServer(usingProxyServer);
     }
 
     public static boolean isRviConfigured() {
@@ -196,22 +197,22 @@ public class HVACManager implements RVIApp.RVIAppListener
     }
 
     public static void start() {
-        RVIRemoteConnectionManager.setServerUrl(getServerUrl());
-        RVIRemoteConnectionManager.setServerPort(getServerPort());
+        RemoteConnectionManager.setServerUrl(getServerUrl());
+        RemoteConnectionManager.setServerPort(getServerPort());
 
-        RVIRemoteConnectionManager.setProxyServerUrl(getProxyServerUrl());
-        RVIRemoteConnectionManager.setProxyServerPort(getProxyServerPort());
+        RemoteConnectionManager.setProxyServerUrl(getProxyServerUrl());
+        RemoteConnectionManager.setProxyServerPort(getProxyServerPort());
 
-        RVIRemoteConnectionManager.setUsingProxyServer(getUsingProxyServer());
+        RemoteConnectionManager.setUsingProxyServer(getUsingProxyServer());
 
         if (rviApp != null)
-            RVINode.removeApp(rviApp);
+            RemoteVehicleNode.removeApp(rviApp);
 
-        rviApp = new RVIApp(applicationContext, RVI_APP_NAME, RVI_DOMAIN, "/vin/" + getVin(), serviceIdentifiers);
+        rviApp = new VehicleApplication(applicationContext, RVI_APP_NAME, RVI_DOMAIN, "/vin/" + getVin(), serviceIdentifiers);
         rviApp.setListener(ourInstance);
 
-        RVINode.addApp(rviApp);
-        RVINode.connect();
+        RemoteVehicleNode.addApp(rviApp);
+        RemoteVehicleNode.connect();
     }
 
     public static void updateService(String service, String value) {
@@ -220,7 +221,7 @@ public class HVACManager implements RVIApp.RVIAppListener
     }
 
     @Override
-    public void onServiceUpdated(RVIService service) {
+    public void onServiceUpdated(VehicleService service) {
         mListener.onServiceUpdated(service.getServiceIdentifier(), service.getValue());
     }
 

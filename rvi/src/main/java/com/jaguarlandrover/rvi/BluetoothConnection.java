@@ -1,4 +1,4 @@
-package com.jaguarlandrover.hvacdemo;
+package com.jaguarlandrover.rvi;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Copyright (c) 2015 Jaguar Land Rover.
@@ -7,21 +7,21 @@ package com.jaguarlandrover.hvacdemo;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVIBluetoothConnection.java
- * Project: HVACDemo
+ * File:    BluetoothConnection.java
+ * Project: RVI SDK
  *
  * Created by Lilli Szafranski on 5/19/15.
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-public class RVIBluetoothConnection implements RVIRemoteConnectionInterface
+public class BluetoothConnection implements RemoteConnectionInterface
 {
-    private final static String TAG = "HVACDemo:RVIBluetoothConnection";
+    private final static String TAG = "RVI:BluetoothConnection";
 
     private RemoteConnectionListener mRemoteConnectionListener;
 
     @Override
-    public void sendRviRequest(RVIDlinkPacket dlinkPacket) {
+    public void sendRviRequest(DlinkPacket dlinkPacket) {
         return;
     }
 

@@ -1,4 +1,4 @@
-package com.jaguarlandrover.hvacdemo;
+package com.jaguarlandrover.rvi;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Copyright (c) 2015 Jaguar Land Rover.
@@ -7,16 +7,16 @@ package com.jaguarlandrover.hvacdemo;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVIRemoteConnectionInterface.java
- * Project: HVACDemo
+ * File:    RemoteConnectionInterface.java
+ * Project: RVI SDK
  *
  * Created by Lilli Szafranski on 5/19/15.
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-public interface RVIRemoteConnectionInterface
+public interface RemoteConnectionInterface
 {
-    void sendRviRequest(RVIDlinkPacket dlinkPacket);
+    void sendRviRequest(DlinkPacket dlinkPacket);
 
     boolean isConnected();
     boolean isEnabled();

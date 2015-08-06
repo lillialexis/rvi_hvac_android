@@ -1,4 +1,4 @@
-package com.jaguarlandrover.hvacdemo;
+package com.jaguarlandrover.rvi;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Copyright (c) 2015 Jaguar Land Rover.
@@ -7,8 +7,8 @@ package com.jaguarlandrover.hvacdemo;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVIService.java
- * Project: HVACDemo
+ * File:    VehicleService.java
+ * Project: RVI SDK
  *
  * Created by Lilli Szafranski on 5/19/15.
  *
@@ -22,9 +22,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class RVIService
+public class VehicleService
 {
-    private final static String TAG = "HVACDemo:RVIService";
+    private final static String TAG = "RVI:VehicleService";
 
     private String mServiceIdentifier;
 
@@ -36,7 +36,7 @@ public class RVIService
 
     private Object mValue;
 
-    public RVIService(String serviceIdentifier, String appIdentifier, String domain, String remotePrefix, String localPrefix) {
+    public VehicleService(String serviceIdentifier, String appIdentifier, String domain, String remotePrefix, String localPrefix) {
         mServiceIdentifier = serviceIdentifier;
         mAppIdentifier = appIdentifier;
         mDomain = domain;
@@ -44,7 +44,7 @@ public class RVIService
         mLocalPrefix = localPrefix; // TODO: This concept is HVAC specific; extract to an hvac-layer class
     }
 
-    public RVIService(String jsonString) {
+    public VehicleService(String jsonString) {
         Log.d(TAG, "Service data: " + jsonString);
 
         Gson gson = new Gson();

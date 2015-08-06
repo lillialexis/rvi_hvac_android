@@ -1,4 +1,4 @@
-package com.jaguarlandrover.hvacdemo;
+package com.jaguarlandrover.rvi;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Copyright (c) 2015 Jaguar Land Rover.
@@ -7,8 +7,8 @@ package com.jaguarlandrover.hvacdemo;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVIServerConnection.java
- * Project: HVACDemo
+ * File:    ServerConnection.java
+ * Project: RVI SDK
  *
  * Created by Lilli Szafranski on 5/19/15.
  *
@@ -24,9 +24,9 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class RVIServerConnection implements RVIRemoteConnectionInterface
+public class ServerConnection implements RemoteConnectionInterface
 {
-    private final static String TAG = "HVACDemo:RVIServerCo...";
+    private final static String TAG = "RVI:RVIServerCo...";
     private RemoteConnectionListener mRemoteConnectionListener;
 
     private String  mServerUrl;
@@ -35,7 +35,7 @@ public class RVIServerConnection implements RVIRemoteConnectionInterface
     Socket mSocket;
 
     @Override
-    public void sendRviRequest(RVIDlinkPacket dlinkPacket) {
+    public void sendRviRequest(DlinkPacket dlinkPacket) {
         if (!isConnected() || !isEnabled()) // TODO: Call error on listener
             return;
 

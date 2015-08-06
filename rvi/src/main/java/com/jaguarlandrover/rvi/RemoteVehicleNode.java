@@ -1,4 +1,4 @@
-package com.jaguarlandrover.hvacdemo;
+package com.jaguarlandrover.rvi;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Copyright (c) 2015 Jaguar Land Rover.
@@ -7,8 +7,8 @@ package com.jaguarlandrover.hvacdemo;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVINode.java
- * Project: HVACDemo
+ * File:    RemoteVehicleNode.java
+ * Project: RVI SDK
  *
  * Created by Lilli Szafranski on 7/1/15.
  *
@@ -25,16 +25,17 @@ import java.util.UUID;
 
 import static android.content.Context.MODE_PRIVATE;
 
-public class RVINode implements RVIRemoteConnectionManagerListener
+public class RemoteVehicleNode implements RemoteConnectionManagerListener
 {
-    private final static String TAG = "HVACDemo:RVINode";
+    private final static String TAG = "RVI:RemoteVehicleNode";
 
-    private static RVINode ourInstance = new RVINode();
-    private RVINode() {
-        RVIRemoteConnectionManager.setListener(this);
+    private static RemoteVehicleNode ourInstance = new RemoteVehicleNode();
+
+    private RemoteVehicleNode() {
+        RemoteConnectionManager.setListener(this);
     }
 
-    private static HashSet<RVIApp> allApps = new HashSet<>();
+    private static HashSet<VehicleApplication> allApps = new HashSet<>();
 
     public static RVINodeListener getListener() {
         return ourInstance.mListener;
@@ -59,39 +60,39 @@ public class RVINode implements RVIRemoteConnectionManagerListener
     public static void connect() {
         // are we configured
         // connect
-        RVIRemoteConnectionManager.connect();
+        RemoteConnectionManager.connect();
 
     }
 
     public static void disconnect() {
         // disconnect
 
-        RVIRemoteConnectionManager.disconnect();
+        RemoteConnectionManager.disconnect();
     }
 
     // TODO: Change allApps to a set, to remove duplication
-    public static void addApp(RVIApp app) {
-        RVINode.allApps.add(app);
-        RVINode.announceServices();
+    public static void addApp(VehicleApplication app) {
+        RemoteVehicleNode.allApps.add(app);
+        RemoteVehicleNode.announceServices();
     }
 
-    public static void removeApp(RVIApp app) {
-        RVINode.allApps.remove(app);
-        RVINode.announceServices();
+    public static void removeApp(VehicleApplication app) {
+        RemoteVehicleNode.allApps.remove(app);
+        RemoteVehicleNode.announceServices();
     }
 
     // TODO: Change all services to a set, to remove duplication
     private static void announceServices() {
-        ArrayList<RVIService> allServices = new ArrayList<>();
-        for (RVIApp app : allApps)
+        ArrayList<VehicleService> allServices = new ArrayList<>();
+        for (VehicleApplication app : allApps)
             allServices.addAll(app.getServices());
 
-        RVIRemoteConnectionManager.sendPacket(new RVIDlinkServiceAnnouncePacket(allServices));
+        RemoteConnectionManager.sendPacket(new DlinkServiceAnnouncePacket(allServices));
     }
 
     @Override
     public void onRVIDidConnect() {
-        RVIRemoteConnectionManager.sendPacket(new RVIDlinkAuthPacket());
+        RemoteConnectionManager.sendPacket(new DlinkAuthPacket());
 
         announceServices();
 
@@ -109,13 +110,13 @@ public class RVINode implements RVIRemoteConnectionManagerListener
     }
 
     @Override
-    public void onRVIDidReceivePacket(RVIDlinkPacket packet) {
+    public void onRVIDidReceivePacket(DlinkPacket packet) {
         if (packet == null) return;
 
-        if (packet.getClass().equals(RVIDlinkReceivePacket.class)) {
-            RVIService service = ((RVIDlinkReceivePacket) packet).getService();
+        if (packet.getClass().equals(DlinkReceivePacket.class)) {
+            VehicleService service = ((DlinkReceivePacket) packet).getService();
 
-            for (RVIApp app : allApps) {
+            for (VehicleApplication app : allApps) {
                 if (app.getAppIdentifier().equals(service.getAppIdentifier())) {
                     app.serviceUpdated(service);
                 }

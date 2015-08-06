@@ -1,4 +1,4 @@
-package com.jaguarlandrover.hvacdemo;
+package com.jaguarlandrover.rvi;
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
@@ -8,13 +8,13 @@ package com.jaguarlandrover.hvacdemo;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVIRemoteConnectionManagerListener.java
- * Project: HVACDemo
+ * File:    RemoteConnectionManagerListener.java
+ * Project: RVI SDK
  *
  * Created by Lilli Szafranski on 6/30/15.
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-public interface RVIRemoteConnectionManagerListener
+public interface RemoteConnectionManagerListener
 {
     public void onRVIDidConnect();
 
@@ -22,7 +22,7 @@ public interface RVIRemoteConnectionManagerListener
 
     public void onRVIDidDisconnect();
 
-    public void onRVIDidReceivePacket(RVIDlinkPacket packet);
+    public void onRVIDidReceivePacket(DlinkPacket packet);
 
     public void onRVIDidSendPacket();
 

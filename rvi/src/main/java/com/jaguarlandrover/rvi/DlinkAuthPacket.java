@@ -1,4 +1,4 @@
-package com.jaguarlandrover.hvacdemo;
+package com.jaguarlandrover.rvi;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Copyright (c) 2015 Jaguar Land Rover.
@@ -7,8 +7,8 @@ package com.jaguarlandrover.hvacdemo;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVIDlinkAuthPacket.java
- * Project: HVACDemo
+ * File:    DlinkAuthPacket.java
+ * Project: RVI SDK
  *
  * Created by Lilli Szafranski on 6/15/15.
  *
@@ -18,9 +18,9 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.HashMap;
 
-public class RVIDlinkAuthPacket extends RVIDlinkPacket
+public class DlinkAuthPacket extends DlinkPacket
 {
-    private final static String TAG = "HVACDemo:RVIDlinkAuthPacket";
+    private final static String TAG = "RVI:DlinkAuthPacket";
 
     @SerializedName("addr")
     private String mAddr;
@@ -37,7 +37,7 @@ public class RVIDlinkAuthPacket extends RVIDlinkPacket
     /**
      * Helper method to get an authorization json object
      */
-    public RVIDlinkAuthPacket() {
+    public DlinkAuthPacket() {
         super(Command.AUTHORIZE);
 
         mAddr = "0.0.0.0";
@@ -46,7 +46,7 @@ public class RVIDlinkAuthPacket extends RVIDlinkPacket
         mCert = "";
     }
 
-    public RVIDlinkAuthPacket(HashMap jsonHash) {
+    public DlinkAuthPacket(HashMap jsonHash) {
         super(Command.AUTHORIZE, jsonHash);
 
         mAddr = (String)  jsonHash.get("addr");

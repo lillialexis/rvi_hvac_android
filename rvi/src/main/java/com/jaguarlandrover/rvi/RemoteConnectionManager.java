@@ -1,4 +1,4 @@
-package com.jaguarlandrover.hvacdemo;
+package com.jaguarlandrover.rvi;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Copyright (c) 2015 Jaguar Land Rover.
@@ -7,46 +7,43 @@ package com.jaguarlandrover.hvacdemo;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVIRemoteConnectionManager.java
- * Project: HVACDemo
+ * File:    RemoteConnectionManager.java
+ * Project: RVI SDK
  *
  * Created by Lilli Szafranski on 5/19/15.
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import android.util.Log;
-import com.google.gson.Gson;
 
-import java.util.HashMap;
-
-public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.RemoteConnectionListener, RVIDataParser.RVIDataParserListener
+public class RemoteConnectionManager implements RemoteConnectionInterface.RemoteConnectionListener, DlinkPacketParser.RVIDataParserListener
 {
-    private final static String TAG = "HVACDemo:RVIRemoteCo...";
+    private final static String TAG = "RVI:RVIRemoteCo...";
 
-    private static RVIRemoteConnectionManager ourInstance = new RVIRemoteConnectionManager();
+    private static RemoteConnectionManager ourInstance = new RemoteConnectionManager();
 
     private boolean mUsingProxyServer;
 
-    private RVIServerConnection    mProxyServerConnection;
-    private RVIBluetoothConnection mBluetoothConnection;
-    private RVIServerConnection    mDirectServerConnection;
+    private ServerConnection    mProxyServerConnection;
+    private BluetoothConnection mBluetoothConnection;
+    private ServerConnection    mDirectServerConnection;
 
-    private RVIDataParser mDataParser;
+    private DlinkPacketParser mDataParser;
 
-    private RVIRemoteConnectionManagerListener mListener;
+    private RemoteConnectionManagerListener mListener;
 
-    private RVIRemoteConnectionManager() {
-        mDataParser = new RVIDataParser(this);
+    private RemoteConnectionManager() {
+        mDataParser = new DlinkPacketParser(this);
 
-        mProxyServerConnection = new RVIServerConnection();
-        mBluetoothConnection = new RVIBluetoothConnection();
-        mDirectServerConnection = new RVIServerConnection();
+        mProxyServerConnection = new ServerConnection();
+        mBluetoothConnection = new BluetoothConnection();
+        mDirectServerConnection = new ServerConnection();
     }
 
     public static void connect() {
         ourInstance.closeConnections();
 
-        RVIRemoteConnectionInterface remoteConnection = ourInstance.selectEnabledRemoteConnection();
+        RemoteConnectionInterface remoteConnection = ourInstance.selectEnabledRemoteConnection();
 
         if (remoteConnection == null) return;
 
@@ -62,17 +59,17 @@ public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.
         ourInstance.mListener.onRVIDidDisconnect();
     }
 
-    public static void sendPacket(RVIDlinkPacket dlinkPacket) {
+    public static void sendPacket(DlinkPacket dlinkPacket) {
         Log.d(TAG, Util.getMethodName());
 
-        RVIRemoteConnectionInterface remoteConnection = ourInstance.selectConnectedRemoteConnection();
+        RemoteConnectionInterface remoteConnection = ourInstance.selectConnectedRemoteConnection();
 
         if (remoteConnection == null) return; // TODO: Implement a cache to send out stuff after a connection has been established
 
         remoteConnection.sendRviRequest(dlinkPacket);
     }
 
-    private RVIRemoteConnectionInterface selectConnectedRemoteConnection() {
+    private RemoteConnectionInterface selectConnectedRemoteConnection() {
         if (mDirectServerConnection.isEnabled() && mDirectServerConnection.isConnected() && !mUsingProxyServer)
             return mDirectServerConnection;
         if (mProxyServerConnection.isEnabled() && mProxyServerConnection.isConnected() && mUsingProxyServer)
@@ -84,7 +81,7 @@ public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.
         return null;
     }
 
-    private RVIRemoteConnectionInterface selectEnabledRemoteConnection() { // TODO: This is going to be buggy if a connection is enabled but not connected; the other connections won't have connected
+    private RemoteConnectionInterface selectEnabledRemoteConnection() { // TODO: This is going to be buggy if a connection is enabled but not connected; the other connections won't have connected
         if (mDirectServerConnection.isEnabled() && !mUsingProxyServer)     // TODO: Rewrite better 'chosing' code
             return mDirectServerConnection;
         if (mProxyServerConnection.isEnabled() && mUsingProxyServer)
@@ -128,35 +125,35 @@ public class RVIRemoteConnectionManager implements RVIRemoteConnectionInterface.
     }
 
     @Override
-    public void onPacketParsed(RVIDlinkPacket packet) {
+    public void onPacketParsed(DlinkPacket packet) {
         mListener.onRVIDidReceivePacket(packet);
     }
 
     public static void setServerUrl(String serverUrl) {
-        RVIRemoteConnectionManager.ourInstance.mDirectServerConnection.setServerUrl(serverUrl);
+        RemoteConnectionManager.ourInstance.mDirectServerConnection.setServerUrl(serverUrl);
     }
 
     public static void setServerPort(Integer serverPort) {
-        RVIRemoteConnectionManager.ourInstance.mDirectServerConnection.setServerPort(serverPort);
+        RemoteConnectionManager.ourInstance.mDirectServerConnection.setServerPort(serverPort);
     }
 
     public static void setProxyServerUrl(String proxyServerUrl) {
-        RVIRemoteConnectionManager.ourInstance.mProxyServerConnection.setServerUrl(proxyServerUrl);
+        RemoteConnectionManager.ourInstance.mProxyServerConnection.setServerUrl(proxyServerUrl);
     }
 
     public static void setProxyServerPort(Integer proxyServerPort) {
-        RVIRemoteConnectionManager.ourInstance.mProxyServerConnection.setServerPort(proxyServerPort);
+        RemoteConnectionManager.ourInstance.mProxyServerConnection.setServerPort(proxyServerPort);
     }
 
     public static void setUsingProxyServer(boolean usingProxyServer) {
-        RVIRemoteConnectionManager.ourInstance.mUsingProxyServer = usingProxyServer;
+        RemoteConnectionManager.ourInstance.mUsingProxyServer = usingProxyServer;
     }
 
-    public static RVIRemoteConnectionManagerListener getListener() {
-        return RVIRemoteConnectionManager.ourInstance.mListener;
+    public static RemoteConnectionManagerListener getListener() {
+        return RemoteConnectionManager.ourInstance.mListener;
     }
 
-    public static void setListener(RVIRemoteConnectionManagerListener listener) {
-        RVIRemoteConnectionManager.ourInstance.mListener = listener;
+    public static void setListener(RemoteConnectionManagerListener listener) {
+        RemoteConnectionManager.ourInstance.mListener = listener;
     }
 }

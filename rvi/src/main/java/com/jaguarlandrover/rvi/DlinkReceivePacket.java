@@ -1,4 +1,4 @@
-package com.jaguarlandrover.hvacdemo;
+package com.jaguarlandrover.rvi;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Copyright (c) 2015 Jaguar Land Rover.
@@ -7,22 +7,21 @@ package com.jaguarlandrover.hvacdemo;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVIDlinkReceivePacket.java
- * Project: HVACDemo
+ * File:    DlinkReceivePacket.java
+ * Project: RVI SDK
  *
  * Created by Lilli Szafranski on 6/15/15.
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import android.util.Base64;
-import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.HashMap;
 
-public class RVIDlinkReceivePacket extends RVIDlinkPacket
+public class DlinkReceivePacket extends DlinkPacket
 {
-    private final static String TAG = "HVACDemo:RVIDlinkReceivePacket";
+    private final static String TAG = "RVI:DlinkReceivePacket";
 
     /**
      * The mod parameter.
@@ -32,14 +31,14 @@ public class RVIDlinkReceivePacket extends RVIDlinkPacket
     private String mMod;
 
     /**
-     * The RVIService used to create the request params
+     * The VehicleService used to create the request params
      */
-    private transient RVIService mService;
+    private transient VehicleService mService;
 
     @SerializedName("data")
     private String mData;
 
-    public RVIDlinkReceivePacket() {
+    public DlinkReceivePacket() {
     }
 
     /**
@@ -47,7 +46,7 @@ public class RVIDlinkReceivePacket extends RVIDlinkPacket
      *
      * @param service The service that is getting invoked
      */
-    public RVIDlinkReceivePacket(RVIService service) {
+    public DlinkReceivePacket(VehicleService service) {
         super(Command.RECEIVE);
 
         mMod = "proto_json_rpc";
@@ -55,22 +54,22 @@ public class RVIDlinkReceivePacket extends RVIDlinkPacket
         mData = Base64.encodeToString(mService.jsonString().getBytes(), Base64.DEFAULT);
     }
 
-    public RVIDlinkReceivePacket(HashMap jsonHash) {
+    public DlinkReceivePacket(HashMap jsonHash) {
         super(Command.RECEIVE, jsonHash);
 
         mMod = (String) jsonHash.get("mod");
 
-        mService = new RVIService(new String(Base64.decode((String)jsonHash.get("data"), Base64.DEFAULT)));
+        mService = new VehicleService(new String(Base64.decode((String)jsonHash.get("data"), Base64.DEFAULT)));
     }
 
-    public RVIService getService() {
+    public VehicleService getService() {
         if (mService == null && mData != null)
-            mService = new RVIService(new String(Base64.decode(mData, Base64.DEFAULT)));
+            mService = new VehicleService(new String(Base64.decode(mData, Base64.DEFAULT)));
 
         return mService;
     }
 
-    public void setService(RVIService service) {
+    public void setService(VehicleService service) {
         mService = service;
     }
 }

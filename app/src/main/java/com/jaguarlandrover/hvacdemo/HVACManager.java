@@ -20,6 +20,7 @@ import com.jaguarlandrover.rvi.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -49,9 +50,9 @@ public class HVACManager implements VehicleApplication.VehicleApplicationListene
                     HVACServiceIdentifier.DEFROST_MAX.value(),
                     HVACServiceIdentifier.AIR_CIRC.value(),
                     HVACServiceIdentifier.AC.value(),
-                    HVACServiceIdentifier.AUTO.value(),
-                    HVACServiceIdentifier.SUBSCRIBE.value(),
-                    HVACServiceIdentifier.UNSUBSCRIBE.value()
+                    HVACServiceIdentifier.AUTO.value()//,
+                    //HVACServiceIdentifier.SUBSCRIBE.value(),
+                    //HVACServiceIdentifier.UNSUBSCRIBE.value()
             ));
 
     private HVACManagerListener mListener;
@@ -62,12 +63,12 @@ public class HVACManager implements VehicleApplication.VehicleApplicationListene
     }
 
     private HVACManager() {
-        RemoteVehicleNode.setListener(new RemoteVehicleNode.RemoteVehicleNodeListener()
+        VehicleNode.setListener(new VehicleNode.VehicleNodeListener()
         {
             @Override
             public void nodeDidConnect() {
-                updateService("/subscribe", "{\"node\":\"" + RVI_DOMAIN + RemoteVehicleNode
-                        .getLocalServicePrefix(applicationContext) + "/\"}");
+                updateService(HVACServiceIdentifier.SUBSCRIBE.value(),
+                        "{\"node\":\"" + RVI_DOMAIN + VehicleNode.getLocalServicePrefix(applicationContext) + "/\"}");
             }
 
             @Override
@@ -120,16 +121,16 @@ public class HVACManager implements VehicleApplication.VehicleApplicationListene
         editor.apply();
     }
 
-    public static String getVin() {
-        return getStringFromPrefs(applicationContext.getResources().getString(R.string.vehicle_vin_prefs_string), "");
-    }
-
-    public static void setVin(String vin) {
-        putStringInPrefs(applicationContext.getString(R.string.vehicle_vin_prefs_string), vin);
-
-        if (mVehicleApplication != null)
-            mVehicleApplication.setRemotePrefix(vin);
-    }
+//    public static String getVin() {
+//        return getStringFromPrefs(applicationContext.getResources().getString(R.string.vehicle_vin_prefs_string), "");
+//    }
+//
+//    public static void setVin(String vin) {
+//        putStringInPrefs(applicationContext.getString(R.string.vehicle_vin_prefs_string), vin);
+//
+//        if (mVehicleApplication != null)
+//            mVehicleApplication.setRemotePrefix(vin);
+//    }
 
     public static String getServerUrl() {
         return getStringFromPrefs(applicationContext.getResources().getString(R.string.server_url_prefs_string), "");
@@ -184,7 +185,7 @@ public class HVACManager implements VehicleApplication.VehicleApplicationListene
     }
 
     public static boolean isRviConfigured() {
-        if (getVin()        == null || getVin().isEmpty())       return false;
+        //if (getVin()        == null || getVin().isEmpty())       return false;
         if (getServerUrl()  == null || getServerUrl().isEmpty()) return false;
         if (getServerPort() == 0)                                return false;
 
@@ -207,23 +208,27 @@ public class HVACManager implements VehicleApplication.VehicleApplicationListene
         }
 
         if (mVehicleApplication != null)
-            RemoteVehicleNode.removeApp(mVehicleApplication);
+            VehicleNode.removeApp(mVehicleApplication);
 
-        mVehicleApplication = new VehicleApplication(applicationContext, RVI_APP_NAME, RVI_DOMAIN, "/vin/" + getVin(), serviceIdentifiers);
+        mVehicleApplication = new VehicleApplication(applicationContext, RVI_APP_NAME, RVI_DOMAIN, /*"/vin/" + getVin(),*/ serviceIdentifiers);
         mVehicleApplication.setListener(ourInstance);
 
-        RemoteVehicleNode.addApp(mVehicleApplication);
-        RemoteVehicleNode.connect();
+        VehicleNode.addApp(mVehicleApplication);
+        VehicleNode.connect();
     }
 
     public static void updateService(String service, String value) {
-        mVehicleApplication.getService(service).setValue(value);
-        mVehicleApplication.updateService(service);
+        HashMap<String, Object> updateParams = new HashMap<>(2);
+
+        updateParams.put("sending_node", RVI_DOMAIN + VehicleNode.getLocalServicePrefix(applicationContext) + "/"); // TODO: This concept is HVAC specific; extract to an hvac-layer class
+        updateParams.put("value", value);
+
+        mVehicleApplication.updateService(service, updateParams, (long) 50000);
     }
 
     @Override
     public void onServiceUpdated(VehicleService service) {
-        mListener.onServiceUpdated(service.getServiceIdentifier(), service.getValue());
+        mListener.onServiceUpdated(service.getServiceIdentifier(), service.getParameters());
     }
 
     public static HVACManagerListener getListener() {

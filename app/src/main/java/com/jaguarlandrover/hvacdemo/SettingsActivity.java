@@ -26,7 +26,7 @@ import android.widget.*;
 
 public class SettingsActivity extends ActionBarActivity
 {
-    EditText mVinEditText;
+    //EditText mVinEditText;
 
     TextView mUrlLabel;
     EditText mUrlEditText;
@@ -48,7 +48,7 @@ public class SettingsActivity extends ActionBarActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        String vinString = HVACManager.getVin();
+        //String vinString = HVACManager.getVin();
 
         String urlString = HVACManager.getServerUrl();
         String portString = HVACManager.getServerPort().toString();
@@ -58,7 +58,7 @@ public class SettingsActivity extends ActionBarActivity
 
         boolean usingProxyServer = HVACManager.getUsingProxyServer();
 
-        mVinEditText = (EditText) findViewById(R.id.vin_edit_text);
+        //mVinEditText = (EditText) findViewById(R.id.vin_edit_text);
 
         mUrlLabel = (TextView) findViewById(R.id.server_url_label);
         mUrlEditText = (EditText) findViewById(R.id.server_url_edit_text);
@@ -74,7 +74,7 @@ public class SettingsActivity extends ActionBarActivity
 
         mSubmitButton = (Button) findViewById(R.id.settings_submit_button);
 
-        mVinEditText.setText(vinString);
+        //mVinEditText.setText(vinString);
         mUrlEditText.setText(urlString);
         mPortEditText.setText(portString);
 
@@ -92,7 +92,7 @@ public class SettingsActivity extends ActionBarActivity
                 }
             };
 
-        mVinEditText.setOnEditorActionListener(enterListener);
+        //mVinEditText.setOnEditorActionListener(enterListener);
         mUrlEditText.setOnEditorActionListener(enterListener);
         mPortEditText.setOnEditorActionListener(enterListener);
 
@@ -165,7 +165,7 @@ public class SettingsActivity extends ActionBarActivity
     public void settingsSubmitButtonClicked(View view) {
         // TODO: Validate input (correct URLs, etc.)
 
-        EditText vinEditText  = (EditText) findViewById(R.id.vin_edit_text);
+        //EditText vinEditText  = (EditText) findViewById(R.id.vin_edit_text);
 
         EditText urlEditText  = (EditText) findViewById(R.id.server_url_edit_text);
         EditText portEditText = (EditText) findViewById(R.id.server_port_edit_text);
@@ -173,7 +173,7 @@ public class SettingsActivity extends ActionBarActivity
         EditText proxyUrlEditText  = (EditText) findViewById(R.id.proxy_server_url_edit_text);
         EditText proxyPortEditText = (EditText) findViewById(R.id.proxy_server_port_edit_text);
 
-        HVACManager.setVin(vinEditText.getText().toString().trim());
+        //HVACManager.setVin(vinEditText.getText().toString().trim());
 
         HVACManager.setServerUrl(urlEditText.getText().toString().trim());
         HVACManager.setServerPort(Integer.parseInt((portEditText.getText().toString().trim())));

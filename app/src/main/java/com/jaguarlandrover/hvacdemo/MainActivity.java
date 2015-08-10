@@ -291,7 +291,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
     }
 
     @Override
-    public void onServiceUpdated(String serviceIdentifierString, Object value) {
+    public void onServiceUpdated(String serviceIdentifierString, Object parameters) {
 
         Integer id;
         View view = null;
@@ -306,36 +306,36 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
             case DEFROST_FRONT:
             case DEFROST_REAR:
                 if (view != null) {
-                    view.setSelected(Boolean.parseBoolean((String) value));
+                    view.setSelected(Boolean.parseBoolean((String) parameters));
                     updateToggleButtonImage((ImageButton) view);
                 }
 
                 break;
 
             case AIRFLOW_DIRECTION:
-                setAirflowDirectionButtons(Integer.parseInt((String) value));
+                setAirflowDirectionButtons(Integer.parseInt((String) parameters));
 
                 break;
 
             case FAN_SPEED:
-                if (view != null) ((SeekBar) view).setProgress(Integer.parseInt((String) value));
+                if (view != null) ((SeekBar) view).setProgress(Integer.parseInt((String) parameters));
 
                 break;
 
             case SEAT_HEAT_LEFT:
             case SEAT_HEAT_RIGHT:
-                setSeatTempImageFromValue((ImageButton) view, Integer.parseInt((String) value));
+                setSeatTempImageFromValue((ImageButton) view, Integer.parseInt((String) parameters));
 
                 break;
 
             case HAZARD:
-                toggleHazardButtonFlashing(Boolean.parseBoolean((String) value));
+                toggleHazardButtonFlashing(Boolean.parseBoolean((String) parameters));
 
                 break;
 
             case TEMP_LEFT:
             case TEMP_RIGHT:
-                if (view != null) ((NumberPicker) view).setValue(Integer.parseInt((String) value));
+                if (view != null) ((NumberPicker) view).setValue(Integer.parseInt((String) parameters));
 
                 break;
 

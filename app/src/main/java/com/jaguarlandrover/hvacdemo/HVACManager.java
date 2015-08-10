@@ -24,19 +24,19 @@ import java.util.HashMap;
 
 import static android.content.Context.MODE_PRIVATE;
 
-public class HVACManager implements VehicleApplication.VehicleApplicationListener
+public class HVACManager implements ServiceBundle.ServiceBundleListener
 {
     private final static String TAG = "HVACDemo:HVACManager";
 
-    private final static String RVI_DOMAIN   = "jlr.com";
-    private final static String RVI_APP_NAME = "/hvac";
+    private final static String RVI_DOMAIN      = "jlr.com";
+    private final static String RVI_BUNDLE_NAME = "/hvac";
 
     private static Context applicationContext = HVACApplication.getContext();
-    private static VehicleApplication mVehicleApplication;
+    private static ServiceBundle mHVACServiceBundle;
 
     private static HVACManager ourInstance = new HVACManager();
 
-    private final static ArrayList<String> serviceIdentifiers =
+    private final static ArrayList<String> localServiceIdentifiers =
             new ArrayList<>(Arrays.asList(
                     HVACServiceIdentifier.HAZARD.value(),
                     HVACServiceIdentifier.TEMP_LEFT.value(),
@@ -59,16 +59,16 @@ public class HVACManager implements VehicleApplication.VehicleApplicationListene
 
     public interface HVACManagerListener
     {
-        void onServiceUpdated(String service, Object value);
+        void onServiceUpdated(String serviceIdentifier, Object parameters);
     }
 
     private HVACManager() {
-        VehicleNode.setListener(new VehicleNode.VehicleNodeListener()
+        RVINode.setListener(new RVINode.RVINodeListener()
         {
             @Override
             public void nodeDidConnect() {
                 updateService(HVACServiceIdentifier.SUBSCRIBE.value(),
-                        "{\"node\":\"" + RVI_DOMAIN + VehicleNode.getLocalServicePrefix(applicationContext) + "/\"}");
+                        "{\"node\":\"" + RVI_DOMAIN + RVINode.getLocalServicePrefix(applicationContext) + "/\"}");
             }
 
             @Override
@@ -128,8 +128,8 @@ public class HVACManager implements VehicleApplication.VehicleApplicationListene
 //    public static void setVin(String vin) {
 //        putStringInPrefs(applicationContext.getString(R.string.vehicle_vin_prefs_string), vin);
 //
-//        if (mVehicleApplication != null)
-//            mVehicleApplication.setRemotePrefix(vin);
+//        if (mHVACServiceBundle != null)
+//            mHVACServiceBundle.setRemotePrefix(vin);
 //    }
 
     public static String getServerUrl() {
@@ -207,28 +207,28 @@ public class HVACManager implements VehicleApplication.VehicleApplicationListene
             RemoteConnectionManager.setServerPort(getServerPort());
         }
 
-        if (mVehicleApplication != null)
-            VehicleNode.removeApp(mVehicleApplication);
+        if (mHVACServiceBundle != null)
+            RVINode.removeBundle(mHVACServiceBundle);
 
-        mVehicleApplication = new VehicleApplication(applicationContext, RVI_APP_NAME, RVI_DOMAIN, /*"/vin/" + getVin(),*/ serviceIdentifiers);
-        mVehicleApplication.setListener(ourInstance);
+        mHVACServiceBundle = new ServiceBundle(applicationContext, RVI_DOMAIN, RVI_BUNDLE_NAME,  /*"/vin/" + getVin(),*/ localServiceIdentifiers);
+        mHVACServiceBundle.setListener(ourInstance);
 
-        VehicleNode.addApp(mVehicleApplication);
-        VehicleNode.connect();
+        RVINode.addBundle(mHVACServiceBundle);
+        RVINode.connect();
     }
 
-    public static void updateService(String service, String value) {
+    public static void updateService(String serviceIdentifier, String value) {
         HashMap<String, Object> updateParams = new HashMap<>(2);
 
-        updateParams.put("sending_node", RVI_DOMAIN + VehicleNode.getLocalServicePrefix(applicationContext) + "/"); // TODO: This concept is HVAC specific; extract to an hvac-layer class
+        updateParams.put("sending_node", RVI_DOMAIN + RVINode.getLocalServicePrefix(applicationContext) + "/");
         updateParams.put("value", value);
 
-        mVehicleApplication.updateService(service, updateParams, (long) 50000);
+        mHVACServiceBundle.updateService(serviceIdentifier, updateParams, (long) 50000);
     }
 
     @Override
-    public void onServiceUpdated(VehicleService service) {
-        mListener.onServiceUpdated(service.getServiceIdentifier(), service.getParameters());
+    public void onServiceUpdated(String serviceIdentifier, Object value) {
+        if (mListener != null) mListener.onServiceUpdated(serviceIdentifier, value);
     }
 
     public static HVACManagerListener getListener() {

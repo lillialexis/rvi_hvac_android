@@ -1,4 +1,4 @@
-package com.jaguarlandrover.hvacdemo;
+package com.jaguarlandrover.rvi;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Copyright (c) 2015 Jaguar Land Rover.
@@ -7,8 +7,8 @@ package com.jaguarlandrover.hvacdemo;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVIDataParser.java
- * Project: HVACDemo
+ * File:    DlinkPacketParser.java
+ * Project: RVI SDK
  *
  * Created by Lilli Szafranski on 7/2/15.
  *
@@ -17,36 +17,33 @@ package com.jaguarlandrover.hvacdemo;
 import android.util.Log;
 import com.google.gson.Gson;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
-public class RVIDataParser
+class DlinkPacketParser
 {
-    private final static String TAG = "HVACDemo:RVIDataParser";
+    private final static String TAG = "RVI:DlinkPacketParser";
 
-    private String mBuffer;
-    private RVIDataParserListener mDataParserListener;
+    private String                    mBuffer;
+    private DlinkPacketParserListener mDataParserListener;
 
-    public interface RVIDataParserListener
+    interface DlinkPacketParserListener
     {
-        void onPacketParsed(RVIDlinkPacket packet);
+        void onPacketParsed(DlinkPacket packet);
     }
 
-    public interface RVIDataParserTestCaseListener
+    interface DlinkPacketParserTestCaseListener
     {
         void onJsonStringParsed(String jsonString);
 
         void onJsonObjectParsed(Object jsonObject);
     }
 
-    public RVIDataParser(RVIDataParserListener listener) {
+    DlinkPacketParser(DlinkPacketParserListener listener) {
         mDataParserListener = listener;
     }
 
     /**
      *
      * @param  buffer String to parse out JSON objects from
-     * @return        The length of the first JSON object found, 0 if it is an incomplete object,
+     * @return The length of the first JSON object found, 0 if it is an incomplete object,
      *                -1 if the string does not start with a '{' or an '['
      */
     private int getLengthOfJsonObject(String buffer) {
@@ -68,36 +65,36 @@ public class RVIDataParser
         return 0;
     }
 
-    private RVIDlinkPacket stringToPacket(String string) {
+    private DlinkPacket stringToPacket(String string) {
         Log.d(TAG, "Received packet: " + string);
 
-        if (mDataParserListener instanceof RVIDataParserTestCaseListener)
-            ((RVIDataParserTestCaseListener) mDataParserListener).onJsonStringParsed(string);
+        if (mDataParserListener instanceof DlinkPacketParserTestCaseListener)
+            ((DlinkPacketParserTestCaseListener) mDataParserListener).onJsonStringParsed(string);
 
         Gson gson = new Gson();
-        RVIDlinkPacket packet;
+        DlinkPacket packet;
 
         try {
-            packet = gson.fromJson(string, RVIDlinkPacket.class);
+            packet = gson.fromJson(string, DlinkPacket.class);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
 
-        if (mDataParserListener instanceof RVIDataParserTestCaseListener)
-            ((RVIDataParserTestCaseListener) mDataParserListener).onJsonObjectParsed(packet);
+        if (mDataParserListener instanceof DlinkPacketParserTestCaseListener)
+            ((DlinkPacketParserTestCaseListener) mDataParserListener).onJsonObjectParsed(packet);
 
-        RVIDlinkPacket.Command command = packet.mCmd;
+        DlinkPacket.Command command = packet.mCmd;
 
         if (command == null)
             return null;
 
-        if (command == RVIDlinkPacket.Command.AUTHORIZE) {
-            return gson.fromJson(string, RVIDlinkAuthPacket.class);
-        } else if (command == RVIDlinkPacket.Command.SERVICE_ANNOUNCE) {
-            return gson.fromJson(string, RVIDlinkServiceAnnouncePacket.class);
-        } else if (command == RVIDlinkPacket.Command.RECEIVE) {
-            return gson.fromJson(string, RVIDlinkReceivePacket.class);
+        if (command == DlinkPacket.Command.AUTHORIZE) {
+            return gson.fromJson(string, DlinkAuthPacket.class);
+        } else if (command == DlinkPacket.Command.SERVICE_ANNOUNCE) {
+            return gson.fromJson(string, DlinkServiceAnnouncePacket.class);
+        } else if (command == DlinkPacket.Command.RECEIVE) {
+            return gson.fromJson(string, DlinkReceivePacket.class);
         } else {
             return null;
         }
@@ -107,7 +104,7 @@ public class RVIDataParser
         int lengthOfString     = buffer.length();
         int lengthOfJsonObject = getLengthOfJsonObject(buffer);
 
-        RVIDlinkPacket packet;
+        DlinkPacket packet;
 
         if (lengthOfJsonObject == lengthOfString) { /* Current data is 1 json object */
             if ((packet = stringToPacket(buffer)) != null)
@@ -130,13 +127,13 @@ public class RVIDataParser
         }
     }
 
-    public void parseData(String data) {
+    void parseData(String data) {
         if (mBuffer == null) mBuffer = "";
 
         mBuffer = recurse(mBuffer + data);
     }
 
-    public void clear() {
+    void clear() {
         mBuffer = null;
     }
 

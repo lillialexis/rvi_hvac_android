@@ -16,25 +16,27 @@ package com.jaguarlandrover.hvacdemo;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import com.jaguarlandrover.rvi.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import static android.content.Context.MODE_PRIVATE;
 
-public class HVACManager implements RVIApp.RVIAppListener
+public class HVACManager implements ServiceBundle.ServiceBundleListener
 {
     private final static String TAG = "HVACDemo:HVACManager";
 
-    private final static String RVI_DOMAIN   = "jlr.com";
-    private final static String RVI_APP_NAME = "/hvac";
+    private final static String RVI_DOMAIN      = "jlr.com";
+    private final static String RVI_BUNDLE_NAME = "/hvac";
 
     private static Context applicationContext = HVACApplication.getContext();
-    private static RVIApp rviApp;
+    private static ServiceBundle mHVACServiceBundle;
 
     private static HVACManager ourInstance = new HVACManager();
 
-    private final static ArrayList<String> serviceIdentifiers =
+    private final static ArrayList<String> localServiceIdentifiers =
             new ArrayList<>(Arrays.asList(
                     HVACServiceIdentifier.HAZARD.value(),
                     HVACServiceIdentifier.TEMP_LEFT.value(),
@@ -48,34 +50,34 @@ public class HVACManager implements RVIApp.RVIAppListener
                     HVACServiceIdentifier.DEFROST_MAX.value(),
                     HVACServiceIdentifier.AIR_CIRC.value(),
                     HVACServiceIdentifier.AC.value(),
-                    HVACServiceIdentifier.AUTO.value(),
-                    HVACServiceIdentifier.SUBSCRIBE.value(),
-                    HVACServiceIdentifier.UNSUBSCRIBE.value()
+                    HVACServiceIdentifier.AUTO.value()//,
+                    //HVACServiceIdentifier.SUBSCRIBE.value(),
+                    //HVACServiceIdentifier.UNSUBSCRIBE.value()
             ));
 
     private HVACManagerListener mListener;
 
     public interface HVACManagerListener
     {
-        void onServiceUpdated(String service, Object value);
+        void onServiceUpdated(String serviceIdentifier, Object parameters);
     }
 
     private HVACManager() {
         RVINode.setListener(new RVINode.RVINodeListener()
         {
             @Override
-            public void rviNodeDidConnect() {
-                updateService("/subscribe", "{\"node\":\"" + RVI_DOMAIN + RVINode
-                        .getLocalServicePrefix(applicationContext) + "/\"}");
+            public void nodeDidConnect() {
+                updateService(HVACServiceIdentifier.SUBSCRIBE.value(),
+                        "{\"node\":\"" + RVI_DOMAIN + RVINode.getLocalServicePrefix(applicationContext) + "/\"}");
             }
 
             @Override
-            public void rviNodeDidFailToConnect() {
+            public void nodeDidFailToConnect() {
 
             }
 
             @Override
-            public void rviNodeDidDisconnect() {
+            public void nodeDidDisconnect() {
 
             }
         });
@@ -119,16 +121,16 @@ public class HVACManager implements RVIApp.RVIAppListener
         editor.apply();
     }
 
-    public static String getVin() {
-        return getStringFromPrefs(applicationContext.getResources().getString(R.string.vehicle_vin_prefs_string), "");
-    }
-
-    public static void setVin(String vin) {
-        putStringInPrefs(applicationContext.getString(R.string.vehicle_vin_prefs_string), vin);
-
-        if (rviApp != null)
-            rviApp.setRemotePrefix(vin);
-    }
+//    public static String getVin() {
+//        return getStringFromPrefs(applicationContext.getResources().getString(R.string.vehicle_vin_prefs_string), "");
+//    }
+//
+//    public static void setVin(String vin) {
+//        putStringInPrefs(applicationContext.getString(R.string.vehicle_vin_prefs_string), vin);
+//
+//        if (mHVACServiceBundle != null)
+//            mHVACServiceBundle.setRemotePrefix(vin);
+//    }
 
     public static String getServerUrl() {
         return getStringFromPrefs(applicationContext.getResources().getString(R.string.server_url_prefs_string), "");
@@ -137,7 +139,7 @@ public class HVACManager implements RVIApp.RVIAppListener
     public static void setServerUrl(String serverUrl) {
         putStringInPrefs(applicationContext.getString(R.string.server_url_prefs_string), serverUrl);
 
-        RVIRemoteConnectionManager.setServerUrl(serverUrl);
+        //RemoteConnectionManager.setServerUrl(serverUrl);
     }
 
     public static Integer getServerPort() {
@@ -147,7 +149,7 @@ public class HVACManager implements RVIApp.RVIAppListener
     public static void setServerPort(Integer serverPort) {
         putIntInPrefs(applicationContext.getString(R.string.server_port_prefs_string), serverPort);
 
-        RVIRemoteConnectionManager.setServerPort(serverPort);
+        //RemoteConnectionManager.setServerPort(serverPort);
     }
 
     public static String getProxyServerUrl() {
@@ -158,7 +160,7 @@ public class HVACManager implements RVIApp.RVIAppListener
     public static void setProxyServerUrl(String proxyUrl) {
         putStringInPrefs(applicationContext.getString(R.string.proxy_server_url_prefs_string), proxyUrl);
 
-        RVIRemoteConnectionManager.setProxyServerUrl(proxyUrl);
+        //RemoteConnectionManager.setProxyServerUrl(proxyUrl);
     }
 
     public static Integer getProxyServerPort() {
@@ -168,7 +170,7 @@ public class HVACManager implements RVIApp.RVIAppListener
     public static void setProxyServerPort(Integer proxyPort) {
         putIntInPrefs(applicationContext.getString(R.string.proxy_server_port_prefs_string), proxyPort);
 
-        RVIRemoteConnectionManager.setProxyServerPort(proxyPort);
+        //RemoteConnectionManager.setProxyServerPort(proxyPort);
     }
 
     public static boolean getUsingProxyServer() {
@@ -179,11 +181,11 @@ public class HVACManager implements RVIApp.RVIAppListener
     public static void setUsingProxyServer(boolean usingProxyServer) {
         putBoolInPrefs(applicationContext.getString(R.string.using_proxy_server_prefs_string), usingProxyServer);
 
-        RVIRemoteConnectionManager.setUsingProxyServer(usingProxyServer);
+        //RemoteConnectionManager.setUsingProxyServer(usingProxyServer);
     }
 
     public static boolean isRviConfigured() {
-        if (getVin()        == null || getVin().isEmpty())       return false;
+        //if (getVin()        == null || getVin().isEmpty())       return false;
         if (getServerUrl()  == null || getServerUrl().isEmpty()) return false;
         if (getServerPort() == 0)                                return false;
 
@@ -196,32 +198,37 @@ public class HVACManager implements RVIApp.RVIAppListener
     }
 
     public static void start() {
-        RVIRemoteConnectionManager.setServerUrl(getServerUrl());
-        RVIRemoteConnectionManager.setServerPort(getServerPort());
+        if (getUsingProxyServer()) {
+            RemoteConnectionManager.setServerUrl(getProxyServerUrl());
+            RemoteConnectionManager.setServerPort(getProxyServerPort());
 
-        RVIRemoteConnectionManager.setProxyServerUrl(getProxyServerUrl());
-        RVIRemoteConnectionManager.setProxyServerPort(getProxyServerPort());
+        } else {
+            RemoteConnectionManager.setServerUrl(getServerUrl());
+            RemoteConnectionManager.setServerPort(getServerPort());
+        }
 
-        RVIRemoteConnectionManager.setUsingProxyServer(getUsingProxyServer());
+        if (mHVACServiceBundle != null)
+            RVINode.removeBundle(mHVACServiceBundle);
 
-        if (rviApp != null)
-            RVINode.removeApp(rviApp);
+        mHVACServiceBundle = new ServiceBundle(applicationContext, RVI_DOMAIN, RVI_BUNDLE_NAME,  /*"/vin/" + getVin(),*/ localServiceIdentifiers);
+        mHVACServiceBundle.setListener(ourInstance);
 
-        rviApp = new RVIApp(applicationContext, RVI_APP_NAME, RVI_DOMAIN, "/vin/" + getVin(), serviceIdentifiers);
-        rviApp.setListener(ourInstance);
-
-        RVINode.addApp(rviApp);
+        RVINode.addBundle(mHVACServiceBundle);
         RVINode.connect();
     }
 
-    public static void updateService(String service, String value) {
-        rviApp.getService(service).setValue(value);
-        rviApp.updateService(service);
+    public static void updateService(String serviceIdentifier, String value) {
+        HashMap<String, Object> updateParams = new HashMap<>(2);
+
+        updateParams.put("sending_node", RVI_DOMAIN + RVINode.getLocalServicePrefix(applicationContext) + "/");
+        updateParams.put("value", value);
+
+        mHVACServiceBundle.updateService(serviceIdentifier, updateParams, (long) 50000);
     }
 
     @Override
-    public void onServiceUpdated(RVIService service) {
-        mListener.onServiceUpdated(service.getServiceIdentifier(), service.getValue());
+    public void onServiceUpdated(String serviceIdentifier, Object value) {
+        if (mListener != null) mListener.onServiceUpdated(serviceIdentifier, value);
     }
 
     public static HVACManagerListener getListener() {

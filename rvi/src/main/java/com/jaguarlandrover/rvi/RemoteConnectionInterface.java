@@ -1,4 +1,4 @@
-package com.jaguarlandrover.hvacdemo;
+package com.jaguarlandrover.rvi;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Copyright (c) 2015 Jaguar Land Rover.
@@ -7,16 +7,16 @@ package com.jaguarlandrover.hvacdemo;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVIRemoteConnectionInterface.java
- * Project: HVACDemo
+ * File:    RemoteConnectionInterface.java
+ * Project: RVI SDK
  *
  * Created by Lilli Szafranski on 5/19/15.
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-public interface RVIRemoteConnectionInterface
+interface RemoteConnectionInterface
 {
-    void sendRviRequest(RVIDlinkPacket dlinkPacket);
+    void sendRviRequest(DlinkPacket dlinkPacket);
 
     boolean isConnected();
     boolean isEnabled();
@@ -26,16 +26,18 @@ public interface RVIRemoteConnectionInterface
 
     void setRemoteConnectionListener(RemoteConnectionListener remoteConnectionListener); // TODO: Probably bad architecture to expect interface implementations to correctly set and use an
                                                                                          // TODO, cont: instance of the RemoteConnectionListener. Not sure what the best Java paradigm would be in this case
-    public interface RemoteConnectionListener
+    interface RemoteConnectionListener
     {
-        public void onRemoteConnectionDidConnect();
+        void onRemoteConnectionDidConnect();
 
-        public void onRemoteConnectionDidFailToConnect(Error error);
+        void onRemoteConnectionDidDisconnect();
 
-        public void onRemoteConnectionDidReceiveData(String data);
+        void onRemoteConnectionDidFailToConnect(Error error);
 
-        public void onDidSendDataToRemoteConnection();
+        void onRemoteConnectionDidReceiveData(String data);
 
-        public void onDidFailToSendDataToRemoteConnection(Error error);
+        void onDidSendDataToRemoteConnection();
+
+        void onDidFailToSendDataToRemoteConnection(Error error);
     }
 }

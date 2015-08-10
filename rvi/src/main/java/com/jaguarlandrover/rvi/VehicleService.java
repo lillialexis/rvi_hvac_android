@@ -1,4 +1,4 @@
-package com.jaguarlandrover.hvacdemo;
+package com.jaguarlandrover.rvi;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Copyright (c) 2015 Jaguar Land Rover.
@@ -7,8 +7,8 @@ package com.jaguarlandrover.hvacdemo;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVIService.java
- * Project: HVACDemo
+ * File:    VehicleService.java
+ * Project: RVI SDK
  *
  * Created by Lilli Szafranski on 5/19/15.
  *
@@ -22,29 +22,31 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class RVIService
+class VehicleService
 {
-    private final static String TAG = "HVACDemo:RVIService";
+    private final static String TAG = "RVI:VehicleService";
 
     private String mServiceIdentifier;
 
-    private String mAppIdentifier;
+    private String mBundleIdentifier;
     private String mDomain;
 
     private String mLocalPrefix;
     private String mRemotePrefix;
 
-    private Object mValue;
+    private Object mParameters;
 
-    public RVIService(String serviceIdentifier, String appIdentifier, String domain, String remotePrefix, String localPrefix) {
+    private Long mTimeout;
+
+    VehicleService(String serviceIdentifier, String domain, String bundleIdentifier, String remotePrefix, String localPrefix) {
         mServiceIdentifier = serviceIdentifier;
-        mAppIdentifier = appIdentifier;
+        mBundleIdentifier = bundleIdentifier;
         mDomain = domain;
         mRemotePrefix = remotePrefix;
-        mLocalPrefix = localPrefix; // TODO: This concept is HVAC specific; extract to an hvac-layer class
+        mLocalPrefix = localPrefix;
     }
 
-    public RVIService(String jsonString) {
+    VehicleService(String jsonString) {
         Log.d(TAG, "Service data: " + jsonString);
 
         Gson gson = new Gson();
@@ -56,53 +58,53 @@ public class RVIService
 
         mDomain = serviceParts[0];
         mRemotePrefix = "/" + serviceParts[1] + "/" + serviceParts[2];
-        mAppIdentifier = "/" + serviceParts[3];
+        mBundleIdentifier = "/" + serviceParts[3];
         mServiceIdentifier = "/" + serviceParts[4];
 
         LinkedTreeMap<Object, Object> parameters = ((ArrayList<LinkedTreeMap>) jsonHash.get("parameters")).get(0);
 
         // TODO: Why are parameters arrays of object, not just an object?
 
-        mValue = parameters.get("value"); // TODO: This concept is HVAC specific; extract to an hvac-layer class
+        mParameters = parameters.get("value"); // TODO: This concept is HVAC specific; extract to an hvac-layer class
     }
 
-    public Object getValue() {
-        return mValue;
+    Object getParameters() {
+        return mParameters;
     }
 
-    public void setValue(Object mValue) {
-        this.mValue = mValue;
+    void setParameters(Object parameters) {
+        this.mParameters = parameters;
     }
 
-    public String getServiceIdentifier() {
+    String getServiceIdentifier() {
         return mServiceIdentifier;
     }
 
-    public String getFullyQualifiedLocalServiceName() {
-        return mDomain + mLocalPrefix + mAppIdentifier + mServiceIdentifier;
+    String getFullyQualifiedLocalServiceName() {
+        return mDomain + mLocalPrefix + mBundleIdentifier + mServiceIdentifier;
     }
 
-    public String getFullyQualifiedRemoteServiceName() {
-        return mDomain + mRemotePrefix + mAppIdentifier + mServiceIdentifier;
+    String getFullyQualifiedRemoteServiceName() {
+        return mDomain + mRemotePrefix + mBundleIdentifier + mServiceIdentifier;
     }
 
-    public Object generateRequestParams() {
+    boolean hasRemotePrefix() {
+        return mRemotePrefix != null;
+    }
+
+    Object generateRequestParams() {
         HashMap<String, Object> params = new HashMap<>(4);
-        HashMap<String, Object> subParams = new HashMap<>(2);
-
-        subParams.put("sending_node", mDomain + mLocalPrefix + "/"); // TODO: This concept is HVAC specific; extract to an hvac-layer class
-        subParams.put("value", mValue);
 
         params.put("service", getFullyQualifiedRemoteServiceName());
-        params.put("parameters", Arrays.asList(subParams));
-        params.put("timeout", System.currentTimeMillis() + 5000);
+        params.put("parameters", Arrays.asList(mParameters));
+        params.put("timeout", mTimeout);
         params.put("signature", "signature");
         params.put("certificate", "certificate");
 
         return params;
     }
 
-    public String jsonString() {
+    String jsonString() {
         Gson gson = new Gson();
 
         Log.d(TAG, "Service data: " + gson.toJson(generateRequestParams()));
@@ -110,15 +112,23 @@ public class RVIService
         return gson.toJson(generateRequestParams());
     }
 
-    public String getAppIdentifier() {
-        return mAppIdentifier;
+    String getBundleIdentifier() {
+        return mBundleIdentifier;
     }
 
-    public String getRemotePrefix() {
+    String getRemotePrefix() {
         return mRemotePrefix;
     }
 
-    public void setRemotePrefix(String remotePrefix) {
+    void setRemotePrefix(String remotePrefix) {
         mRemotePrefix = remotePrefix;
+    }
+
+    Long getTimeout() {
+        return mTimeout;
+    }
+
+    void setTimeout(Long timeout) {
+        mTimeout =  System.currentTimeMillis() + timeout;
     }
 }

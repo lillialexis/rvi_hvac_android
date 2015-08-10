@@ -1,4 +1,4 @@
-package com.jaguarlandrover.hvacdemo;
+package com.jaguarlandrover.rvi;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Copyright (c) 2015 Jaguar Land Rover.
@@ -7,22 +7,21 @@ package com.jaguarlandrover.hvacdemo;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVIDlinkPacket.java
- * Project: HVACDemo
+ * File:    DlinkPacket.java
+ * Project: RVI SDK
  *
  * Created by Lilli Szafranski on 6/15/15.
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.HashMap;
 
-public class RVIDlinkPacket
+class DlinkPacket
 {
-    private final static String TAG = "HVACDemo:RVIDlinkPacket";
+    private final static String TAG = "RVI:DlinkPacket";
 
     protected enum Command
     {
@@ -60,17 +59,17 @@ public class RVIDlinkPacket
      */
     protected String toJsonString() {
         Gson gson = new Gson();
-        return gson.toJson(this);//jsonHash());
+        return gson.toJson(this);
     }
 
-    protected RVIDlinkPacket() {
+    protected DlinkPacket() {
 
     }
 
     /**
-     * Base constructor of the RVIDlinkPacket
+     * Base constructor of the DlinkPacket
      */
-    protected RVIDlinkPacket(Command command) {
+    protected DlinkPacket(Command command) {
         if (command == null) {
           throw new IllegalArgumentException("Command can't be null");
         }
@@ -81,7 +80,7 @@ public class RVIDlinkPacket
         mSig = "";
     }
 
-    protected RVIDlinkPacket(Command command, HashMap jsonHash) {
+    protected DlinkPacket(Command command, HashMap jsonHash) {
         if (command == null || jsonHash == null)  {
           throw new IllegalArgumentException("Constructor arguments can't be null");
         }

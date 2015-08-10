@@ -1,4 +1,4 @@
-package com.jaguarlandrover.hvacdemo;
+package com.jaguarlandrover.rvi;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Copyright (c) 2015 Jaguar Land Rover.
@@ -7,8 +7,8 @@ package com.jaguarlandrover.hvacdemo;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVIDataParserTest.java
- * Project: HVACDemo
+ * File:    DlinkPacketParserTest.java
+ * Project: RVI SDK
  *
  * Created by Lilli Szafranski on 7/6/15.
  *
@@ -17,9 +17,9 @@ package com.jaguarlandrover.hvacdemo;
 import android.test.AndroidTestCase;
 import android.util.Log;
 
-public class RVIDataParserTest extends AndroidTestCase implements RVIDataParser.RVIDataParserTestCaseListener, RVIDataParser.RVIDataParserListener
+public class DlinkPacketParserTest extends AndroidTestCase implements DlinkPacketParser.DlinkPacketParserTestCaseListener, DlinkPacketParser.DlinkPacketParserListener
 {
-    private final static String TAG = "HVACDemo:RVIData...Test";
+    private final static String TAG = "RVI:DlinkPacketP...Test";
 
     private enum TestState {
         TEST1,
@@ -42,10 +42,10 @@ public class RVIDataParserTest extends AndroidTestCase implements RVIDataParser.
 
     private interface PacketCallbackInterface
     {
-        void handlePacket(RVIDlinkPacket packet);
+        void handlePacket(DlinkPacket packet);
     }
 
-    private RVIDataParser mDataParser;
+    private DlinkPacketParser mDataParser;
 
     private StringCallbackInterface mStringHandler;
     private ObjectCallbackInterface mObjectHandler;
@@ -58,7 +58,7 @@ public class RVIDataParserTest extends AndroidTestCase implements RVIDataParser.
     /**
      *
      */
-    public RVIDataParserTest() {
+    public DlinkPacketParserTest() {
         super();
     }
 
@@ -68,7 +68,7 @@ public class RVIDataParserTest extends AndroidTestCase implements RVIDataParser.
     protected void setUp() throws Exception {
         super.setUp();
 
-        mDataParser = new RVIDataParser(this);
+        mDataParser = new DlinkPacketParser(this);
 
         mTestState = TestState.TEST1;
     }
@@ -79,9 +79,9 @@ public class RVIDataParserTest extends AndroidTestCase implements RVIDataParser.
     protected void tearDown() throws Exception {
         super.tearDown();
 
-        mStringHandler   = null;
-        mObjectHandler   = null;
-        mPacketHandler   = null;
+        mStringHandler = null;
+        mObjectHandler = null;
+        mPacketHandler = null;
 
         mInStringHandler = false;
         mInObjectHandler = false;
@@ -555,7 +555,7 @@ public class RVIDataParserTest extends AndroidTestCase implements RVIDataParser.
     }
 
     @Override
-    public void onPacketParsed(RVIDlinkPacket packet) {
+    public void onPacketParsed(DlinkPacket packet) {
         mInPacketHandler = true;
 
         if (mPacketHandler != null)

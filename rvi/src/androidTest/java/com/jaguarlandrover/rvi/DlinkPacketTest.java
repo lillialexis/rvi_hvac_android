@@ -1,4 +1,4 @@
-package com.jaguarlandrover.hvacdemo;
+package com.jaguarlandrover.rvi;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Copyright (c) 2015 Jaguar Land Rover.
@@ -7,8 +7,8 @@ package com.jaguarlandrover.hvacdemo;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVIDlinkPacketTest.java
- * Project: HVACDemo
+ * File:    DlinkPacketTest.java
+ * Project: RVI SDK
  *
  * Created by Lilli Szafranski on 7/6/15.
  *
@@ -20,13 +20,13 @@ import com.google.gson.Gson;
 
 import java.util.HashMap;
 
-public class RVIDlinkPacketTest extends AndroidTestCase
+public class DlinkPacketTest extends AndroidTestCase
 {
-    private final static String TAG = "HVACDemo:RVIDlinkPacketTest";
+    private final static String TAG = "RVI:DlinkPacketTest";
 
     private Integer tidCounter = 0;
 
-    private RVIDlinkPacket mPacket;
+    private DlinkPacket mPacket;
 
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
@@ -51,59 +51,59 @@ public class RVIDlinkPacketTest extends AndroidTestCase
     }
 
     public final void testConstructorCommandAuthorize() {
-        mPacket = new RVIDlinkPacket(RVIDlinkPacket.Command.AUTHORIZE);
+        mPacket = new DlinkPacket(DlinkPacket.Command.AUTHORIZE);
 
-        assertEquals(mPacket.mCmd, RVIDlinkPacket.Command.AUTHORIZE);
+        assertEquals(mPacket.mCmd, DlinkPacket.Command.AUTHORIZE);
         assertEquals(mPacket.mSig, "");
     }
 
     public final void testConstructorCommandServiceAnnounce() {
-        mPacket = new RVIDlinkPacket(RVIDlinkPacket.Command.SERVICE_ANNOUNCE);
+        mPacket = new DlinkPacket(DlinkPacket.Command.SERVICE_ANNOUNCE);
 
-        assertEquals(mPacket.mCmd, RVIDlinkPacket.Command.SERVICE_ANNOUNCE);
+        assertEquals(mPacket.mCmd, DlinkPacket.Command.SERVICE_ANNOUNCE);
         assertEquals(mPacket.mSig, "");
     }
 
     public final void testConstructorCommandReceive() {
-        mPacket = new RVIDlinkPacket(RVIDlinkPacket.Command.RECEIVE);
+        mPacket = new DlinkPacket(DlinkPacket.Command.RECEIVE);
 
-        assertEquals(mPacket.mCmd, RVIDlinkPacket.Command.RECEIVE);
+        assertEquals(mPacket.mCmd, DlinkPacket.Command.RECEIVE);
         assertEquals(mPacket.mSig, "");
     }
 
     public final void testConstructorCommandAuthorizeGoodJson() {
         String jsonString = "{\"cmd\":\"au\",\"sign\":\"\",\"tid\":1}";
 
-        mPacket = new RVIDlinkPacket(RVIDlinkPacket.Command.AUTHORIZE, jsonObjectFromString(jsonString));
+        mPacket = new DlinkPacket(DlinkPacket.Command.AUTHORIZE, jsonObjectFromString(jsonString));
 
         assertEquals(mPacket.mTid, Integer.valueOf(1));
-        assertEquals(mPacket.mCmd, RVIDlinkPacket.Command.AUTHORIZE);
+        assertEquals(mPacket.mCmd, DlinkPacket.Command.AUTHORIZE);
         assertEquals(mPacket.mSig, "");
     }
 
     public final void testConstructorCommandServiceAnnounceGoodJson() {
         String jsonString = "{\"cmd\":\"sa\",\"sign\":\"\",\"tid\":1}";
 
-        mPacket = new RVIDlinkPacket(RVIDlinkPacket.Command.SERVICE_ANNOUNCE, jsonObjectFromString(jsonString));
+        mPacket = new DlinkPacket(DlinkPacket.Command.SERVICE_ANNOUNCE, jsonObjectFromString(jsonString));
 
         assertEquals(mPacket.mTid, Integer.valueOf(1));
-        assertEquals(mPacket.mCmd, RVIDlinkPacket.Command.SERVICE_ANNOUNCE);
+        assertEquals(mPacket.mCmd, DlinkPacket.Command.SERVICE_ANNOUNCE);
         assertEquals(mPacket.mSig, "");
     }
 
     public final void testConstructorCommandReceiveGoodJson() {
         String jsonString = "{\"cmd\":\"rcv\",\"sign\":\"\",\"tid\":1}";
 
-        mPacket = new RVIDlinkPacket(RVIDlinkPacket.Command.RECEIVE, jsonObjectFromString(jsonString));
+        mPacket = new DlinkPacket(DlinkPacket.Command.RECEIVE, jsonObjectFromString(jsonString));
 
         assertEquals(mPacket.mTid, Integer.valueOf(1));
-        assertEquals(mPacket.mCmd, RVIDlinkPacket.Command.RECEIVE);
+        assertEquals(mPacket.mCmd, DlinkPacket.Command.RECEIVE);
         assertEquals(mPacket.mSig, "");
     }
 
     public final void testConstructorNullCommand() {
         try {
-            mPacket = new RVIDlinkPacket(null);
+            mPacket = new DlinkPacket(null);
         } catch (IllegalArgumentException e) {
             /* Success */
             return;
@@ -116,7 +116,7 @@ public class RVIDlinkPacketTest extends AndroidTestCase
         String jsonString = "{\"sign\":\"\",\"tid\":1}";
 
         try {
-            mPacket = new RVIDlinkPacket(null, jsonObjectFromString(jsonString));
+            mPacket = new DlinkPacket(null, jsonObjectFromString(jsonString));
         } catch (IllegalArgumentException e) {
             /* Success */
             return;
@@ -128,7 +128,7 @@ public class RVIDlinkPacketTest extends AndroidTestCase
     public final void testConstructorNullJson() {
 
         try {
-            mPacket = new RVIDlinkPacket(RVIDlinkPacket.Command.AUTHORIZE, null);
+            mPacket = new DlinkPacket(DlinkPacket.Command.AUTHORIZE, null);
         } catch (IllegalArgumentException e) {
             /* Success */
             return;
@@ -140,14 +140,14 @@ public class RVIDlinkPacketTest extends AndroidTestCase
     public final void testConstructorEmptyJson() {
         String jsonString = "{}";
 
-        mPacket = new RVIDlinkPacket(RVIDlinkPacket.Command.AUTHORIZE, jsonObjectFromString(jsonString));
+        mPacket = new DlinkPacket(DlinkPacket.Command.AUTHORIZE, jsonObjectFromString(jsonString));
 
         assertNull(mPacket.mTid);
         assertNull(mPacket.mSig);
     }
 
     public final void testJsonString() {
-        mPacket = new RVIDlinkPacket(RVIDlinkPacket.Command.AUTHORIZE);
+        mPacket = new DlinkPacket(DlinkPacket.Command.AUTHORIZE);
 
         Log.d(TAG, mPacket.toJsonString());
 

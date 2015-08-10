@@ -1,4 +1,4 @@
-package com.jaguarlandrover.hvacdemo;
+package com.jaguarlandrover.rvi;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Copyright (c) 2015 Jaguar Land Rover.
@@ -7,22 +7,22 @@ package com.jaguarlandrover.hvacdemo;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVIDlinkServiceAnnouncePacket.java
- * Project: HVACDemo
+ * File:    DlinkServiceAnnouncePacket.java
+ * Project: RVI SDK
  *
  * Created by Lilli Szafranski on 7/1/15.
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-import com.google.gson.Gson;
+import android.util.Log;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class RVIDlinkServiceAnnouncePacket extends RVIDlinkPacket
+class DlinkServiceAnnouncePacket extends DlinkPacket
 {
-    private final static String TAG = "HVACDemo:RVIDlinkServiceAnnouncePacket";
+    private final static String TAG = "RVI:DlinkServi...Packet";
 
     @SerializedName("stat")
     private String mStatus;
@@ -30,15 +30,15 @@ public class RVIDlinkServiceAnnouncePacket extends RVIDlinkPacket
     @SerializedName("svcs")
     private ArrayList<String> mServices;
 
-    ArrayList<String> getServiceFQNames(ArrayList<RVIService> services) {
+    private ArrayList<String> getServiceFQNames(ArrayList<VehicleService> services) {
         ArrayList<String> newList = new ArrayList<>(services.size());
-        for (RVIService service : services)
+        for (VehicleService service : services)
             newList.add(service.getFullyQualifiedLocalServiceName());
 
         return newList;
     }
 
-    public RVIDlinkServiceAnnouncePacket() {
+    DlinkServiceAnnouncePacket() {
     }
 
     /**
@@ -47,18 +47,22 @@ public class RVIDlinkServiceAnnouncePacket extends RVIDlinkPacket
      * @param services The array of services to announce
      *
      */
-    public RVIDlinkServiceAnnouncePacket(ArrayList<RVIService> services) {
+    DlinkServiceAnnouncePacket(ArrayList<VehicleService> services) {
         super(Command.SERVICE_ANNOUNCE);
 
         mStatus   = "av"; // TODO: Confirm what this is/where is comes from
         mServices = getServiceFQNames(services);
     }
 
-    public RVIDlinkServiceAnnouncePacket(HashMap jsonHash) {
-        super(Command.SERVICE_ANNOUNCE, jsonHash);
-
-        mStatus   = (String) jsonHash.get("stat");
-        mServices = (ArrayList<String>) jsonHash.get("svcs");
+    ArrayList<String> getServices() {
+        return mServices;
     }
+
+//    public DlinkServiceAnnouncePacket(HashMap jsonHash) {
+//        super(Command.SERVICE_ANNOUNCE, jsonHash);
+//
+//        mStatus   = (String) jsonHash.get("stat");
+//        mServices = (ArrayList<String>) jsonHash.get("svcs");
+//    }
 
 }

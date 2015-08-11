@@ -68,7 +68,7 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
             @Override
             public void nodeDidConnect() {
                 updateService(HVACServiceIdentifier.SUBSCRIBE.value(),
-                        "{\"node\":\"" + RVI_DOMAIN + RVINode.getLocalServicePrefix(applicationContext) + "/\"}");
+                        "{\"node\":\"" + RVI_DOMAIN + RVINode.getLocalNodeIdentifier(applicationContext) + "/\"}");
             }
 
             @Override
@@ -220,7 +220,7 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
     public static void updateService(String serviceIdentifier, String value) {
         HashMap<String, Object> updateParams = new HashMap<>(2);
 
-        updateParams.put("sending_node", RVI_DOMAIN + RVINode.getLocalServicePrefix(applicationContext) + "/");
+        updateParams.put("sending_node", RVI_DOMAIN + RVINode.getLocalNodeIdentifier(applicationContext) + "/");
         updateParams.put("value", value);
 
         mHVACServiceBundle.updateService(serviceIdentifier, updateParams, (long) 50000);

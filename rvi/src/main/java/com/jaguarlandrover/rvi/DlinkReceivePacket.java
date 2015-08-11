@@ -19,6 +19,9 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.HashMap;
 
+/**
+ * The type Dlink "receive" request packet. This request is used to update RVI services.
+ */
 class DlinkReceivePacket extends DlinkPacket
 {
     private final static String TAG = "RVI:DlinkReceivePacket";
@@ -31,18 +34,24 @@ class DlinkReceivePacket extends DlinkPacket
     private String mMod;
 
     /**
-     * The VehicleService used to create the request params
+     * The VehicleService used to create the request params.
      */
     private transient VehicleService mService;
 
+    /**
+     * The service is converted to a json string, then base64 encoded to be embedded in the packet's json.
+     */
     @SerializedName("data")
     private String mData;
 
+    /**
+     * Instantiates a new Dlink receive packet.
+     */
     DlinkReceivePacket() {
     }
 
     /**
-     * Helper method to get a receive dlink json object
+     * Helper method to get a receive dlink json object.
      *
      * @param service The service that is getting invoked
      */
@@ -62,6 +71,11 @@ class DlinkReceivePacket extends DlinkPacket
 //        mService = new VehicleService(new String(Base64.decode((String)jsonHash.get("data"), Base64.DEFAULT)));
 //    }
 
+    /**
+     * Gets the service that is being updated over the network.
+     *
+     * @return the service that is being updated
+     */
     VehicleService getService() {
         if (mService == null && mData != null)
             mService = new VehicleService(new String(Base64.decode(mData, Base64.DEFAULT)));
@@ -69,6 +83,11 @@ class DlinkReceivePacket extends DlinkPacket
         return mService;
     }
 
+    /**
+     * Sets the service that is being updated over the network.
+     *
+     * @param service the service
+     */
     void setService(VehicleService service) {
         mService = service;
     }

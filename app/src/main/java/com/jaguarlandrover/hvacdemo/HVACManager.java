@@ -227,8 +227,8 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
     }
 
     @Override
-    public void onServiceUpdated(String serviceIdentifier, Object value) {
-        if (mListener != null) mListener.onServiceUpdated(serviceIdentifier, value);
+    public void onServiceUpdated(String serviceIdentifier, Object parameters) {
+        if (mListener != null) mListener.onServiceUpdated(serviceIdentifier, parameters);
     }
 
     public static HVACManagerListener getListener() {

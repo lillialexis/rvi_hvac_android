@@ -17,6 +17,10 @@ package com.jaguarlandrover.rvi;
 import android.util.Log;
 import com.google.gson.Gson;
 
+/**
+ * The Dlink packet parser. Class that parses received strings first into json objects, and then parses complete json
+ * objects into dlink packets based on their 'cmd'
+ */
 class DlinkPacketParser
 {
     private final static String TAG = "RVI:DlinkPacketParser";
@@ -24,18 +28,48 @@ class DlinkPacketParser
     private String                    mBuffer;
     private DlinkPacketParserListener mDataParserListener;
 
+    /**
+     * The interface Dlink packet parser listener. The object that's notified when complete dlink packets are parsed.
+     */
     interface DlinkPacketParserListener
     {
+        /**
+         * On packet parsed. Callback method that notifies listener when a complete dlink packet was parsed out of the
+         * input stream coming from an rvi node over the network.
+         *
+         * @param packet the dlink packet
+         */
         void onPacketParsed(DlinkPacket packet);
     }
 
+    /**
+     * The interface Dlink packet parser test case listener. The test object that's notified when complete dlink
+     * packets are parsed, with an extra method for test purposes.
+     */
     interface DlinkPacketParserTestCaseListener
     {
+        /**
+         * On json string parsed. Callback method that notifies listener when a complete json string was parsed out of
+         * the input stream coming from an rvi node over the network.
+         *
+         * @param jsonString the json string
+         */
         void onJsonStringParsed(String jsonString);
 
+        /**
+         * On json object parsed. Callback method that notifies listener when a complete json object was parsed out of
+         * the input stream coming from an rvi node over the network.
+         *
+         * @param jsonObject the json object
+         */
         void onJsonObjectParsed(Object jsonObject);
     }
 
+    /**
+     * Instantiates a new Dlink packet parser.
+     *
+     * @param listener the listener
+     */
     DlinkPacketParser(DlinkPacketParserListener listener) {
         mDataParserListener = listener;
     }
@@ -127,12 +161,23 @@ class DlinkPacketParser
         }
     }
 
+    /**
+     * Parse the data (consisting of 0-n partial or complete json objects) that was received over the network
+     * from an rvi node. Method parses the string, recursively chomping off json objects as they come in,
+     * deserializing them into dlink packets. Remaining string (thereby assumed to be only a partial json object)
+     * is saved until rest of the json object is received over the networked and appended to the buffer.
+     *
+     * @param data a json string, consisting of 0-n partial or complete json objects.
+     */
     void parseData(String data) {
         if (mBuffer == null) mBuffer = "";
 
         mBuffer = recurse(mBuffer + data);
     }
 
+    /**
+     * Clears the saved (unparsed) buffer of data.
+     */
     void clear() {
         mBuffer = null;
     }

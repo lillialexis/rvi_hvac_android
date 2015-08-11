@@ -16,6 +16,9 @@ package com.jaguarlandrover.rvi;
 
 import android.util.Log;
 
+/**
+ * The remote connection manager of the RVI node.
+ */
 public class RemoteConnectionManager
 {
     private final static String TAG = "RVI:RemoteCon...Manager";
@@ -78,6 +81,9 @@ public class RemoteConnectionManager
         mDirectServerConnection.setRemoteConnectionListener(connectionListener);
     }
 
+    /**
+     * Connect the local RVI node to the remote RVI node.
+     */
     static void connect() {
         ourInstance.closeConnections();
 
@@ -88,11 +94,19 @@ public class RemoteConnectionManager
         remoteConnection.connect();
     }
 
+    /**
+     * Disconnect the local RVI node from the remote RVI node
+     */
     static void disconnect() {
         ourInstance.closeConnections();
         ourInstance.mDataParser.clear();
     }
 
+    /**
+     * Send an RVI request packet.
+     *
+     * @param dlinkPacket the dlink packet
+     */
     static void sendPacket(DlinkPacket dlinkPacket) {
         Log.d(TAG, Util.getMethodName());
 
@@ -128,18 +142,38 @@ public class RemoteConnectionManager
         mBluetoothConnection.disconnect();
     }
 
+    /**
+     * Sets the server url to the remote RVI node, when using a TCP/IP link to interface with a remote node.
+     *
+     * @param serverUrl the server url
+     */
     public static void setServerUrl(String serverUrl) {
         RemoteConnectionManager.ourInstance.mDirectServerConnection.setServerUrl(serverUrl);
     }
 
+    /**
+     * Sets the server port of the remote RVI node, when using a TCP/IP link to interface with a remote node.
+     *
+     * @param serverPort the server port
+     */
     public static void setServerPort(Integer serverPort) {
         RemoteConnectionManager.ourInstance.mDirectServerConnection.setServerPort(serverPort);
     }
 
-    static RemoteConnectionManagerListener getListener() {
-        return RemoteConnectionManager.ourInstance.mListener;
-    }
+//    /**
+//     * Gets listener.
+//     *
+//     * @return the listener
+//     */
+//    static RemoteConnectionManagerListener getListener() {
+//        return RemoteConnectionManager.ourInstance.mListener;
+//    }
 
+    /**
+     * Sets the remote connection manager listener.
+     *
+     * @param listener the listener
+     */
     static void setListener(RemoteConnectionManagerListener listener) {
         RemoteConnectionManager.ourInstance.mListener = listener;
     }

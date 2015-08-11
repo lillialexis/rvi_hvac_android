@@ -18,14 +18,27 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
+/**
+ * The type Util.
+ */
 public class Util
 {
     private static final String TAG = "RVI:Util";
 
+    /**
+     * Gets the name of the current method on the stack.
+     *
+     * @return the method name
+     */
     public static String getMethodName() {
         return Thread.currentThread().getStackTrace()[3].getMethodName();
     }
 
+    /**
+     * Print view information.
+     *
+     * @param view the view
+     */
     public static void printView(View view) {
         Log.d(TAG, view.getClass().toString() + " frame:    (x:" + view.getLeft() + ", " +
                                                             "y:" + view.getTop() + ", " +

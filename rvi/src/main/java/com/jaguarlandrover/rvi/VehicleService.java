@@ -34,8 +34,7 @@ class VehicleService
     private String mBundleIdentifier;
     private String mDomain;
 
-    private String mLocalPrefix;
-    private String mRemotePrefix;
+    private String mNodeIdentifier;
 
     private Object mParameters;
 
@@ -47,15 +46,13 @@ class VehicleService
      * @param serviceIdentifier the service identifier
      * @param domain the domain
      * @param bundleIdentifier the bundle identifier
-     * @param remotePrefix the remote prefix
-     * @param localPrefix the local prefix
+     * @param prefix the service's prefix
      */
-    VehicleService(String serviceIdentifier, String domain, String bundleIdentifier, String remotePrefix, String localPrefix) {
+    VehicleService(String serviceIdentifier, String domain, String bundleIdentifier, String prefix) {
         mServiceIdentifier = serviceIdentifier;
         mBundleIdentifier = bundleIdentifier;
         mDomain = domain;
-        mRemotePrefix = remotePrefix;
-        mLocalPrefix = localPrefix;
+        mNodeIdentifier = prefix;
     }
 
     /**
@@ -74,7 +71,7 @@ class VehicleService
         if (serviceParts.length != 5) return;
 
         mDomain = serviceParts[0];
-        mRemotePrefix = "/" + serviceParts[1] + "/" + serviceParts[2];
+        mNodeIdentifier = "/" + serviceParts[1] + "/" + serviceParts[2];
         mBundleIdentifier = "/" + serviceParts[3];
         mServiceIdentifier = "/" + serviceParts[4];
 
@@ -113,30 +110,22 @@ class VehicleService
     }
 
     /**
-     * Gets fully qualified local service name.
+     * Gets fully qualified service name.
      *
-     * @return the fully qualified local service name
+     * @return the fully qualified service name
      */
-    String getFullyQualifiedLocalServiceName() {
-        return mDomain + mLocalPrefix + mBundleIdentifier + mServiceIdentifier;
+    String getFullyQualifiedServiceName() {
+        return mDomain + mNodeIdentifier + mBundleIdentifier + mServiceIdentifier;
     }
 
     /**
-     * Gets fully qualified remote service name.
-     *
-     * @return the fully qualified remote service name
-     */
-    String getFullyQualifiedRemoteServiceName() {
-        return mDomain + mRemotePrefix + mBundleIdentifier + mServiceIdentifier;
-    }
-
-    /**
-     * Has remote prefix.
+     * Has the node identifier portion of the fully-qualified service name. This happens if the remote node is
+     * connected and has announced this service.
      *
      * @return the boolean
      */
-    boolean hasRemotePrefix() {
-        return mRemotePrefix != null;
+    boolean hasNodeIdentifier() {
+        return mNodeIdentifier != null;
     }
 
     /**
@@ -147,7 +136,7 @@ class VehicleService
     Object generateRequestParams() {
         HashMap<String, Object> params = new HashMap<>(4);
 
-        params.put("service", getFullyQualifiedRemoteServiceName());
+        params.put("service", getFullyQualifiedServiceName());
         params.put("parameters", Arrays.asList(mParameters));
         params.put("timeout", mTimeout);
         params.put("signature", "signature");
@@ -179,21 +168,12 @@ class VehicleService
     }
 
     /**
-     * Gets remote prefix.
+     * Sets the node identifier portion of the fully-qualified service name
      *
-     * @return the remote prefix
+     * @param nodeIdentifier the local or remote RVI node's identifier
      */
-    String getRemotePrefix() {
-        return mRemotePrefix;
-    }
-
-    /**
-     * Sets remote prefix.
-     *
-     * @param remotePrefix the remote prefix
-     */
-    void setRemotePrefix(String remotePrefix) {
-        mRemotePrefix = remotePrefix;
+    void setNodeIdentifier(String nodeIdentifier) {
+        mNodeIdentifier = nodeIdentifier;
     }
 
     /**

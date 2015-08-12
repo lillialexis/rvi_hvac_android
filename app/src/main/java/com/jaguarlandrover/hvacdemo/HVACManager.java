@@ -16,6 +16,7 @@ package com.jaguarlandrover.hvacdemo;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import com.google.gson.internal.LinkedTreeMap;
 import com.jaguarlandrover.rvi.*;
 
 import java.util.ArrayList;
@@ -228,7 +229,7 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
 
     @Override
     public void onServiceUpdated(String serviceIdentifier, Object parameters) {
-        if (mListener != null) mListener.onServiceUpdated(serviceIdentifier, parameters);
+        if (mListener != null) mListener.onServiceUpdated(serviceIdentifier, ((LinkedTreeMap)parameters).get("value"));
     }
 
     public static HVACManagerListener getListener() {

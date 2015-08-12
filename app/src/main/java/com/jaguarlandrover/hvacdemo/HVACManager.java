@@ -30,7 +30,7 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
     private final static String TAG = "HVACDemo:HVACManager";
 
     private final static String RVI_DOMAIN      = "jlr.com";
-    private final static String RVI_BUNDLE_NAME = "/hvac";
+    private final static String RVI_BUNDLE_NAME = "hvac";
 
     private static Context applicationContext = HVACApplication.getContext();
     private static ServiceBundle mHVACServiceBundle;
@@ -69,7 +69,7 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
             @Override
             public void nodeDidConnect() {
                 updateService(HVACServiceIdentifier.SUBSCRIBE.value(),
-                        "{\"node\":\"" + RVI_DOMAIN + RVINode.getLocalNodeIdentifier(applicationContext) + "/\"}");
+                        "{\"node\":\"" + RVI_DOMAIN + "/" + RVINode.getLocalNodeIdentifier(applicationContext) + "/\"}");
             }
 
             @Override
@@ -211,7 +211,7 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
         if (mHVACServiceBundle != null)
             RVINode.removeBundle(mHVACServiceBundle);
 
-        mHVACServiceBundle = new ServiceBundle(applicationContext, RVI_DOMAIN, RVI_BUNDLE_NAME,  /*"/vin/" + getVin(),*/ localServiceIdentifiers);
+        mHVACServiceBundle = new ServiceBundle(applicationContext, RVI_DOMAIN, RVI_BUNDLE_NAME, localServiceIdentifiers);
         mHVACServiceBundle.setListener(ourInstance);
 
         RVINode.addBundle(mHVACServiceBundle);
@@ -221,7 +221,7 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
     public static void updateService(String serviceIdentifier, String value) {
         HashMap<String, Object> updateParams = new HashMap<>(2);
 
-        updateParams.put("sending_node", RVI_DOMAIN + RVINode.getLocalNodeIdentifier(applicationContext) + "/");
+        updateParams.put("sending_node", RVI_DOMAIN + "/" + RVINode.getLocalNodeIdentifier(applicationContext) + "/");
         updateParams.put("value", value);
 
         mHVACServiceBundle.updateService(serviceIdentifier, updateParams, (long) 50000);

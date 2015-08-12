@@ -16,22 +16,22 @@ package com.jaguarlandrover.hvacdemo;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 public enum HVACServiceIdentifier
 {
-    HAZARD("/hazard"),
-    TEMP_LEFT("/temp_left"),
-    TEMP_RIGHT("/temp_right"),
-    SEAT_HEAT_LEFT("/seat_heat_left"),
-    SEAT_HEAT_RIGHT("/seat_heat_right"),
-    FAN_SPEED("/fan_speed"),
-    AIRFLOW_DIRECTION("/airflow_direction"),
-    DEFROST_REAR("/defrost_rear"),
-    DEFROST_FRONT("/defrost_front"),
-    DEFROST_MAX("/defrost_max"),
-    AIR_CIRC("/air_circ"),
-    AC("/ac"),
-    AUTO("/auto"),
-    SUBSCRIBE("/subscribe"),
-    UNSUBSCRIBE("/unsubscribe"),
-    NONE("/none");
+    HAZARD("hazard"),
+    TEMP_LEFT("temp_left"),
+    TEMP_RIGHT("temp_right"),
+    SEAT_HEAT_LEFT("seat_heat_left"),
+    SEAT_HEAT_RIGHT("seat_heat_right"),
+    FAN_SPEED("fan_speed"),
+    AIRFLOW_DIRECTION("airflow_direction"),
+    DEFROST_REAR("defrost_rear"),
+    DEFROST_FRONT("defrost_front"),
+    DEFROST_MAX("defrost_max"),
+    AIR_CIRC("air_circ"),
+    AC("ac"),
+    AUTO("auto"),
+    SUBSCRIBE("subscribe"),
+    UNSUBSCRIBE("unsubscribe"),
+    NONE("none");
 
     private final String mIdentifier;
 
@@ -45,21 +45,21 @@ public enum HVACServiceIdentifier
 
     public static HVACServiceIdentifier get(String identifier) {
         switch (identifier) {
-            case "/hazard":            return HAZARD;
-            case "/temp_left":         return TEMP_LEFT;
-            case "/temp_right":        return TEMP_RIGHT;
-            case "/seat_heat_left":    return SEAT_HEAT_LEFT;
-            case "/seat_heat_right":   return SEAT_HEAT_RIGHT;
-            case "/fan_speed":         return FAN_SPEED;
-            case "/airflow_direction": return AIRFLOW_DIRECTION;
-            case "/defrost_rear":      return DEFROST_REAR;
-            case "/defrost_front":     return DEFROST_FRONT;
-            case "/defrost_max":       return DEFROST_MAX;
-            case "/air_circ":          return AIR_CIRC;
-            case "/ac":                return AC;
-            case "/auto":              return AUTO;
-            case "/subscribe":         return SUBSCRIBE;
-            case "/unsubscribe":       return UNSUBSCRIBE;
+            case "hazard":            return HAZARD;
+            case "temp_left":         return TEMP_LEFT;
+            case "temp_right":        return TEMP_RIGHT;
+            case "seat_heat_left":    return SEAT_HEAT_LEFT;
+            case "seat_heat_right":   return SEAT_HEAT_RIGHT;
+            case "fan_speed":         return FAN_SPEED;
+            case "airflow_direction": return AIRFLOW_DIRECTION;
+            case "defrost_rear":      return DEFROST_REAR;
+            case "defrost_front":     return DEFROST_FRONT;
+            case "defrost_max":       return DEFROST_MAX;
+            case "air_circ":          return AIR_CIRC;
+            case "ac":                return AC;
+            case "auto":              return AUTO;
+            case "subscribe":         return SUBSCRIBE;
+            case "unsubscribe":       return UNSUBSCRIBE;
         }
 
         return NONE;

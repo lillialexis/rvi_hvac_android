@@ -60,7 +60,7 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
 
     public interface HVACManagerListener
     {
-        void onServiceUpdated(String serviceIdentifier, Object parameters);
+        void onServiceInvoked(String serviceIdentifier, Object parameters);
     }
 
     private HVACManager() {
@@ -68,7 +68,7 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
         {
             @Override
             public void nodeDidConnect() {
-                updateService(HVACServiceIdentifier.SUBSCRIBE.value(),
+                invokeService(HVACServiceIdentifier.SUBSCRIBE.value(),
                         "{\"node\":\"" + RVI_DOMAIN + "/" + RVINode.getLocalNodeIdentifier(applicationContext) + "/\"}");
             }
 
@@ -218,18 +218,18 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
         RVINode.connect();
     }
 
-    public static void updateService(String serviceIdentifier, String value) {
-        HashMap<String, Object> updateParams = new HashMap<>(2);
+    public static void invokeService(String serviceIdentifier, String value) {
+        HashMap<String, Object> invokeParams = new HashMap<>(2);
 
-        updateParams.put("sending_node", RVI_DOMAIN + "/" + RVINode.getLocalNodeIdentifier(applicationContext) + "/");
-        updateParams.put("value", value);
+        invokeParams.put("sending_node", RVI_DOMAIN + "/" + RVINode.getLocalNodeIdentifier(applicationContext) + "/");
+        invokeParams.put("value", value);
 
-        mHVACServiceBundle.updateService(serviceIdentifier, updateParams, (long) 50000);
+        mHVACServiceBundle.invokeService(serviceIdentifier, invokeParams, (long) 50000);
     }
 
     @Override
-    public void onServiceUpdated(String serviceIdentifier, Object parameters) {
-        if (mListener != null) mListener.onServiceUpdated(serviceIdentifier, ((LinkedTreeMap)parameters).get("value"));
+    public void onServiceInvoked(String serviceIdentifier, Object parameters) {
+        if (mListener != null) mListener.onServiceInvoked(serviceIdentifier, ((LinkedTreeMap) parameters).get("value"));
     }
 
     public static HVACManagerListener getListener() {

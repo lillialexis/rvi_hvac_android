@@ -97,7 +97,8 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
                 Log.d(TAG, Util.getMethodName());
 
                 if (fromUser)
-                    HVACManager.updateService((String) mControlToServices.get(seekBar.getId()), Integer.toString(progress));
+                    HVACManager.invokeService((String) mControlToServices.get(seekBar.getId()), Integer
+                            .toString(progress));
             }
 
             @Override
@@ -127,7 +128,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
                 Log.d(TAG, Util.getMethodName());
 
-                HVACManager.updateService((String) mControlToServices.get(picker.getId()), Integer.toString(newVal));
+                HVACManager.invokeService((String) mControlToServices.get(picker.getId()), Integer.toString(newVal));
             }
         });
     }
@@ -207,7 +208,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
 
         toggleHazardButtonFlashing(!mHazardsAreFlashing);
 
-        HVACManager.updateService("hazard", Boolean.toString(mHazardsAreFlashing));
+        HVACManager.invokeService("hazard", Boolean.toString(mHazardsAreFlashing));
     }
 
     public void updateToggleButtonImage(ImageButton toggleButton) {
@@ -229,7 +230,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
             case R.id.fan_down_button:
             case R.id.fan_up_button:
             case R.id.fan_right_button:
-                HVACManager.updateService((String) mControlToServices.get(toggleButton.getId()),
+                HVACManager.invokeService((String) mControlToServices.get(toggleButton.getId()),
                         Integer.toString(getAirflowDirectionValue()));
                 break;
 
@@ -237,7 +238,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
             case R.id.defrost_front_button:
             case R.id.circ_button:
 
-                HVACManager.updateService((String) mControlToServices.get(toggleButton.getId()),
+                HVACManager.invokeService((String) mControlToServices.get(toggleButton.getId()),
                         Boolean.toString(toggleButton.isSelected()));
                 break;
 
@@ -281,7 +282,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
 
         seatTempButton.setImageResource((Integer) mSeatTempImages.get(seatTempButton.getId()).get(newSeatTempState));
 
-        HVACManager.updateService((String) mControlToServices.get(seatTempButton.getId()),
+        HVACManager.invokeService((String) mControlToServices.get(seatTempButton.getId()),
                 Integer.toString(mSeatTempValues.get(newSeatTempState)));
     }
 
@@ -291,7 +292,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
     }
 
     @Override
-    public void onServiceUpdated(String serviceIdentifierString, Object parameters) {
+    public void onServiceInvoked(String serviceIdentifierString, Object parameters) {
 
         Integer id;
         View view = null;

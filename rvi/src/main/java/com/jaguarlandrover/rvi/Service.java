@@ -7,7 +7,7 @@ package com.jaguarlandrover.rvi;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    VehicleService.java
+ * File:    Service.java
  * Project: RVI SDK
  *
  * Created by Lilli Szafranski on 5/19/15.
@@ -25,13 +25,14 @@ import java.util.HashMap;
 /**
  * The type Vehicle service.
  */
-class VehicleService
+class Service
 {
-    private final static String TAG = "RVI:VehicleService";
+    private final static String TAG = "RVI:Service";
 
     private String mServiceIdentifier;
 
     private String mBundleIdentifier;
+
     private String mDomain;
 
     private String mNodeIdentifier;
@@ -48,7 +49,7 @@ class VehicleService
      * @param bundleIdentifier the bundle identifier
      * @param prefix the service's prefix
      */
-    VehicleService(String serviceIdentifier, String domain, String bundleIdentifier, String prefix) {
+    Service(String serviceIdentifier, String domain, String bundleIdentifier, String prefix) {
         mServiceIdentifier = serviceIdentifier;
         mBundleIdentifier = bundleIdentifier;
         mDomain = domain;
@@ -60,7 +61,7 @@ class VehicleService
      *
      * @param jsonString the json string
      */
-    VehicleService(String jsonString) {
+    Service(String jsonString) {
         Log.d(TAG, "Service data: " + jsonString);
 
         Gson gson = new Gson();
@@ -71,9 +72,9 @@ class VehicleService
         if (serviceParts.length != 5) return;
 
         mDomain = serviceParts[0];
-        mNodeIdentifier = "/" + serviceParts[1] + "/" + serviceParts[2];
-        mBundleIdentifier = "/" + serviceParts[3];
-        mServiceIdentifier = "/" + serviceParts[4];
+        mNodeIdentifier = serviceParts[1] + "/" + serviceParts[2];
+        mBundleIdentifier = serviceParts[3];
+        mServiceIdentifier = serviceParts[4];
 
         // TODO: Why are parameters arrays of object, not just an object? This should probably get fixed everywhere.
         if  (jsonHash.get("parameters").getClass().equals(ArrayList.class))
@@ -115,7 +116,7 @@ class VehicleService
      * @return the fully qualified service name
      */
     String getFullyQualifiedServiceName() {
-        return mDomain + mNodeIdentifier + mBundleIdentifier + mServiceIdentifier;
+        return mDomain + "/" + mNodeIdentifier + "/" + mBundleIdentifier + "/" + mServiceIdentifier;
     }
 
     /**
@@ -167,6 +168,16 @@ class VehicleService
         return mBundleIdentifier;
     }
 
+
+    /**
+     * Gets the domain.
+     *
+     * @return the domain
+     */
+    String getDomain() {
+        return mDomain;
+    }
+
     /**
      * Sets the node identifier portion of the fully-qualified service name
      *
@@ -177,7 +188,7 @@ class VehicleService
     }
 
     /**
-     * Gets timeout.
+     * Gets the timeout. This value is the timeout, in milliseconds, from the epoch.
      *
      * @return the timeout
      */
@@ -186,11 +197,11 @@ class VehicleService
     }
 
     /**
-     * Sets timeout.
+     * Sets the timeout.
      *
-     * @param timeout the timeout
+     * @param timeout the timeout in milliseconds from the epoch.
      */
     void setTimeout(Long timeout) {
-        mTimeout =  System.currentTimeMillis() + timeout;
+        mTimeout = timeout;
     }
 }

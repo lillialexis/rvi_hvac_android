@@ -16,6 +16,7 @@ package com.jaguarlandrover.rvi;
 
 import android.content.Context;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -28,14 +29,15 @@ public class ServiceBundle
     private final static String TAG = "RVI:ServiceBundle";
 
     private String mBundleIdentifier;
+
     private String mDomain;
     private String mLocalNodeIdentifier;
 
-    private HashMap<String, VehicleService> mLocalServices;
+    private HashMap<String, Service> mLocalServices;
 
-    private HashMap<String, VehicleService> mRemoteServices = new HashMap<>();
+    private HashMap<String, Service> mRemoteServices = new HashMap<>();
 
-    private HashMap<String, VehicleService> mPendingServiceUpdates = new HashMap<>();
+    private HashMap<String, Service> mPendingServiceInvocations = new HashMap<>();
 
     /**
      * The Service bundle listener interface.
@@ -43,37 +45,62 @@ public class ServiceBundle
     public interface ServiceBundleListener
     {
         /**
-         * Callback for when a local service belonging to the bundle was updated.
+         * Callback for when a local service belonging to the bundle was invoked.
          *
          * @param serviceIdentifier the service identifier
-         * @param parameters the parameters receieved in the update
+         * @param parameters the parameters received in the invocation
          */
-        public void onServiceUpdated(String serviceIdentifier, Object parameters);
+        public void onServiceInvoked(String serviceIdentifier, Object parameters);
     }
 
     private ServiceBundleListener mListener;
 
+    private String validated(String identifier) {
+        if (identifier == null) throw new IllegalArgumentException("Input parameter can't be null.");
+        if (identifier.equals("")) throw new IllegalArgumentException("Input parameter can't be an empty string.");
+
+        String regex = "^[a-zA-Z0-9_\\.]*$";
+        boolean hasSpecialChar = !identifier.matches(regex);
+
+        if (hasSpecialChar)
+            throw new IllegalArgumentException("Input parameter contains a non-alphanumeric/underscore character.");
+
+        return identifier;
+    }
+
     /**
      * Instantiates a new Service bundle.
      *
-     * @param context the Application context
-     * @param domain the domain portion of the RVI node's prefix (e.g., "jlr.com")
-     * @param bundleIdentifier the bundle identifier (e.g., "hvac")
-     * @param servicesIdentifiers a list of the identifiers for all the local services
+     * @param context          the Application context. This value cannot be null.
+     * @param domain           the domain portion of the RVI node's prefix (e.g., "jlr.com"). The domain must only contain
+     *                         alphanumeric characters, underscores, and/or periods. No other characters or whitespace are
+     *                         allowed. This value cannot be an empty string or null.
+     * @param bundleIdentifier the bundle identifier (e.g., "hvac") The bundle identifier must only contain
+     *                         alphanumeric characters, underscores, and/or periods. No other characters or whitespace
+     *                         are allowed.  This value cannot be an empty string or null.
+     * @param servicesIdentifiers a list of the identifiers for all the local services. The service identifiers must only contain
+     *                            alphanumeric characters, underscores, and/or periods. No other characters or whitespace are allowed.
+     *                            This value cannot be an empty string or null.
+     *
+     * @exception java.lang.IllegalArgumentException Throws an exception when the context is null, or if the domain, bundle identifier
+     *                                               or any of the service identifiers are an empty string, contain special characters,
+     *                                               or are null.
      */
-    public ServiceBundle(Context context, String domain, String bundleIdentifier, ArrayList<String> servicesIdentifiers) {
-        mDomain = domain;
-        mBundleIdentifier = bundleIdentifier; // TODO: If no '/' prefix, add one
+    public ServiceBundle(Context context, String domain, String bundleIdentifier, ArrayList<String> servicesIdentifiers) throws IllegalArgumentException {
+        if (context == null) throw new InvalidParameterException("Input parameter can't be null");
+
+        mDomain = validated(domain);
+        mBundleIdentifier = validated(bundleIdentifier);
 
         mLocalNodeIdentifier = RVINode.getLocalNodeIdentifier(context);
 
         mLocalServices = makeServices(servicesIdentifiers);
     }
 
-    private HashMap<String, VehicleService> makeServices(ArrayList<String> serviceIdentifiers) {
-        HashMap<String, VehicleService> services = new HashMap<>(serviceIdentifiers.size());
+    private HashMap<String, Service> makeServices(ArrayList<String> serviceIdentifiers) {
+        HashMap<String, Service> services = new HashMap<>(serviceIdentifiers.size());
         for (String serviceIdentifier : serviceIdentifiers)
-            services.put(serviceIdentifier, new VehicleService(serviceIdentifier, mDomain, mBundleIdentifier, mLocalNodeIdentifier));
+            services.put(validated(serviceIdentifier), new Service(serviceIdentifier, mDomain, mBundleIdentifier, mLocalNodeIdentifier));
 
         return services;
     }
@@ -84,15 +111,12 @@ public class ServiceBundle
      * @param serviceIdentifier the service identifier
      * @return the service
      */
-    VehicleService getRemoteService(String serviceIdentifier) {
-        VehicleService service;
+    Service getRemoteService(String serviceIdentifier) {
+        Service service;
         if (null != (service = mRemoteServices.get(serviceIdentifier)))
             return service;
 
-        if (null != (service = mRemoteServices.get("/" + serviceIdentifier)))
-            return service;
-
-        return new VehicleService(serviceIdentifier, mDomain, mBundleIdentifier, null);
+        return new Service(serviceIdentifier, mDomain, mBundleIdentifier, null);
     }
 
     /**
@@ -101,7 +125,7 @@ public class ServiceBundle
      */
     public void addLocalService(String serviceIdentifier) {
         if (!mLocalServices.containsKey(serviceIdentifier))
-            mLocalServices.put(serviceIdentifier, new VehicleService(serviceIdentifier, mDomain, mBundleIdentifier, mLocalNodeIdentifier));
+            mLocalServices.put(serviceIdentifier, new Service(serviceIdentifier, mDomain, mBundleIdentifier, mLocalNodeIdentifier));
 
         RVINode.announceServices();
     }
@@ -112,7 +136,7 @@ public class ServiceBundle
      */
     public void addLocalServices(ArrayList<String> serviceIdentifiers) {
         for (String serviceIdentifier : serviceIdentifiers)
-            mLocalServices.put(serviceIdentifier, new VehicleService(serviceIdentifier, mDomain, mBundleIdentifier, mLocalNodeIdentifier));
+            mLocalServices.put(serviceIdentifier, new Service(serviceIdentifier, mDomain, mBundleIdentifier, mLocalNodeIdentifier));
 
         RVINode.announceServices();
     }
@@ -137,23 +161,23 @@ public class ServiceBundle
     }
 
     /**
-     * Add a remote service to the service bundle. If there is a pending service update with a matching service
-     * identifier, this update is sent to the remote node.
+     * Add a remote service to the service bundle. If there is a pending service invocation with a matching service
+     * identifier, this invocation is sent to the remote node.
      *
      * @param serviceIdentifier the identifier of the service
      */
     void addRemoteService(String serviceIdentifier, String remoteNodeIdentifier) {
         if (!mRemoteServices.containsKey(serviceIdentifier))
-            mRemoteServices.put(serviceIdentifier, new VehicleService(serviceIdentifier, mDomain, mBundleIdentifier, remoteNodeIdentifier));
+            mRemoteServices.put(serviceIdentifier, new Service(serviceIdentifier, mDomain, mBundleIdentifier, remoteNodeIdentifier));
 
-        VehicleService pendingServiceUpdate = mPendingServiceUpdates.get(serviceIdentifier);
-        if (pendingServiceUpdate != null) {
-            if (pendingServiceUpdate.getTimeout() >= System.currentTimeMillis()) {
-                pendingServiceUpdate.setNodeIdentifier(remoteNodeIdentifier);
-                RVINode.updateService(pendingServiceUpdate);
+        Service pendingServiceInvocation = mPendingServiceInvocations.get(serviceIdentifier);
+        if (pendingServiceInvocation != null) {
+            if (pendingServiceInvocation.getTimeout() >= System.currentTimeMillis()) {
+                pendingServiceInvocation.setNodeIdentifier(remoteNodeIdentifier);
+                RVINode.invokeService(pendingServiceInvocation);
             }
 
-            mPendingServiceUpdates.remove(serviceIdentifier);
+            mPendingServiceInvocations.remove(serviceIdentifier);
         }
     }
 
@@ -173,31 +197,31 @@ public class ServiceBundle
     }
 
     /**
-     * Update a remote service on the remote RVI node
+     * Invoke/update a remote service on the remote RVI node
      *
      * @param serviceIdentifier the service identifier
      * @param parameters the parameters
-     * @param timeout the timeout
+     * @param timeout the timeout, in milliseconds. This is added to the current system time.
      */
-    public void updateService(String serviceIdentifier, Object parameters, Long timeout) {
-        VehicleService service = getRemoteService(serviceIdentifier);
+    public void invokeService(String serviceIdentifier, Object parameters, Long timeout) {
+        Service service = getRemoteService(serviceIdentifier);
 
         service.setParameters(parameters);
-        service.setTimeout(timeout);
+        service.setTimeout(System.currentTimeMillis() + timeout);
 
         if (service.hasNodeIdentifier())
-            RVINode.updateService(service);
+            RVINode.invokeService(service);
         else
-            mPendingServiceUpdates.put(serviceIdentifier, service);
+            mPendingServiceInvocations.put(serviceIdentifier, service);
     }
 
     /**
-     * Service updated.
+     * Service invoked.
      *
      * @param service the service
      */
-    void serviceUpdated(VehicleService service) {
-        if (mListener != null) mListener.onServiceUpdated(service.getServiceIdentifier(), service.getParameters()); // TODO: This code can pass through a service that might not exist locally
+    void serviceInvoked(Service service) {
+        if (mListener != null) mListener.onServiceInvoked(service.getServiceIdentifier(), service.getParameters()); // TODO: This code can pass through a service that might not exist locally
     }
 
     /**
@@ -216,7 +240,7 @@ public class ServiceBundle
      */
     ArrayList<String> getFullyQualifiedLocalServiceNames() {
         ArrayList<String> fullyQualifiedLocalServiceNames = new ArrayList<>(mLocalServices.size());
-        for (VehicleService service : mLocalServices.values())
+        for (Service service : mLocalServices.values())
             if (service.getFullyQualifiedServiceName() != null)
                 fullyQualifiedLocalServiceNames.add(service.getFullyQualifiedServiceName());
 
@@ -230,6 +254,16 @@ public class ServiceBundle
      */
     public String getBundleIdentifier() {
         return mBundleIdentifier;
+    }
+
+
+    /**
+     * Gets the domain.
+     *
+     * @return the domain
+     */
+    String getDomain() {
+        return mDomain;
     }
 
 }

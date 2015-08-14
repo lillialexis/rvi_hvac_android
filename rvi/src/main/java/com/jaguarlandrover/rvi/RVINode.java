@@ -21,7 +21,6 @@ import android.util.Base64;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.UUID;
 
 import static android.content.Context.MODE_PRIVATE;
@@ -145,7 +144,7 @@ public class RVINode
      * @param bundle the bundle
      */
     public static void addBundle(ServiceBundle bundle) {
-        RVINode.allServiceBundles.put(bundle.getBundleIdentifier(), bundle);
+        RVINode.allServiceBundles.put(bundle.getDomain() + ":" + bundle.getBundleIdentifier(), bundle);
         RVINode.announceServices();
     }
 
@@ -156,7 +155,7 @@ public class RVINode
      * @param bundle the bundle
      */
     public static void removeBundle(ServiceBundle bundle) {
-        RVINode.allServiceBundles.remove(bundle.getBundleIdentifier());
+        RVINode.allServiceBundles.remove(bundle.getDomain() + ":" + bundle.getBundleIdentifier());
         RVINode.announceServices();
     }
 
@@ -172,18 +171,20 @@ public class RVINode
     }
 
     /**
-     * Update service.
+     * Invoke service.
      *
      * @param service the service
      */
-    static void updateService(VehicleService service) {
+    static void invokeService(Service service) {
         RemoteConnectionManager.sendPacket(new DlinkReceivePacket(service));
     }
 
     private void handleReceivePacket(DlinkReceivePacket packet) {
-        VehicleService service = packet.getService();
+        Service service = packet.getService();
 
-        allServiceBundles.get(service.getBundleIdentifier()).serviceUpdated(service);
+        ServiceBundle bundle = allServiceBundles.get(service.getDomain() + ":" + service.getBundleIdentifier());
+        if (bundle != null)
+            bundle.serviceInvoked(service);
     }
 
     private void handleServiceAnnouncePacket(DlinkServiceAnnouncePacket packet) {
@@ -193,11 +194,12 @@ public class RVINode
 
             if (serviceParts.length != 5) return;
 
-            String nodeIdentifier = "/" + serviceParts[1] + "/" + serviceParts[2];
-            String bundleIdentifier = "/" + serviceParts[3];
-            String serviceIdentifier = "/" + serviceParts[4];
+            String domain = serviceParts[0];
+            String nodeIdentifier = serviceParts[1] + "/" + serviceParts[2];
+            String bundleIdentifier = serviceParts[3];
+            String serviceIdentifier = serviceParts[4];
 
-            ServiceBundle bundle = allServiceBundles.get(bundleIdentifier);
+            ServiceBundle bundle = allServiceBundles.get(domain + ":" + bundleIdentifier);
 
             if (bundle != null)
                 bundle.addRemoteService(serviceIdentifier, nodeIdentifier);
@@ -235,12 +237,12 @@ public class RVINode
      * @param context the application context
      * @return the local prefix
      */
-    public static String getLocalNodeIdentifier(Context context) {
+    public static String getLocalNodeIdentifier(Context context) { // TODO: There is no easy way to reset this once it's stored, is there? Maybe an app version check?
         SharedPreferences sharedPrefs = context.getSharedPreferences(SHARED_PREFS_STRING, MODE_PRIVATE);
         String localServicePrefix;
 
         if ((localServicePrefix = sharedPrefs.getString(LOCAL_SERVICE_PREFIX_STRING, null)) == null)
-            localServicePrefix = "/android/" + uuidB58String();
+            localServicePrefix = "android/" + uuidB58String();
 
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putString(LOCAL_SERVICE_PREFIX_STRING, localServicePrefix);

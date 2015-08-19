@@ -27,8 +27,8 @@ public enum HVACServiceIdentifier
     DEFROST_FRONT("defrost_front"),
     DEFROST_MAX("defrost_max"),
     AIR_CIRC("air_circ"),
-    AC("ac"),
-    AUTO("auto"),
+    AC("fan"),
+    AUTO("control_auto"),
     SUBSCRIBE("subscribe"),
     UNSUBSCRIBE("unsubscribe"),
     NONE("none");
@@ -56,8 +56,8 @@ public enum HVACServiceIdentifier
             case "defrost_front":     return DEFROST_FRONT;
             case "defrost_max":       return DEFROST_MAX;
             case "air_circ":          return AIR_CIRC;
-            case "ac":                return AC;
-            case "auto":              return AUTO;
+            case "fan":               return AC;
+            case "control_auto":      return AUTO;
             case "subscribe":         return SUBSCRIBE;
             case "unsubscribe":       return UNSUBSCRIBE;
         }

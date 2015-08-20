@@ -73,8 +73,8 @@ public class MainActivityUtil
     }
 
     /* Maps each control with the service(s) it invokes on RVI */
-    public static HashMap<Integer, Object> initializeViewToServiceIdMap() {
-        HashMap<Integer, Object> hm = new HashMap<>();
+    public static HashMap<Integer, String> initializeViewToServiceIdMap() {
+        HashMap<Integer, String> hm = new HashMap<>();
 
         hm.put(R.id.hazard_button,                HVACServiceIdentifier.HAZARD.value());
 
@@ -83,7 +83,7 @@ public class MainActivityUtil
         hm.put(R.id.left_seat_temp_button,        HVACServiceIdentifier.SEAT_HEAT_LEFT.value());
         hm.put(R.id.right_seat_temp_button,       HVACServiceIdentifier.SEAT_HEAT_RIGHT.value());
 
-        hm.put(R.id.fan_power_seekbar,            HVACServiceIdentifier.FAN_SPEED.value());
+        hm.put(R.id.fan_speed_seekbar,            HVACServiceIdentifier.FAN_SPEED.value());
 
         hm.put(R.id.fan_down_button,              HVACServiceIdentifier.AIRFLOW_DIRECTION.value());
         hm.put(R.id.fan_right_button,             HVACServiceIdentifier.AIRFLOW_DIRECTION.value());
@@ -91,27 +91,29 @@ public class MainActivityUtil
 
         hm.put(R.id.defrost_rear_button,          HVACServiceIdentifier.DEFROST_REAR.value());
         hm.put(R.id.defrost_front_button,         HVACServiceIdentifier.DEFROST_FRONT.value());
-        hm.put(R.id.defrost_max_button, Arrays.asList(HVACServiceIdentifier.DEFROST_REAR.value(),
-                                                  HVACServiceIdentifier.DEFROST_FRONT.value(),
-                                                  HVACServiceIdentifier.FAN_SPEED.value(),
-                                                  HVACServiceIdentifier.DEFROST_MAX.value()));
+        hm.put(R.id.defrost_max_button,           HVACServiceIdentifier.DEFROST_MAX.value());
+//                Arrays.asList(HVACServiceIdentifier.DEFROST_REAR.value(),
+//                                                  HVACServiceIdentifier.DEFROST_FRONT.value(),
+//                                                  HVACServiceIdentifier.FAN_SPEED.value(),
+//                                                  HVACServiceIdentifier.DEFROST_MAX.value()));
 
         hm.put(R.id.circ_button,                  HVACServiceIdentifier.AIR_CIRC.value());
         hm.put(R.id.ac_button,                    HVACServiceIdentifier.AC.value());
-        hm.put(R.id.auto_button,    Arrays.asList(HVACServiceIdentifier.AIRFLOW_DIRECTION.value(),
-                                                  HVACServiceIdentifier.DEFROST_REAR.value(),
-                                                  HVACServiceIdentifier.DEFROST_FRONT.value(),
-                                                  HVACServiceIdentifier.FAN_SPEED.value(),
-                                                  HVACServiceIdentifier.TEMP_LEFT.value(),
-                                                  HVACServiceIdentifier.TEMP_RIGHT.value(),
-                                                  HVACServiceIdentifier.AUTO.value()));
+        hm.put(R.id.auto_button,                  HVACServiceIdentifier.AUTO.value());
+//                Arrays.asList(HVACServiceIdentifier.AIRFLOW_DIRECTION.value(),
+//                                                  HVACServiceIdentifier.DEFROST_REAR.value(),
+//                                                  HVACServiceIdentifier.DEFROST_FRONT.value(),
+//                                                  HVACServiceIdentifier.FAN_SPEED.value(),
+//                                                  HVACServiceIdentifier.TEMP_LEFT.value(),
+//                                                  HVACServiceIdentifier.TEMP_RIGHT.value(),
+//                                                  HVACServiceIdentifier.AUTO.value()));
 
         return hm;
     }
 
     /* Maps each RVI service with the controls that are updated when the service is invoked */
-    public static HashMap<String, Object> initializeServiceToViewIdMap() {
-        HashMap<String, Object> hm = new HashMap<>();
+    public static HashMap<String, Integer> initializeServiceToViewIdMap() {
+        HashMap<String, Integer> hm = new HashMap<>();
 
         hm.put(HVACServiceIdentifier.HAZARD.value(),          R.id.hazard_button);
 
@@ -121,7 +123,7 @@ public class MainActivityUtil
         hm.put(HVACServiceIdentifier.SEAT_HEAT_LEFT.value(),  R.id.left_seat_temp_button);
         hm.put(HVACServiceIdentifier.SEAT_HEAT_RIGHT.value(), R.id.right_seat_temp_button);
 
-        hm.put(HVACServiceIdentifier.FAN_SPEED.value(),       R.id.fan_power_seekbar);
+        hm.put(HVACServiceIdentifier.FAN_SPEED.value(),       R.id.fan_speed_seekbar);
 
         hm.put(HVACServiceIdentifier.DEFROST_MAX.value(),     R.id.defrost_max_button);
         hm.put(HVACServiceIdentifier.DEFROST_REAR.value(),    R.id.defrost_rear_button);

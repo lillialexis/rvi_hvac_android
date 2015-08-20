@@ -112,7 +112,7 @@
             android:src="@drawable/fan"/>
 
         <SeekBar
-            android:id="@+id/fan_power_seekbar"
+            android:id="@+id/fan_speed_seekbar"
             android:layout_width="225dp"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"

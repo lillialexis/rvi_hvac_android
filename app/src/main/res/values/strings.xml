@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">HVACDemo</string>
+    <string name="app_name">HVAC Demo</string>
 
     <string name="hello_world">Hello world, 2!</string>
     <string name="action_settings">Settings</string>
@@ -13,4 +13,6 @@
     <string name="hvac_shared_prefs_string">com.jaguarlandrover.hvac.settings</string>
     <string name="use_proxy_server_switch_text">Use Proxy Server</string>
     <string name="use_proxy_server_not_switch_text">Don\'t Use Proxy Server</string>
+    <string name="hvac_left">LEFT CLIMATE</string>
+    <string name="hvac_right">RIGHT CLIMATE</string>
 </resources>

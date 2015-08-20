@@ -30,11 +30,13 @@
             <!--android:layout_height="wrap_content"-->
             <!--android:layout_columnSpan="3"-->
             <!--android:layout_marginTop="@dimen/marginTop"-->
-            <!--android:paddingTop="@dimen/paddingTop"-->
+            <!--android:background="@color/black"-->
+            <!--android:imeOptions="actionDone"-->
+            <!--android:inputType="text"-->
             <!--android:paddingBottom="@dimen/paddingBottom"-->
             <!--android:paddingLeft="@dimen/paddingLeft"-->
             <!--android:paddingRight="@dimen/paddingRight"-->
-            <!--android:background="@color/black"/>-->
+            <!--android:paddingTop="@dimen/paddingTop"/>-->
 
         <TextView
             android:id="@+id/server_url_label"
@@ -49,11 +51,13 @@
             android:layout_height="wrap_content"
             android:layout_columnSpan="3"
             android:layout_marginTop="@dimen/marginTop"
-            android:paddingTop="@dimen/paddingTop"
+            android:background="@color/black"
+            android:imeOptions="actionDone"
+            android:inputType="text"
             android:paddingBottom="@dimen/paddingBottom"
             android:paddingLeft="@dimen/paddingLeft"
             android:paddingRight="@dimen/paddingRight"
-            android:background="@color/black" />
+            android:paddingTop="@dimen/paddingTop"/>
 
         <TextView
             android:id="@+id/server_port_label"
@@ -68,11 +72,13 @@
             android:layout_height="wrap_content"
             android:layout_columnSpan="3"
             android:layout_marginTop="@dimen/marginTop"
-            android:paddingTop="@dimen/paddingTop"
+            android:background="@color/black"
+            android:imeOptions="actionDone"
+            android:inputType="text"
             android:paddingBottom="@dimen/paddingBottom"
             android:paddingLeft="@dimen/paddingLeft"
             android:paddingRight="@dimen/paddingRight"
-            android:background="@color/black"/>
+            android:paddingTop="@dimen/paddingTop"/>
 
     </GridLayout>
 
@@ -108,6 +114,8 @@
             android:layout_height="wrap_content"
             android:layout_columnSpan="3"
             android:layout_marginTop="@dimen/marginTop"
+            android:imeOptions="actionDone"
+            android:inputType="text"
             android:visibility="gone"/>
 
         <TextView
@@ -125,10 +133,11 @@
             android:layout_height="wrap_content"
             android:layout_columnSpan="3"
             android:layout_marginTop="@dimen/marginTop"
+            android:imeOptions="actionDone"
+            android:inputType="text"
             android:visibility="gone"/>
 
     </GridLayout>
-
 
     <LinearLayout
         android:layout_width="wrap_content"

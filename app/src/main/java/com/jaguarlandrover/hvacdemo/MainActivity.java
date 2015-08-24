@@ -88,6 +88,16 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
         configureSeekBar((SeekBar) findViewById(R.id.fan_speed_seekbar));
 
         mFanSpeedSeekBar = (SeekBar) findViewById(R.id.fan_speed_seekbar);
+
+        findViewById(R.id.logo_graphic).setOnLongClickListener(new View.OnLongClickListener()
+        {
+            @Override
+            public boolean onLongClick(View v) {
+                HVACManager.subscribeToHvacRvi();
+
+                return true;
+            }
+        });
     }
 
     @Override

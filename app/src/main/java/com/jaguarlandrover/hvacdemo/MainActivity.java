@@ -94,6 +94,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
             @Override
             public boolean onLongClick(View v) {
                 HVACManager.subscribeToHvacRvi();
+                Toast.makeText(getApplicationContext(), "Subscribed", Toast.LENGTH_SHORT).show();
 
                 return true;
             }
@@ -115,6 +116,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
         seekBar.setMax(MAX_FAN_SPEED);
         seekBar.setOnSeekBarChangeListener(mFanSpeedSeekBarListener = new SeekBar.OnSeekBarChangeListener()
         {
+            /* USER INTERFACE CALLBACK */
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 Log.d(TAG, Util.getMethodName());
@@ -151,6 +153,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
 
         picker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener()
         {
+            /* USER INTERFACE CALLBACK */
             @Override
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
                 Log.d(TAG, Util.getMethodName());
@@ -205,6 +208,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
         }
     }
 
+    /* USER INTERFACE CALLBACK */
     public void hazardButtonPressed(View view) {
         Log.d(TAG, Util.getMethodName());
 
@@ -242,6 +246,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
         updateToggleButtonImage((ImageButton) findViewById(R.id.fan_up_button));
     }
 
+    /* USER INTERFACE CALLBACK */
     public void seatTempButtonPressed(View view) {
         Log.d(TAG, Util.getMethodName());
 
@@ -310,12 +315,14 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
         }
     }
 
+    /* USER INTERFACE CALLBACK */
     public void toggleButtonPressed(View view) {
         Log.d(TAG, Util.getMethodName());
 
         ImageButton toggleButton = (ImageButton) view;
         String serviceIdentifier = getServiceIdentifiersFromViewId(toggleButton.getId());
 
+        /* Toggle the state of the toggle button */
         toggleTheButton(toggleButton);
 
         if (mAutoIsOn && shouldBreakOutOfAuto(HVACServiceIdentifier.get(serviceIdentifier)))
@@ -330,6 +337,11 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
                 if (mFanSpeedSeekBar.getProgress() == 0) {
                     mFanSpeedSeekBar.setProgress(DEFAULT_FAN_SPEED);
                     HVACManager.invokeService(HVACServiceIdentifier.FAN_SPEED.value(), Integer.toString(DEFAULT_FAN_SPEED));
+                }
+
+                if (getAirflowDirectionValue() == 0) {
+                    mFanSpeedSeekBar.setProgress(0);
+                    HVACManager.invokeService(HVACServiceIdentifier.FAN_SPEED.value(), Integer.toString(0));
                 }
 
                 HVACManager.invokeService(getServiceIdentifiersFromViewId(toggleButton.getId()),
@@ -371,6 +383,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
         }
     }
 
+    /* RVI SERVICE INVOCATION CALLBACK */
     @Override
     public void onServiceInvoked(String serviceIdentifierString, Object parameters) {
 

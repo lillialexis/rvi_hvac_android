@@ -21,14 +21,16 @@ public class HVACState
     private Integer mAirDirection;
     private Integer mFanSpeed;
     private Boolean mAc;
-    private Boolean mRecirc;
+    private Boolean mCirc;
+    private Boolean mDefrostMax;
 
-    public HVACState (Integer airDirection, Integer fanSpeed, Boolean ac, Boolean recirc) {
+    public HVACState (Integer airDirection, Integer fanSpeed, Boolean ac, Boolean circ, Boolean defrostMax) {
 
         mAirDirection = airDirection;
         mFanSpeed = fanSpeed;
         mAc = ac;
-        mRecirc = recirc;
+        mCirc = circ;
+        mDefrostMax = defrostMax;
     }
 
     public Integer getAirDirection() {
@@ -44,6 +46,10 @@ public class HVACState
     }
 
     public Boolean getCirc() {
-        return mRecirc;
+        return mCirc;
+    }
+
+    public Boolean getDefrostMax() {
+        return mDefrostMax;
     }
 }

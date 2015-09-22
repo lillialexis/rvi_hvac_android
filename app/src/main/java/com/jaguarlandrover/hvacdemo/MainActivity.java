@@ -37,11 +37,11 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
     private final Handler mHandler = new Handler();
     private Runnable mRunnable;
 
-    private HashMap<Integer, Object> mControlToServices;
-    private HashMap<String, Object>  mServicesToControls;
+    private HashMap<Integer, String> mViewIdsToServiceIds;
+    private HashMap<String, Integer> mServiceIdsToViewIds;
 
-    private HashMap<Integer, Integer> mButtonImagesOff;
-    private HashMap<Integer, Integer> mButtonImagesOn;
+    private HashMap<Integer, Integer> mButtonOffImages;
+    private HashMap<Integer, Integer> mButtonOnImages;
     private HashMap<Integer, List>    mSeatTempImages;
 
     private List<Integer> mSeatTempValues = Arrays.asList(0, 5, 3, 1);
@@ -49,10 +49,21 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
     private int mLeftSeatTempState  = 0;
     private int mRightSeatTempState = 0;
 
+    private boolean mMaxDefrostIsOn;
+    private boolean mAutoIsOn;
+
+    private HVACState mSavedState;
+
     private boolean mHazardsAreFlashing = false;
     private boolean mHazardsImageIsOn;
 
     private ImageButton mHazardButton;
+    private SeekBar     mFanSpeedSeekBar;
+
+    private SeekBar.OnSeekBarChangeListener mFanSpeedSeekBarListener;
+
+    private final static Integer DEFAULT_FAN_SPEED = 3;
+    private final static Integer MAX_FAN_SPEED     = 8;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,20 +72,33 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mControlToServices = MainActivityUtil.initializeControlServices();
-        mServicesToControls = MainActivityUtil.initializeServiceControls();
+        mViewIdsToServiceIds = MainActivityUtil.initializeViewToServiceIdMap();
+        mServiceIdsToViewIds = MainActivityUtil.initializeServiceToViewIdMap();
 
-        mButtonImagesOff = MainActivityUtil.initializeButtonOffHashMap();
-        mButtonImagesOn = MainActivityUtil.initializeButtonOnHashMap();
+        mButtonOffImages = MainActivityUtil.initializeButtonOffImagesMap();
+        mButtonOnImages = MainActivityUtil.initializeButtonOnImagesMap();
 
-        mSeatTempImages = MainActivityUtil.initializeSeatTempHashArray();
+        mSeatTempImages = MainActivityUtil.initializeSeatTempImagesMap();
 
         mHazardButton = (ImageButton) findViewById(R.id.hazard_button);
 
         configurePicker((NumberPicker) findViewById(R.id.left_temp_picker));
         configurePicker((NumberPicker) findViewById(R.id.right_temp_picker));
 
-        configureSeekBar((SeekBar) findViewById(R.id.fan_power_seekbar));
+        configureSeekBar((SeekBar) findViewById(R.id.fan_speed_seekbar));
+
+        mFanSpeedSeekBar = (SeekBar) findViewById(R.id.fan_speed_seekbar);
+
+        findViewById(R.id.logo_graphic).setOnLongClickListener(new View.OnLongClickListener()
+        {
+            @Override
+            public boolean onLongClick(View v) {
+                HVACManager.subscribeToHvacRvi();
+                Toast.makeText(getApplicationContext(), "Subscribed", Toast.LENGTH_SHORT).show();
+
+                return true;
+            }
+        });
     }
 
     @Override
@@ -89,16 +113,22 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
     }
 
     private void configureSeekBar(SeekBar seekBar) {
-        seekBar.setMax(7);
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
+        seekBar.setMax(MAX_FAN_SPEED);
+        seekBar.setOnSeekBarChangeListener(mFanSpeedSeekBarListener = new SeekBar.OnSeekBarChangeListener()
         {
+            /* USER INTERFACE CALLBACK */
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 Log.d(TAG, Util.getMethodName());
 
-                if (fromUser)
-                    HVACManager.invokeService((String) mControlToServices.get(seekBar.getId()), Integer
-                            .toString(progress));
+                if (fromUser) {
+                    HVACManager.invokeService(getServiceIdentifiersFromViewId(seekBar.getId()), Integer.toString(progress));
+
+                    if (progress == 0) {
+                        setAirflowDirectionButtons(0);
+                        HVACManager.invokeService(HVACServiceIdentifier.AIRFLOW_DIRECTION.value(), Integer.toString(0));
+                    }
+                }
             }
 
             @Override
@@ -114,48 +144,23 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
     }
 
     private void configurePicker(NumberPicker picker) {
-        // TODO - Barbara, see this on making the picker not so ugly: http://stackoverflow.com/questions/15031624/how-to-change-number-picker-style-in-android
 
         picker.setMinValue(15);
         picker.setMaxValue(29);
 
         picker.setWrapSelectorWheel(false);
-        picker.setDisplayedValues( new String[] { "LO", "16˚", "17˚", "18˚", "19˚", "20˚", "21˚", "22˚", "23˚", "24˚", "25˚", "26˚", "27˚", "28˚", "HI" } );
+        picker.setDisplayedValues(new String[]{"LO", "16˚", "17˚", "18˚", "19˚", "20˚", "21˚", "22˚", "23˚", "24˚", "25˚", "26˚", "27˚", "28˚", "HI"});
 
         picker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener()
         {
+            /* USER INTERFACE CALLBACK */
             @Override
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
                 Log.d(TAG, Util.getMethodName());
 
-                HVACManager.invokeService((String) mControlToServices.get(picker.getId()), Integer.toString(newVal));
+                HVACManager.invokeService(getServiceIdentifiersFromViewId(picker.getId()), Integer.toString(newVal));
             }
         });
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
-
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     private void stepAnimation() {
@@ -203,51 +208,25 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
         }
     }
 
+    /* USER INTERFACE CALLBACK */
     public void hazardButtonPressed(View view) {
         Log.d(TAG, Util.getMethodName());
 
         toggleHazardButtonFlashing(!mHazardsAreFlashing);
 
-        HVACManager.invokeService("hazard", Boolean.toString(mHazardsAreFlashing));
+        HVACManager.invokeService(getServiceIdentifiersFromViewId(view.getId()), Boolean.toString(mHazardsAreFlashing));
     }
 
     public void updateToggleButtonImage(ImageButton toggleButton) {
         if (toggleButton.isSelected())
-            toggleButton.setImageResource(mButtonImagesOn.get(toggleButton.getId()));
+            toggleButton.setImageResource(mButtonOnImages.get(toggleButton.getId()));
         else
-            toggleButton.setImageResource(mButtonImagesOff.get(toggleButton.getId()));
+            toggleButton.setImageResource(mButtonOffImages.get(toggleButton.getId()));
     }
 
-    public void toggleButtonPressed(View view) {
-        Log.d(TAG, Util.getMethodName());
-
-        ImageButton toggleButton = (ImageButton) view;
+    private void toggleTheButton(ImageButton toggleButton) {
         toggleButton.setSelected(!toggleButton.isSelected());
-
         updateToggleButtonImage(toggleButton);
-
-        switch (toggleButton.getId()) {
-            case R.id.fan_down_button:
-            case R.id.fan_up_button:
-            case R.id.fan_right_button:
-                HVACManager.invokeService((String) mControlToServices.get(toggleButton.getId()),
-                        Integer.toString(getAirflowDirectionValue()));
-                break;
-
-            case R.id.defrost_rear_button:
-            case R.id.defrost_front_button:
-            case R.id.circ_button:
-
-                HVACManager.invokeService((String) mControlToServices.get(toggleButton.getId()),
-                        Boolean.toString(toggleButton.isSelected()));
-                break;
-
-            case R.id.ac_button:
-            case R.id.auto_button:
-            case R.id.max_fan_button:
-                // TODO: Do stuff here
-                break;
-        }
     }
 
     private Integer getAirflowDirectionValue() {
@@ -256,19 +235,18 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
                ((findViewById(R.id.fan_up_button)).isSelected()    ? 4 : 0);
     }
 
-
     private void setAirflowDirectionButtons (Integer value) {
 
         findViewById(R.id.fan_down_button) .setSelected(value % 2 == 1); value /= 2;
         findViewById(R.id.fan_right_button).setSelected(value % 2 == 1); value /= 2;
         findViewById(R.id.fan_up_button)   .setSelected(value % 2 == 1);
 
-
         updateToggleButtonImage((ImageButton) findViewById(R.id.fan_down_button));
         updateToggleButtonImage((ImageButton) findViewById(R.id.fan_right_button));
         updateToggleButtonImage((ImageButton) findViewById(R.id.fan_up_button));
     }
 
+    /* USER INTERFACE CALLBACK */
     public void seatTempButtonPressed(View view) {
         Log.d(TAG, Util.getMethodName());
 
@@ -282,7 +260,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
 
         seatTempButton.setImageResource((Integer) mSeatTempImages.get(seatTempButton.getId()).get(newSeatTempState));
 
-        HVACManager.invokeService((String) mControlToServices.get(seatTempButton.getId()),
+        HVACManager.invokeService(getServiceIdentifiersFromViewId(seatTempButton.getId()),
                 Integer.toString(mSeatTempValues.get(newSeatTempState)));
     }
 
@@ -291,6 +269,172 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
         seatTempButton.setImageResource((Integer) mSeatTempImages.get(seatTempButton.getId()).get(index));
     }
 
+    private boolean shouldBreakOutOfMaxDefrost(HVACServiceIdentifier serviceIdentifier) {
+        switch (serviceIdentifier) {
+
+            case DEFROST_REAR:
+            case DEFROST_FRONT:
+            case AUTO:
+             return true;
+        }
+        return false;
+    }
+
+    private boolean shouldBreakOutOfAuto(HVACServiceIdentifier serviceIdentifier) {
+        switch (serviceIdentifier) {
+
+            case FAN_SPEED:
+            case AIRFLOW_DIRECTION:
+            case DEFROST_MAX:
+            case AIR_CIRC:
+            case AC:
+            case AUTO:
+             return true;
+        }
+        return false;
+    }
+
+    private void breakOutOfAuto(HVACServiceIdentifier serviceIdentifier) {
+        mAutoIsOn = false;
+
+        if (serviceIdentifier != HVACServiceIdentifier.FAN_SPEED && mSavedState.getFanSpeed() != 0 && serviceIdentifier!= HVACServiceIdentifier.DEFROST_MAX) {
+            mFanSpeedSeekBar.setProgress(mSavedState.getFanSpeed());
+            HVACManager.invokeService(HVACServiceIdentifier.FAN_SPEED.value(), Integer.toString(mSavedState.getFanSpeed()));
+        }
+
+        if (serviceIdentifier != HVACServiceIdentifier.AIRFLOW_DIRECTION && serviceIdentifier!= HVACServiceIdentifier.DEFROST_MAX) {
+            setAirflowDirectionButtons(mSavedState.getAirDirection());
+            HVACManager.invokeService(HVACServiceIdentifier.AIRFLOW_DIRECTION.value(), Integer.toString(mSavedState.getAirDirection()));
+        }
+
+        if (serviceIdentifier != HVACServiceIdentifier.AC) {
+            if (findViewById(R.id.ac_button).isSelected() != mSavedState.getAc())
+                toggleButtonPressed(findViewById(R.id.ac_button));
+//                toggleTheButton((ImageButton) findViewById(R.id.ac_button));
+//            HVACManager.invokeService(HVACServiceIdentifier.AC.value(), Boolean.toString(mSavedState.getAc()));
+        }
+
+        if (serviceIdentifier != HVACServiceIdentifier.AIR_CIRC) {
+            if (findViewById(R.id.circ_button).isSelected() != mSavedState.getCirc())
+                toggleButtonPressed(findViewById(R.id.circ_button));
+//                toggleTheButton((ImageButton) findViewById(R.id.circ_button));
+//            HVACManager.invokeService(HVACServiceIdentifier.AIR_CIRC.value(), Boolean.toString(mSavedState.getCirc()));
+        }
+
+        if (serviceIdentifier != HVACServiceIdentifier.DEFROST_MAX) {
+            if (findViewById(R.id.defrost_max_button).isSelected() != mSavedState.getDefrostMax())
+                toggleButtonPressed(findViewById(R.id.defrost_max_button));
+//                toggleTheButton((ImageButton) findViewById(R.id.defrost_max_button));
+//            HVACManager.invokeService(HVACServiceIdentifier.DEFROST_MAX.value(), Boolean.toString(mSavedState.getDefrostMax()));
+        }
+
+        if (serviceIdentifier != HVACServiceIdentifier.AUTO) {
+//            if (findViewById(R.id.auto_button).isSelected() != mSavedState.getCirc())
+                toggleTheButton((ImageButton) findViewById(R.id.auto_button));
+            HVACManager.invokeService(HVACServiceIdentifier.AUTO.value(), Boolean.toString(false));
+        }
+    }
+
+    /* USER INTERFACE CALLBACK */
+    public void toggleButtonPressed(View view) {
+        Log.d(TAG, Util.getMethodName());
+
+        ImageButton toggleButton = (ImageButton) view;
+        String serviceIdentifier = getServiceIdentifiersFromViewId(toggleButton.getId());
+
+        /* Toggle the state of the toggle button */
+        toggleTheButton(toggleButton);
+
+        if (mAutoIsOn && shouldBreakOutOfAuto(HVACServiceIdentifier.get(serviceIdentifier)))
+            breakOutOfAuto(HVACServiceIdentifier.get(serviceIdentifier));
+
+        if (mMaxDefrostIsOn && shouldBreakOutOfMaxDefrost(HVACServiceIdentifier.get(serviceIdentifier)))
+            toggleButtonPressed(findViewById(R.id.defrost_max_button));
+
+        switch (toggleButton.getId()) {
+            case R.id.fan_down_button:
+            case R.id.fan_up_button:
+            case R.id.fan_right_button:
+
+                /* If the fan speed is off, turn it on */
+                if (mFanSpeedSeekBar.getProgress() == 0) {
+                    mFanSpeedSeekBar.setProgress(DEFAULT_FAN_SPEED);
+                    HVACManager.invokeService(HVACServiceIdentifier.FAN_SPEED.value(), Integer.toString(DEFAULT_FAN_SPEED));
+                }
+
+                if (getAirflowDirectionValue() == 0) {
+                    mFanSpeedSeekBar.setProgress(0);
+                    HVACManager.invokeService(HVACServiceIdentifier.FAN_SPEED.value(), Integer.toString(0));
+                }
+
+                HVACManager.invokeService(getServiceIdentifiersFromViewId(toggleButton.getId()),
+                        Integer.toString(getAirflowDirectionValue()));
+
+                break;
+
+            case R.id.auto_button:
+
+                if (toggleButton.isSelected()) {
+                    mSavedState = new HVACState(getAirflowDirectionValue(), mFanSpeedSeekBar.getProgress(),
+                            findViewById(R.id.ac_button).isSelected(), findViewById(R.id.circ_button).isSelected(), findViewById(R.id.defrost_max_button).isSelected());
+
+                    setAirflowDirectionButtons(0);
+                    HVACManager.invokeService(HVACServiceIdentifier.AIRFLOW_DIRECTION.value(), Integer.toString(0));
+
+                    mFanSpeedSeekBar.setProgress(0);
+                    HVACManager.invokeService(HVACServiceIdentifier.FAN_SPEED.value(), Integer.toString(0));
+
+                    if (!findViewById(R.id.ac_button).isSelected())
+                        toggleButtonPressed(findViewById(R.id.ac_button));
+
+                    if (findViewById(R.id.circ_button).isSelected())
+                        toggleButtonPressed(findViewById(R.id.circ_button));
+
+                    if (findViewById(R.id.defrost_max_button).isSelected())
+                        toggleButtonPressed(findViewById(R.id.defrost_max_button));
+
+                    mAutoIsOn = true;
+                }
+
+                HVACManager.invokeService(getServiceIdentifiersFromViewId(toggleButton.getId()),
+                        Boolean.toString(toggleButton.isSelected()));
+
+                break;
+
+            case R.id.defrost_max_button:
+
+                if (toggleButton.isSelected()) {
+                    if (!findViewById(R.id.defrost_front_button).isSelected())
+                        toggleButtonPressed(findViewById(R.id.defrost_front_button));
+
+                    if (!findViewById(R.id.defrost_rear_button).isSelected())
+                        toggleButtonPressed(findViewById(R.id.defrost_rear_button));
+
+                    setAirflowDirectionButtons(4);
+                    HVACManager.invokeService(HVACServiceIdentifier.AIRFLOW_DIRECTION.value(), Integer.toString(4));
+
+                    mFanSpeedSeekBar.setProgress(5);
+                    HVACManager.invokeService(HVACServiceIdentifier.FAN_SPEED.value(), Integer.toString(5));
+
+
+                    mMaxDefrostIsOn = true;
+                } else {
+                    mMaxDefrostIsOn = false;
+                }
+
+            case R.id.ac_button:
+            case R.id.defrost_rear_button:
+            case R.id.defrost_front_button:
+            case R.id.circ_button:
+
+                HVACManager.invokeService(getServiceIdentifiersFromViewId(toggleButton.getId()),
+                        Boolean.toString(toggleButton.isSelected()));
+
+                break;
+        }
+    }
+
+    /* RVI SERVICE INVOCATION CALLBACK */
     @Override
     public void onServiceInvoked(String serviceIdentifierString, Object parameters) {
 
@@ -298,18 +442,33 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
         View view = null;
 
         HVACServiceIdentifier serviceIdentifier = HVACServiceIdentifier.get(serviceIdentifierString);
-        if ((id = (Integer) mServicesToControls.get(serviceIdentifierString)) != null)
+        if ((id = getViewIdFromServiceIdentifier(serviceIdentifierString)) != null)
             view = findViewById(id);
 
         switch (serviceIdentifier) {
+            case DEFROST_MAX:
+            case AUTO:
+
+                Boolean newToggleButtonState = Boolean.parseBoolean((String) parameters);
+
+                /* Special extra work for auto/max_defrost */
+                if (newToggleButtonState)
+                    mSavedState = new HVACState(getAirflowDirectionValue(), mFanSpeedSeekBar.getProgress(), findViewById(R.id.ac_button).isSelected(), findViewById(R.id.circ_button).isSelected(), findViewById(R.id.defrost_max_button).isSelected());
+
+                if (serviceIdentifier == HVACServiceIdentifier.AUTO)
+                    mAutoIsOn = newToggleButtonState;
+
+                if (serviceIdentifier == HVACServiceIdentifier.DEFROST_MAX)
+                    mMaxDefrostIsOn = newToggleButtonState;
+
+                /* Pass through... */
+
             case AC:
             case AIR_CIRC:
             case DEFROST_FRONT:
             case DEFROST_REAR:
-                if (view != null) {
-                    view.setSelected(Boolean.parseBoolean((String) parameters));
-                    updateToggleButtonImage((ImageButton) view);
-                }
+                if (view != null && view.isSelected() != Boolean.parseBoolean((String) parameters))
+                    toggleTheButton((ImageButton) view);
 
                 break;
 
@@ -329,23 +488,15 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
 
                 break;
 
-            case HAZARD:
-                toggleHazardButtonFlashing(Boolean.parseBoolean((String) parameters));
-
-                break;
-
             case TEMP_LEFT:
             case TEMP_RIGHT:
                 if (view != null) ((NumberPicker) view).setValue(Integer.parseInt((String) parameters));
 
                 break;
 
-            case DEFROST_MAX:
-                // TODO: All that other shit
-                break;
+            case HAZARD:
+                toggleHazardButtonFlashing(Boolean.parseBoolean((String) parameters));
 
-            case AUTO:
-                // TODO: All that other shit
                 break;
 
             case SUBSCRIBE:
@@ -354,4 +505,39 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
                 break;
         }
     }
+
+
+    String getServiceIdentifiersFromViewId(Integer uiControlId) {
+        return mViewIdsToServiceIds.get(uiControlId);
+    }
+
+    Integer getViewIdFromServiceIdentifier(String serviceIdentifier) {
+        return mServiceIdsToViewIds.get(serviceIdentifier);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
 }

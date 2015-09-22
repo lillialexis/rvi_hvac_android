@@ -68,8 +68,7 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
         {
             @Override
             public void nodeDidConnect() {
-                invokeService(HVACServiceIdentifier.SUBSCRIBE.value(),
-                        "{\"node\":\"" + RVI_DOMAIN + "/" + RVINode.getLocalNodeIdentifier(applicationContext) + "/\"}");
+                HVACManager.subscribeToHvacRvi();
             }
 
             @Override
@@ -216,6 +215,11 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
 
         RVINode.addBundle(mHVACServiceBundle);
         RVINode.connect();
+    }
+
+    public static void subscribeToHvacRvi() {
+        invokeService(HVACServiceIdentifier.SUBSCRIBE.value(),
+                                "{\"node\":\"" + RVI_DOMAIN + "/" + RVINode.getLocalNodeIdentifier(applicationContext) + "/\"}");
     }
 
     public static void invokeService(String serviceIdentifier, String value) {

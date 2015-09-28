@@ -151,6 +151,8 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
         picker.setWrapSelectorWheel(false);
         picker.setDisplayedValues(new String[]{"LO", "16˚", "17˚", "18˚", "19˚", "20˚", "21˚", "22˚", "23˚", "24˚", "25˚", "26˚", "27˚", "28˚", "HI"});
 
+        picker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
+
         picker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener()
         {
             /* USER INTERFACE CALLBACK */

@@ -83,7 +83,7 @@ Edited by Barbara Harmon October 2015 - responsive layout.
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginBottom="@dimen/marginBottom"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:background="@drawable/hvac_gradient"
             android:scaleY="1.2"/>
 
@@ -93,7 +93,7 @@ Edited by Barbara Harmon October 2015 - responsive layout.
             android:layout_height="match_parent"
             android:layout_marginLeft="@dimen/marginLeft"
             android:layout_marginTop="@dimen/marginTop"
-            android:layout_weight="1"
+            android:layout_weight="3"
             android:background="@null"
             android:onClick="seatTempButtonPressed"
             android:paddingLeft="@dimen/paddingLeft"
@@ -108,7 +108,7 @@ Edited by Barbara Harmon October 2015 - responsive layout.
             android:layout_height="match_parent"
             android:layout_marginRight="@dimen/marginRight"
             android:layout_marginTop="@dimen/marginTop"
-            android:layout_weight="1"
+            android:layout_weight="3"
             android:background="@null"
             android:onClick="seatTempButtonPressed"
             android:paddingLeft="@dimen/paddingLeft"
@@ -121,7 +121,7 @@ Edited by Barbara Harmon October 2015 - responsive layout.
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginBottom="@dimen/marginBottom"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:background="@drawable/hvac_gradient"
             android:scaleY="1.2"/>
 
@@ -145,6 +145,8 @@ Edited by Barbara Harmon October 2015 - responsive layout.
             android:id="@+id/fan_graphic"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:scaleType="centerInside"
             android:layout_marginLeft="50dp"
             android:src="@drawable/fan"/>
 
@@ -155,6 +157,7 @@ Edited by Barbara Harmon October 2015 - responsive layout.
             android:layout_alignParentRight="true"
             android:layout_marginLeft="100dp"
             android:layout_marginRight="@dimen/marginRight"
+            android:layout_centerVertical="true"
             android:progressBackgroundTint="#faac58"
             android:progressTint="#faac58"
             android:thumbTint="#fe9c01"/>
@@ -169,6 +172,7 @@ Edited by Barbara Harmon October 2015 - responsive layout.
         android:alignmentMode="alignBounds"
         android:columnCount="5"
         android:orientation="vertical"
+        android:padding="0dp"
         android:rowCount="3"
         android:useDefaultMargins="true">
 
@@ -186,7 +190,6 @@ Edited by Barbara Harmon October 2015 - responsive layout.
                 android:background="@null"
                 android:contentDescription="@null"
                 android:onClick="toggleButtonPressed"
-                android:paddingLeft="@dimen/paddingLeft"
                 android:paddingRight="@dimen/paddingRight"
                 android:scaleType="centerInside"
                 android:src="@drawable/fan_dir_down_off"/>
@@ -205,7 +208,6 @@ Edited by Barbara Harmon October 2015 - responsive layout.
                 android:background="@null"
                 android:onClick="toggleButtonPressed"
                 android:paddingLeft="@dimen/paddingLeft"
-                android:paddingRight="@dimen/paddingRight"
                 android:scaleType="centerInside"
                 android:src="@drawable/defrost_max_off"/>
         </LinearLayout>
@@ -223,7 +225,6 @@ Edited by Barbara Harmon October 2015 - responsive layout.
                 android:adjustViewBounds="true"
                 android:background="@null"
                 android:onClick="toggleButtonPressed"
-                android:paddingLeft="@dimen/paddingLeft"
                 android:paddingRight="@dimen/paddingRight"
                 android:scaleType="centerInside"
                 android:src="@drawable/fan_dir_right_off"/>
@@ -236,7 +237,6 @@ Edited by Barbara Harmon October 2015 - responsive layout.
                 android:adjustViewBounds="true"
                 android:background="@null"
                 android:onClick="toggleButtonPressed"
-                android:paddingLeft="@dimen/paddingLeft"
                 android:paddingRight="@dimen/paddingRight"
                 android:scaleType="centerInside"
                 android:src="@drawable/fan_control_ac_off"/>
@@ -249,8 +249,8 @@ Edited by Barbara Harmon October 2015 - responsive layout.
                 android:adjustViewBounds="true"
                 android:background="@null"
                 android:onClick="toggleButtonPressed"
-                android:paddingLeft="@dimen/paddingLeft"
-                android:paddingRight="@dimen/paddingRight"
+                android:paddingLeft="3dp"
+                android:paddingRight="3dp"
                 android:scaleType="centerInside"
                 android:src="@drawable/fan_control_auto_off"/>
 
@@ -263,7 +263,6 @@ Edited by Barbara Harmon October 2015 - responsive layout.
                 android:background="@null"
                 android:onClick="toggleButtonPressed"
                 android:paddingLeft="@dimen/paddingLeft"
-                android:paddingRight="@dimen/paddingRight"
                 android:scaleType="centerInside"
                 android:src="@drawable/fan_control_circ_off"/>
 
@@ -276,7 +275,6 @@ Edited by Barbara Harmon October 2015 - responsive layout.
                 android:background="@null"
                 android:onClick="toggleButtonPressed"
                 android:paddingLeft="@dimen/paddingLeft"
-                android:paddingRight="@dimen/paddingRight"
                 android:scaleType="centerInside"
                 android:src="@drawable/defrost_rear_off"/>
         </LinearLayout>
@@ -293,43 +291,37 @@ Edited by Barbara Harmon October 2015 - responsive layout.
                 android:layout_weight="1"
                 android:adjustViewBounds="true"
                 android:background="@null"
-                android:contentDescription="@null"
                 android:onClick="toggleButtonPressed"
-                android:paddingLeft="@dimen/paddingLeft"
                 android:paddingRight="@dimen/paddingRight"
                 android:scaleType="centerInside"
                 android:src="@drawable/fan_dir_up_off"/>
 
-            <Space
+            <ImageView
+                android:id="@+id/logo_graphic"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="3"/>
+                android:layout_columnSpan="3"
+                android:layout_weight="3"
+                android:adjustViewBounds="true"
+                android:paddingLeft="@dimen/paddingLeft"
+                android:paddingRight="@dimen/paddingRight"
+                android:scaleType="centerInside"
+                android:src="@drawable/jlr_logo_color"/>
 
             <ImageButton
                 android:id="@+id/defrost_front_button"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_gravity="clip_horizontal"
                 android:layout_weight="1"
                 android:adjustViewBounds="true"
                 android:background="@null"
-                android:contentDescription="@null"
                 android:onClick="toggleButtonPressed"
                 android:paddingLeft="@dimen/paddingLeft"
-                android:paddingRight="@dimen/paddingRight"
                 android:scaleType="centerInside"
                 android:src="@drawable/defrost_front_off"/>
         </LinearLayout>
 
     </GridLayout>
-
-    <ImageView
-        android:id="@+id/logo_graphic"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_weight="2"
-        android:background="@null"
-        android:gravity="bottom"
-        android:scaleType="centerInside"
-        android:src="@drawable/jlr_logo_color"/>
 
 </LinearLayout>

@@ -4,6 +4,11 @@ android {
     compileSdkVersion 22
     buildToolsVersion "22.0.1"
 
+    packagingOptions {
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
+
+    }
     defaultConfig {
         applicationId "com.jaguarlandrover.hvacdemo"
         minSdkVersion 19

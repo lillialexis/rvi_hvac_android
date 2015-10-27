@@ -33,9 +33,11 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
     private final static String RVI_BUNDLE_NAME = "hvac";
 
     private static Context applicationContext = HVACApplication.getContext();
-    private static ServiceBundle mHVACServiceBundle;
+    private static ServiceBundle hvacServiceBundle;
 
     private static HVACManager ourInstance = new HVACManager();
+
+    private static RVINode node;
 
     private final static ArrayList<String> localServiceIdentifiers =
             new ArrayList<>(Arrays.asList(
@@ -64,7 +66,9 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
     }
 
     private HVACManager() {
-        RVINode.setListener(new RVINode.RVINodeListener()
+        node = new RVINode(applicationContext);
+
+        node.setListener(new RVINode.RVINodeListener()
         {
             @Override
             public void nodeDidConnect() {
@@ -84,8 +88,7 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
     }
 
     private static SharedPreferences getPrefs() {
-        return applicationContext
-                .getSharedPreferences(applicationContext.getString(R.string.hvac_shared_prefs_string), MODE_PRIVATE);
+        return applicationContext.getSharedPreferences(applicationContext.getString(R.string.hvac_shared_prefs_string), MODE_PRIVATE);
     }
 
     private static String getStringFromPrefs(String key, String defaultValue) {
@@ -128,8 +131,8 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
 //    public static void setVin(String vin) {
 //        putStringInPrefs(applicationContext.getString(R.string.vehicle_vin_prefs_string), vin);
 //
-//        if (mHVACServiceBundle != null)
-//            mHVACServiceBundle.setRemotePrefix(vin);
+//        if (hvacServiceBundle != null)
+//            hvacServiceBundle.setRemotePrefix(vin);
 //    }
 
     public static String getServerUrl() {
@@ -199,22 +202,22 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
 
     public static void start() {
         if (getUsingProxyServer()) {
-            RemoteConnectionManager.setServerUrl(getProxyServerUrl());
-            RemoteConnectionManager.setServerPort(getProxyServerPort());
+            node.setServerUrl(getProxyServerUrl());
+            node.setServerPort(getProxyServerPort());
 
         } else {
-            RemoteConnectionManager.setServerUrl(getServerUrl());
-            RemoteConnectionManager.setServerPort(getServerPort());
+            node.setServerUrl(getServerUrl());
+            node.setServerPort(getServerPort());
         }
 
-        if (mHVACServiceBundle != null)
-            RVINode.removeBundle(mHVACServiceBundle);
+        if (hvacServiceBundle != null)
+            node.removeBundle(hvacServiceBundle);
 
-        mHVACServiceBundle = new ServiceBundle(applicationContext, RVI_DOMAIN, RVI_BUNDLE_NAME, localServiceIdentifiers);
-        mHVACServiceBundle.setListener(ourInstance);
+        hvacServiceBundle = new ServiceBundle(applicationContext, RVI_DOMAIN, RVI_BUNDLE_NAME, localServiceIdentifiers);
+        hvacServiceBundle.setListener(ourInstance);
 
-        RVINode.addBundle(mHVACServiceBundle);
-        RVINode.connect();
+        node.addBundle(hvacServiceBundle);
+        node.connect();
     }
 
     public static void subscribeToHvacRvi() {
@@ -228,7 +231,7 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
         invokeParams.put("sending_node", RVI_DOMAIN + "/" + RVINode.getLocalNodeIdentifier(applicationContext) + "/");
         invokeParams.put("value", value);
 
-        mHVACServiceBundle.invokeService(serviceIdentifier, invokeParams, (long) 50000);
+        hvacServiceBundle.invokeService(serviceIdentifier, invokeParams, (long) 50000);
     }
 
     @Override

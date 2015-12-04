@@ -76,12 +76,12 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
             }
 
             @Override
-            public void nodeDidFailToConnect() {
+            public void nodeDidFailToConnect(Throwable trigger) {
 
             }
 
             @Override
-            public void nodeDidDisconnect() {
+            public void nodeDidDisconnect(Throwable trigger) {
 
             }
         });
@@ -222,7 +222,7 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
 
     public static void subscribeToHvacRvi() {
         invokeService(HVACServiceIdentifier.SUBSCRIBE.value(),
-                                "{\"node\":\"" + RVI_DOMAIN + "/" + RVINode.getLocalNodeIdentifier(applicationContext) + "/\"}");
+                "{\"node\":\"" + RVI_DOMAIN + "/" + RVINode.getLocalNodeIdentifier(applicationContext) + "/\"}");
     }
 
     public static void invokeService(String serviceIdentifier, String value) {
@@ -231,11 +231,11 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
         invokeParams.put("sending_node", RVI_DOMAIN + "/" + RVINode.getLocalNodeIdentifier(applicationContext) + "/");
         invokeParams.put("value", value);
 
-        hvacServiceBundle.invokeService(serviceIdentifier, invokeParams, (long) 50000);
+        hvacServiceBundle.invokeService(serviceIdentifier, invokeParams, 50000);
     }
 
     @Override
-    public void onServiceInvoked(String serviceIdentifier, Object parameters) {
+    public void onServiceInvoked(ServiceBundle serviceBundle, String serviceIdentifier, Object parameters) {
         if (mListener != null) mListener.onServiceInvoked(serviceIdentifier, ((LinkedTreeMap) parameters).get("value"));
     }
 

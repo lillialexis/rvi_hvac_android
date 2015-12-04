@@ -16,6 +16,8 @@ package com.jaguarlandrover.rvi;
 
 import android.util.Log;
 
+import java.util.UUID;
+
 /**
  * The remote connection manager of the RVI node.
  */
@@ -25,6 +27,15 @@ public class RemoteConnectionManager
 
     private BluetoothConnection mBluetoothConnection;
     private ServerConnection    mDirectServerConnection;
+    private RemoteConnectionInterface mRemoteConnection;
+
+    public enum ConnectionType
+    {
+        UNKNOWN,
+        SERVER,
+        BLUETOOTH,
+        GLOBAL
+    }
 
     private DlinkPacketParser mDataParser;
 
@@ -47,12 +58,12 @@ public class RemoteConnectionManager
             }
 
             @Override
-            public void onRemoteConnectionDidDisconnect() {
-                if (mListener != null) mListener.onRVIDidDisconnect();
+            public void onRemoteConnectionDidDisconnect(Throwable error) {
+                if (mListener != null) mListener.onRVIDidDisconnect(error);
             }
 
             @Override
-            public void onRemoteConnectionDidFailToConnect(Error error) {
+            public void onRemoteConnectionDidFailToConnect(Throwable error) {
                 if (mListener != null) mListener.onRVIDidFailToConnect(error);
             }
 
@@ -67,7 +78,7 @@ public class RemoteConnectionManager
             }
 
             @Override
-            public void onDidFailToSendDataToRemoteConnection(Error error) {
+            public void onDidFailToSendDataToRemoteConnection(Throwable error) {
                 if (mListener != null) mListener.onRVIDidFailToSendPacket(error);
             }
         };
@@ -82,21 +93,23 @@ public class RemoteConnectionManager
     /**
      * Connect the local RVI node to the remote RVI node.
      */
-    void connect() {
-        closeConnections();
+    void connect(ConnectionType type) {
+        //closeConnections(type);
+        //if (mRemoteConnection != null) mRemoteConnection.disconnect(null);
 
-        RemoteConnectionInterface remoteConnection = selectEnabledRemoteConnection();
+        mRemoteConnection = selectConfiguredRemoteConnection(type);
 
-        if (remoteConnection == null) return;
-
-        remoteConnection.connect();
+        if (mRemoteConnection != null) mRemoteConnection.connect();
     }
 
     /**
      * Disconnect the local RVI node from the remote RVI node
      */
-    void disconnect() {
-        closeConnections();
+    void disconnect(ConnectionType type) {
+        //closeConnections(type);
+
+        if (mRemoteConnection != null) mRemoteConnection.disconnect(null);
+
         mDataParser.clear();
     }
 
@@ -108,35 +121,58 @@ public class RemoteConnectionManager
     void sendPacket(DlinkPacket dlinkPacket) {
         Log.d(TAG, Util.getMethodName());
 
-        RemoteConnectionInterface remoteConnection = selectConnectedRemoteConnection();
+//        RemoteConnectionInterface remoteConnection = selectConnectedRemoteConnection();
+//
+//        if (remoteConnection == null) return; // TODO: Implement a cache to send out stuff after a connection has been established
+//
+//        remoteConnection.sendRviRequest(dlinkPacket);
 
-        if (remoteConnection == null) return; // TODO: Implement a cache to send out stuff after a connection has been established
-
-        remoteConnection.sendRviRequest(dlinkPacket);
+        if (mRemoteConnection == null) {
+            if (mListener != null) mListener.onRVIDidFailToSendPacket(new Error("Interface not selected"));
+        } else if (!mRemoteConnection.isConfigured()) {
+            if (mListener != null) mListener.onRVIDidFailToSendPacket(new Error("Interface not configured"));
+        } else if (!mRemoteConnection.isConnected()) {
+            if (mListener != null) mListener.onRVIDidFailToSendPacket(new Error("Interface not connected"));
+        } else {
+            mRemoteConnection.sendRviRequest(dlinkPacket);
+        }
     }
 
-    private RemoteConnectionInterface selectConnectedRemoteConnection() {
-        if (mDirectServerConnection.isEnabled() && mDirectServerConnection.isConnected())
-            return mDirectServerConnection;
-        if (mBluetoothConnection.isEnabled() && mBluetoothConnection.isConnected())
-            return mBluetoothConnection;
+//    private RemoteConnectionInterface selectConnectedRemoteConnection() {
+//        if (mDirectServerConnection.isConfigured() && mDirectServerConnection.isConnected())
+//            return mDirectServerConnection;
+//        if (mBluetoothConnection.isConfigured() && mBluetoothConnection.isConnected())
+//            return mBluetoothConnection;
+//
+//        return null;
+//    }
 
-        return null;
+    private RemoteConnectionInterface selectConfiguredRemoteConnection(ConnectionType type) { // TODO: This is going to be buggy if a connection is enabled but not connected; the other connections won't have connected
+        RemoteConnectionInterface remoteConnectionInterface;                                  // TODO: Rewrite better 'choosing' code
+
+        if (type == ConnectionType.SERVER)
+            remoteConnectionInterface = mDirectServerConnection;
+        else if (type == ConnectionType.BLUETOOTH)
+            remoteConnectionInterface = mBluetoothConnection;
+        else if (type == ConnectionType.GLOBAL && mDirectServerConnection.isConfigured())
+            remoteConnectionInterface = mDirectServerConnection;
+        else
+            remoteConnectionInterface = mBluetoothConnection;
+
+        if (!remoteConnectionInterface.isConfigured()) {
+            if (mListener != null) mListener.onRVIDidFailToConnect(new Error("Interface not configured"));
+            return null;
+        }
+
+        return remoteConnectionInterface;
     }
 
-    private RemoteConnectionInterface selectEnabledRemoteConnection() { // TODO: This is going to be buggy if a connection is enabled but not connected; the other connections won't have connected
-        if (mDirectServerConnection.isEnabled())                        // TODO: Rewrite better 'choosing' code
-            return mDirectServerConnection;
-        if (mBluetoothConnection.isEnabled())
-            return mBluetoothConnection;
-
-        return null;
-    }
-
-    private void closeConnections() {
-        mDirectServerConnection.disconnect();
-        mBluetoothConnection.disconnect();
-    }
+//    private void closeConnections(ConnectionType type) {
+//        if (type == ConnectionType.GLOBAL || type == ConnectionType.SERVER)
+//            mDirectServerConnection.disconnect(RemoteConnection.AppInitiatedDisconnectionTrigger.get());
+//        if (type == ConnectionType.GLOBAL || type == ConnectionType.BLUETOOTH)
+//            mBluetoothConnection.disconnect(RemoteConnection.AppInitiatedDisconnectionTrigger.get());
+//    }
 
     /**
      * Sets the server url to the remote RVI node, when using a TCP/IP link to interface with a remote node.
@@ -153,7 +189,34 @@ public class RemoteConnectionManager
      * @param serverPort the server port
      */
     void setServerPort(Integer serverPort) {
-        /*RemoteConnectionManager.ourInstance.*/mDirectServerConnection.setServerPort(serverPort);
+        mDirectServerConnection.setServerPort(serverPort);
+    }
+
+    /**
+     * Sets the device address of the remote Bluetooth receiver on the remote RVI node, when using a Bluetooth link to interface with a remote node.
+     *
+     * @param deviceAddress the Bluetooth device address
+     */
+    void setBluetoothDeviceAddress(String deviceAddress) {
+        mBluetoothConnection.setDeviceAddress(deviceAddress);
+    }
+
+    /**
+     * Sets the Bluetooth service record identifier of the remote RVI node, when using a Bluetooth link to interface with a remote node.
+     *
+     * @param serviceRecord the service record identifier
+     */
+    void setBluetoothServiceRecord(UUID serviceRecord) {
+        mBluetoothConnection.setServiceRecord(serviceRecord);
+    }
+
+    /**
+     * Sets the Bluetooth channel of the remote RVI node, when using a Bluetooth link to interface with a remote node.
+     *
+     * @param channel the channel
+     */
+    void setBluetoothChannel(Integer channel) {
+        /*RemoteConnectionManager.ourInstance.*/mBluetoothConnection.setChannel(channel);
     }
 
 //    /**

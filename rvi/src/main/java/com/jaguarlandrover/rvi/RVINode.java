@@ -35,11 +35,15 @@ public class RVINode
     private HashMap<String, ServiceBundle> mAllServiceBundles       = new HashMap<>();
     private RemoteConnectionManager        mRemoteConnectionManager = new RemoteConnectionManager();
 
+//    private boolean mConnected = false;
+
     public RVINode(Context context) {
         mRemoteConnectionManager.setListener(new RemoteConnectionManagerListener()
         {
             @Override
             public void onRVIDidConnect() {
+//                mConnected = true;
+
                 mRemoteConnectionManager.sendPacket(new DlinkAuthPacket());
 
                 announceServices();
@@ -48,13 +52,17 @@ public class RVINode
             }
 
             @Override
-            public void onRVIDidFailToConnect(Error error) {
-                if (mListener != null) mListener.nodeDidFailToConnect();
+            public void onRVIDidFailToConnect(Throwable error) {
+//                mConnected = false;
+
+                if (mListener != null) mListener.nodeDidFailToConnect(error);
             }
 
             @Override
-            public void onRVIDidDisconnect() {
-                if (mListener != null) mListener.nodeDidDisconnect();
+            public void onRVIDidDisconnect(Throwable trigger) {
+//                mConnected = false;
+
+                if (mListener != null) mListener.nodeDidDisconnect(trigger);
             }
 
             @Override
@@ -79,7 +87,7 @@ public class RVINode
             }
 
             @Override
-            public void onRVIDidFailToSendPacket(Error error) {
+            public void onRVIDidFailToSendPacket(Throwable error) {
 
             }
         });
@@ -91,7 +99,7 @@ public class RVINode
      * @param listener the listener
      */
     public void setListener(RVINodeListener listener) {
-        /*ourInstance.*/mListener = listener;
+        mListener = listener;
     }
 
     /**
@@ -107,12 +115,14 @@ public class RVINode
         /**
          * Called when the local RVI node failed to connect to a remote RVI node.
          */
-        void nodeDidFailToConnect();
+        void nodeDidFailToConnect(Throwable trigger);
 
         /**
          * Called when the local RVI node disconnects from a remote RVI node.
          */
-        void nodeDidDisconnect();
+        void nodeDidDisconnect(Throwable trigger);
+
+
 
     }
 
@@ -136,23 +146,86 @@ public class RVINode
         mRemoteConnectionManager.setServerPort(serverPort);
     }
 
-    /**
-     * Tells the local RVI node to connect to the remote RVI node.
-     */
-    public void connect() {
-        // are we configured
-        // connect
-        mRemoteConnectionManager.connect();
 
+    /**
+     * Sets the device address of the remote Bluetooth receiver on the remote RVI node, when using a Bluetooth link to interface with a remote node.
+     *
+     * @param deviceAddress the Bluetooth device address
+     */
+    public void setBluetoothDeviceAddress(String deviceAddress) {
+        mRemoteConnectionManager.setBluetoothDeviceAddress(deviceAddress);
     }
 
     /**
-     * Tells the local RVI node to disconnect from the remote RVI node.
+     * Sets the Bluetooth service record identifier of the remote RVI node, when using a Bluetooth link to interface with a remote node.
+     *
+     * @param serviceRecord the service record identifier
+     */
+    public void setBluetoothServiceRecord(UUID serviceRecord) {
+        /*RemoteConnectionManager.ourInstance.*/mRemoteConnectionManager.setBluetoothServiceRecord(serviceRecord);
+    }
+
+    /**
+     * Sets the Bluetooth channel of the remote RVI node, when using a Bluetooth link to interface with a remote node.
+     *
+     * @param channel the channel
+     */
+    public void setBluetoothChannel(Integer channel) {
+        /*RemoteConnectionManager.ourInstance.*/mRemoteConnectionManager.setBluetoothChannel(channel);
+    }
+
+//    public boolean isConnected() {
+//        return mConnected;
+//    }
+
+    private void connect(RemoteConnectionManager.ConnectionType type) {
+        mRemoteConnectionManager.connect(type);//, RemoteConnection.Status.NA, RemoteConnection.Descriptor.NONE));
+    }
+
+    private void disconnect(RemoteConnectionManager.ConnectionType type) {
+        mRemoteConnectionManager.disconnect(type);//, RemoteConnection.Status.NA, RemoteConnection.Descriptor.DISCONNECTED_APP_INITIATED));
+    }
+
+    /**
+     * Tells the local RVI node to connect to the remote RVI node using a TCP/IP connection.
+     */
+    public void connectServer() {
+        this.connect(RemoteConnectionManager.ConnectionType.SERVER);
+    }
+
+    /**
+     * Tells the local RVI node to disconnect the TCP/IP connection to the remote RVI node.
+     */
+    public void disconnectServer() {
+        this.disconnect(RemoteConnectionManager.ConnectionType.SERVER);
+    }
+
+    /**
+     * Tells the local RVI node to connect to the remote RVI node using a Bluetooth connection.
+     */
+    public void connectBluetooth() {
+       connect(RemoteConnectionManager.ConnectionType.BLUETOOTH);
+    }
+
+    /**
+     * Tells the local RVI node to disconnect the Bluetooth to the remote RVI node.
+     */
+    public void disconnectBluetooth() {
+        connect(RemoteConnectionManager.ConnectionType.BLUETOOTH);
+    }
+
+    /**
+     * Tells the local RVI node to connect to the remote RVI node, letting the RVINode choose the best connection.
+     */
+    public void connect() {
+        connect(RemoteConnectionManager.ConnectionType.GLOBAL);
+    }
+
+    /**
+     * Tells the local RVI node to disconnect all connections to the remote RVI node.
      */
     public void disconnect() {
-        // disconnect
-
-        mRemoteConnectionManager.disconnect();
+        disconnect(RemoteConnectionManager.ConnectionType.GLOBAL);
     }
 
     /**

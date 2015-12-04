@@ -48,10 +48,11 @@ public class ServiceBundle
         /**
          * Callback for when a local service belonging to the bundle was invoked.
          *
+         * @param serviceBundle
          * @param serviceIdentifier the service identifier
          * @param parameters the parameters received in the invocation
          */
-        public void onServiceInvoked(String serviceIdentifier, Object parameters);
+        public void onServiceInvoked(ServiceBundle serviceBundle, String serviceIdentifier, Object parameters);
     }
 
     private ServiceBundleListener mListener;
@@ -99,6 +100,8 @@ public class ServiceBundle
     }
 
     private HashMap<String, Service> makeServices(ArrayList<String> serviceIdentifiers) {
+        if (serviceIdentifiers == null) return new HashMap<>();
+
         HashMap<String, Service> services = new HashMap<>(serviceIdentifiers.size());
         for (String serviceIdentifier : serviceIdentifiers)
             services.put(validated(serviceIdentifier), new Service(serviceIdentifier, mDomain, mBundleIdentifier, mLocalNodeIdentifier));
@@ -175,7 +178,7 @@ public class ServiceBundle
         if (pendingServiceInvocation != null) {
             if (pendingServiceInvocation.getTimeout() >= System.currentTimeMillis()) {
                 pendingServiceInvocation.setNodeIdentifier(remoteNodeIdentifier);
-                /*RVINode*/mNode.invokeService(pendingServiceInvocation);
+                mNode.invokeService(pendingServiceInvocation);
             }
 
             mPendingServiceInvocations.remove(serviceIdentifier);
@@ -204,14 +207,14 @@ public class ServiceBundle
      * @param parameters the parameters
      * @param timeout the timeout, in milliseconds. This is added to the current system time.
      */
-    public void invokeService(String serviceIdentifier, Object parameters, Long timeout) {
+    public void invokeService(String serviceIdentifier, Object parameters, Integer timeout) {
         Service service = getRemoteService(serviceIdentifier);
 
         service.setParameters(parameters);
         service.setTimeout(System.currentTimeMillis() + timeout);
 
         if (service.hasNodeIdentifier() && mNode != null) // TODO: Check the logic here
-            /*RVINode*/ mNode.invokeService(service);
+            mNode.invokeService(service);
         else
             mPendingServiceInvocations.put(serviceIdentifier, service);
     }
@@ -222,7 +225,7 @@ public class ServiceBundle
      * @param service the service
      */
     void serviceInvoked(Service service) {
-        if (mListener != null) mListener.onServiceInvoked(service.getServiceIdentifier(), service.getParameters()); // TODO: This code can pass through a service that might not exist locally
+        if (mListener != null) mListener.onServiceInvoked(this, service.getServiceIdentifier(), service.getParameters()); // TODO: This code can pass through a service that might not exist locally
     }
 
     /**

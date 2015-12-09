@@ -16,9 +16,16 @@ package com.jaguarlandrover.hvacdemo;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.AssetManager;
 import com.google.gson.internal.LinkedTreeMap;
 import com.jaguarlandrover.rvi.*;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -200,6 +207,17 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
         return true;
     }
 
+    private static KeyStore getKeyStore(String fileName, String type, String password) throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException { // type = "jks"?
+        AssetManager assetManager = applicationContext.getAssets();
+        InputStream fis = assetManager.open(fileName);
+
+        KeyStore ks = KeyStore.getInstance(type);
+        ks.load(fis, password.toCharArray());
+        fis.close();
+
+        return ks;
+    }
+
     public static void start() {
         if (getUsingProxyServer()) {
             node.setServerUrl(getProxyServerUrl());
@@ -208,6 +226,12 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
         } else {
             node.setServerUrl(getServerUrl());
             node.setServerPort(getServerPort());
+        }
+
+        try {
+            node.setKeyStores(getKeyStore("server-certs", "BKS", "password"), getKeyStore("client.p12", "PKCS12", "password"), "password");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         if (hvacServiceBundle != null)

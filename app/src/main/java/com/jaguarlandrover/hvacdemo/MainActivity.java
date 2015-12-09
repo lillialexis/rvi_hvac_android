@@ -15,6 +15,8 @@ package com.jaguarlandrover.hvacdemo;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import android.content.Intent;
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,6 +27,14 @@ import android.widget.*;
 
 import android.os.Handler;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;

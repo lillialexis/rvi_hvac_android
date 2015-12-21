@@ -255,7 +255,7 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
         invokeParams.put("sending_node", RVI_DOMAIN + "/" + RVINode.getLocalNodeIdentifier(applicationContext) + "/");
         invokeParams.put("value", value);
 
-        hvacServiceBundle.invokeService(serviceIdentifier, invokeParams, 50000);
+        hvacServiceBundle.invokeService(serviceIdentifier, invokeParams, 360000);
     }
 
     @Override

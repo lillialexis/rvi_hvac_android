@@ -36,7 +36,7 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
 {
     private final static String TAG = "HVACDemo:HVACManager";
 
-    private final static String RVI_DOMAIN      = "jlr.com";
+    private final static String RVI_DOMAIN      = "genivi.org";
     private final static String RVI_BUNDLE_NAME = "hvac";
 
     private static Context applicationContext = HVACApplication.getContext();
@@ -245,8 +245,8 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
     }
 
     public static void subscribeToHvacRvi() {
-        invokeService(HVACServiceIdentifier.SUBSCRIBE.value(),
-                "{\"node\":\"" + RVI_DOMAIN + "/" + RVINode.getLocalNodeIdentifier(applicationContext) + "/\"}");
+        invokeService(HVACServiceIdentifier.SUBSCRIBE.value(), "");
+                //"{\"node\":\"" + RVI_DOMAIN + "/" + RVINode.getLocalNodeIdentifier(applicationContext) + "/\"}");
     }
 
     public static void invokeService(String serviceIdentifier, String value) {

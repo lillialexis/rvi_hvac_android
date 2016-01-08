@@ -17,6 +17,7 @@ package com.jaguarlandrover.hvacdemo;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
+import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
 import com.jaguarlandrover.rvi.*;
 
@@ -79,17 +80,18 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
         {
             @Override
             public void nodeDidConnect() {
+                Log.d(TAG, "RVI node has successfully connected.");
                 HVACManager.subscribeToHvacRvi();
             }
 
             @Override
             public void nodeDidFailToConnect(Throwable trigger) {
-
+                Log.d(TAG, "RVI node failed to connect: " + ((trigger == null) ? "(null)" : trigger.getLocalizedMessage()));
             }
 
             @Override
             public void nodeDidDisconnect(Throwable trigger) {
-
+                Log.d(TAG, "RVI node did disconnect: " + ((trigger == null) ? "(null)" : trigger.getLocalizedMessage()));
             }
         });
     }
@@ -245,8 +247,8 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
     }
 
     public static void subscribeToHvacRvi() {
-        invokeService(HVACServiceIdentifier.SUBSCRIBE.value(), "");
-                //"{\"node\":\"" + RVI_DOMAIN + "/" + RVINode.getLocalNodeIdentifier(applicationContext) + "/\"}");
+        invokeService(HVACServiceIdentifier.SUBSCRIBE.value(),
+                "{\"node\":\"" + RVI_DOMAIN + "/" + RVINode.getLocalNodeIdentifier(applicationContext) + "/\"}");
     }
 
     public static void invokeService(String serviceIdentifier, String value) {

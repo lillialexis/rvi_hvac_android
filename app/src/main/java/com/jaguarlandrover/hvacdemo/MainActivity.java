@@ -15,6 +15,8 @@ package com.jaguarlandrover.hvacdemo;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import android.content.Intent;
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,6 +27,14 @@ import android.widget.*;
 
 import android.os.Handler;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -438,7 +448,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
 
     /* RVI SERVICE INVOCATION CALLBACK */
     @Override
-    public void onServiceInvoked(String serviceIdentifierString, Object parameters) {
+    public void onServiceInvoked(String serviceIdentifierString, Object value) {
 
         Integer id;
         View view = null;
@@ -451,7 +461,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
             case DEFROST_MAX:
             case AUTO:
 
-                Boolean newToggleButtonState = Boolean.parseBoolean((String) parameters);
+                Boolean newToggleButtonState = (Boolean) value;//Boolean.parseBoolean((String) value);
 
                 /* Special extra work for auto/max_defrost */
                 if (newToggleButtonState)
@@ -469,35 +479,35 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
             case AIR_CIRC:
             case DEFROST_FRONT:
             case DEFROST_REAR:
-                if (view != null && view.isSelected() != Boolean.parseBoolean((String) parameters))
+                if (view != null && view.isSelected() != (Boolean) value)//Boolean.parseBoolean((String) value))
                     toggleTheButton((ImageButton) view);
 
                 break;
 
             case AIRFLOW_DIRECTION:
-                setAirflowDirectionButtons(Integer.parseInt((String) parameters));
+                setAirflowDirectionButtons(((Double) value).intValue());//Integer.parseInt((String) value));
 
                 break;
 
             case FAN_SPEED:
-                if (view != null) ((SeekBar) view).setProgress(Integer.parseInt((String) parameters));
+                if (view != null) ((SeekBar) view).setProgress(((Double) value).intValue());//Integer.parseInt((String) value));
 
                 break;
 
             case SEAT_HEAT_LEFT:
             case SEAT_HEAT_RIGHT:
-                setSeatTempImageFromValue((ImageButton) view, Integer.parseInt((String) parameters));
+                setSeatTempImageFromValue((ImageButton) view, ((Double) value).intValue());//Integer.parseInt((String) value));
 
                 break;
 
             case TEMP_LEFT:
             case TEMP_RIGHT:
-                if (view != null) ((NumberPicker) view).setValue(Integer.parseInt((String) parameters));
+                if (view != null) ((NumberPicker) view).setValue(((Double) value).intValue());//Integer.parseInt((String) value));
 
                 break;
 
             case HAZARD:
-                toggleHazardButtonFlashing(Boolean.parseBoolean((String) parameters));
+                toggleHazardButtonFlashing((Boolean) value);//Boolean.parseBoolean((String) value));
 
                 break;
 

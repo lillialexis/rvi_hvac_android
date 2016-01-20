@@ -71,7 +71,7 @@ class ServerConnection implements RemoteConnectionInterface
 
     @Override
     public void disconnect(Throwable trigger) { // TODO: If we get exceptions on our sending/listening tasks, we disconnect, but maybe we don't need to? E.g., javax.net.ssl.SSLException: Read error: ssl=0x57f2cca0: I/O error during system call, Connection timed out
-                                                // TODO, cont'd: 01-08 09:53:32.740 9743-9761/com.jaguarlandrover.hvacdemo W/System.err:     at com.android.org.conscrypt.NativeCrypto.SSL_read(Native Method)
+                                                // TODO, cont'd: 01-08 09:53:32.740 9743-9761/com.jaguarlandrover.hvacdemo W/System.err: at com.android.org.conscrypt.NativeCrypto.SSL_read(Native Method)
         try {
             if (mSocket != null)
                 mSocket.close(); // TODO: Put on background thread (and probably do in BluetoothConnection too)
@@ -238,7 +238,7 @@ class ServerConnection implements RemoteConnectionInterface
                 return e;
             }
 
-            return null;
+            return new Throwable("RVI node has disconnected.");
         }
 
         @Override

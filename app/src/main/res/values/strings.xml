@@ -15,4 +15,5 @@
     <string name="use_proxy_server_not_switch_text">Don\'t Use Proxy Server</string>
     <string name="hvac_left">LEFT CLIMATE</string>
     <string name="hvac_right">RIGHT CLIMATE</string>
+    <string name="reconnect">Reconnect</string>
 </resources>

@@ -70,6 +70,10 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
 
     public interface HVACManagerListener
     {
+        void onNodeConnected();
+
+        void onNodeDisconnected();
+
         void onServiceInvoked(String serviceIdentifier, Object parameters);
     }
 
@@ -81,17 +85,20 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
             @Override
             public void nodeDidConnect() {
                 Log.d(TAG, "RVI node has successfully connected.");
+                mListener.onNodeConnected();
                 HVACManager.subscribeToHvacRvi();
             }
 
             @Override
             public void nodeDidFailToConnect(Throwable trigger) {
                 Log.d(TAG, "RVI node failed to connect: " + ((trigger == null) ? "(null)" : trigger.getLocalizedMessage()));
+                mListener.onNodeDisconnected();
             }
 
             @Override
             public void nodeDidDisconnect(Throwable trigger) {
                 Log.d(TAG, "RVI node did disconnect: " + ((trigger == null) ? "(null)" : trigger.getLocalizedMessage()));
+                mListener.onNodeDisconnected();
             }
         });
     }
@@ -243,6 +250,11 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
         hvacServiceBundle.setListener(ourInstance);
 
         node.addBundle(hvacServiceBundle);
+        node.connect();
+    }
+
+    public static void restart() {
+        node.disconnect();
         node.connect();
     }
 

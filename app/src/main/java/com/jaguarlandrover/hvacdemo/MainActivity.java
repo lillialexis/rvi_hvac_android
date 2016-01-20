@@ -17,6 +17,7 @@ package com.jaguarlandrover.hvacdemo;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -69,6 +70,8 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
 
     private ImageButton mHazardButton;
     private SeekBar     mFanSpeedSeekBar;
+
+    private Menu mMenu;
 
     private SeekBar.OnSeekBarChangeListener mFanSpeedSeekBarListener;
 
@@ -518,6 +521,17 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
         }
     }
 
+    @Override
+    public void onNodeConnected() {
+        mMenu.getItem(0).setIcon(ContextCompat.getDrawable(this, R.drawable.connected_car));
+        Toast.makeText(MainActivity.this, "Vehicle connected", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onNodeDisconnected() {
+        mMenu.getItem(0).setIcon(ContextCompat.getDrawable(this, R.drawable.disconnected_car));
+        Toast.makeText(MainActivity.this, "Vehicle disconnected", Toast.LENGTH_SHORT).show();
+    }
 
     String getServiceIdentifiersFromViewId(Integer uiControlId) {
         return mViewIdsToServiceIds.get(uiControlId);
@@ -531,6 +545,8 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        this.mMenu = menu;
+
         return true;
     }
 
@@ -547,6 +563,8 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
             startActivity(intent);
 
             return true;
+        } else if (id == R.id.action_reconnect) {
+            HVACManager.restart();
         }
 
         return super.onOptionsItemSelected(item);

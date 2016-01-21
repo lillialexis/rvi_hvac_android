@@ -69,19 +69,14 @@ class ServerConnection implements RemoteConnectionInterface
         connectSocket();
     }
 
+    // TODO: If we get exceptions on our sending/listening tasks, we disconnect, but maybe we don't need to? E.g., javax.net.ssl.SSLException: Read error: ssl=0x57f2cca0: I/O error during system call, Connection timed out
+    // TODO, cont'd: 01-08 09:53:32.740 9743-9761/com.jaguarlandrover.hvacdemo W/System.err: at com.android.org.conscrypt.NativeCrypto.SSL_read(Native Method)
     @Override
-    public void disconnect(Throwable trigger) { // TODO: If we get exceptions on our sending/listening tasks, we disconnect, but maybe we don't need to? E.g., javax.net.ssl.SSLException: Read error: ssl=0x57f2cca0: I/O error during system call, Connection timed out
-                                                // TODO, cont'd: 01-08 09:53:32.740 9743-9761/com.jaguarlandrover.hvacdemo W/System.err: at com.android.org.conscrypt.NativeCrypto.SSL_read(Native Method)
-        try {
-            if (mSocket != null)
-                mSocket.close(); // TODO: Put on background thread (and probably do in BluetoothConnection too)
+    public void disconnect(Throwable trigger) {
+        Log.d(TAG, "Disconnecting the socket" + ((trigger == null) ? "" : ": " + trigger.getLocalizedMessage()));
 
-            mSocket = null;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        if (mRemoteConnectionListener != null && trigger != null) mRemoteConnectionListener.onRemoteConnectionDidDisconnect(trigger);
+        DisconnectTask disconnectTask = new DisconnectTask(trigger);
+        disconnectTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Override
@@ -277,7 +272,7 @@ class ServerConnection implements RemoteConnectionInterface
 
                 wr.writeBytes(data);
                 wr.flush();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
 
                 return e;
@@ -295,6 +290,34 @@ class ServerConnection implements RemoteConnectionInterface
 
                 disconnect(result);
             }
+        }
+    }
+
+    private class DisconnectTask extends AsyncTask<Void, Void, Void>
+    {
+        Throwable mTrigger;
+        DisconnectTask(Throwable trigger) {
+            mTrigger = trigger;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            Log.d(TAG, "Closing socket...");
+            try {
+                if (mSocket != null)
+                    mSocket.close(); // TODO: Put on background thread (and probably do in BluetoothConnection too)
+
+                mSocket = null;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void param) {
+            if (mRemoteConnectionListener != null && mTrigger != null) mRemoteConnectionListener.onRemoteConnectionDidDisconnect(mTrigger);
         }
     }
 

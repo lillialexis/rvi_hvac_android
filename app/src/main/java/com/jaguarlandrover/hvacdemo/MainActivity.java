@@ -464,7 +464,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
             case DEFROST_MAX:
             case AUTO:
 
-                Boolean newToggleButtonState = (Boolean) value;//Boolean.parseBoolean((String) value);
+                Boolean newToggleButtonState = Boolean.parseBoolean((String) value);//(Boolean) value;
 
                 /* Special extra work for auto/max_defrost */
                 if (newToggleButtonState)
@@ -482,35 +482,35 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
             case AIR_CIRC:
             case DEFROST_FRONT:
             case DEFROST_REAR:
-                if (view != null && view.isSelected() != (Boolean) value)//Boolean.parseBoolean((String) value))
+                if (view != null && view.isSelected() != Boolean.parseBoolean((String) value))//(Boolean) value)
                     toggleTheButton((ImageButton) view);
 
                 break;
 
             case AIRFLOW_DIRECTION:
-                setAirflowDirectionButtons(((Double) value).intValue());//Integer.parseInt((String) value));
+                setAirflowDirectionButtons(Integer.parseInt((String) value));//((Double) value).intValue());
 
                 break;
 
             case FAN_SPEED:
-                if (view != null) ((SeekBar) view).setProgress(((Double) value).intValue());//Integer.parseInt((String) value));
+                if (view != null) ((SeekBar) view).setProgress(Integer.parseInt((String) value));//((Double) value).intValue());
 
                 break;
 
             case SEAT_HEAT_LEFT:
             case SEAT_HEAT_RIGHT:
-                setSeatTempImageFromValue((ImageButton) view, ((Double) value).intValue());//Integer.parseInt((String) value));
+                setSeatTempImageFromValue((ImageButton) view, Integer.parseInt((String) value));//((Double) value).intValue());
 
                 break;
 
             case TEMP_LEFT:
             case TEMP_RIGHT:
-                if (view != null) ((NumberPicker) view).setValue(((Double) value).intValue());//Integer.parseInt((String) value));
+                if (view != null) ((NumberPicker) view).setValue(Integer.parseInt((String) value));//((Double) value).intValue());
 
                 break;
 
             case HAZARD:
-                toggleHazardButtonFlashing((Boolean) value);//Boolean.parseBoolean((String) value));
+                toggleHazardButtonFlashing(Boolean.parseBoolean((String) value));//(Boolean) value);
 
                 break;
 

@@ -14,18 +14,21 @@ package com.jaguarlandrover.rvi;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-import android.util.Log;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * The type Dlink "service announce" request packet. This request is used to announce RVI node services.
  */
 class DlinkServiceAnnouncePacket extends DlinkPacket
 {
-    private final static String TAG = "RVI:DlinkServi...Packet";
+    private final static String TAG = "RVI/DlinkSrvcAnncPacket";
+
+    enum Status {
+        AVAILABLE,
+        UNAVAILABLE
+    }
 
     /**
      * The status.
@@ -39,19 +42,6 @@ class DlinkServiceAnnouncePacket extends DlinkPacket
     @SerializedName("svcs")
     private ArrayList<String> mServices;
 
-//    /**
-//     * Helper method that takes a list of @VehicleServices, and returns a list of fully-qualified local service names
-//     * @param services a list of @VehicleServices
-//     * @return a list of fully-qualified local service names
-//     */
-//    private ArrayList<String> getServiceFQNames(ArrayList<Service> services) {
-//        ArrayList<String> newList = new ArrayList<>(services.size());
-//        for (Service service : services)
-//            newList.add(service.getFullyQualifiedLocalServiceName());
-//
-//        return newList;
-//    }
-
     /**
      * Instantiates a new Dlink service announce packet.
      */
@@ -63,11 +53,11 @@ class DlinkServiceAnnouncePacket extends DlinkPacket
      *
      * @param services The array of services to announce
      */
-    DlinkServiceAnnouncePacket(ArrayList<String> services) {
+    DlinkServiceAnnouncePacket(ArrayList<String> services, Status status) {
         super(Command.SERVICE_ANNOUNCE);
 
-        mStatus = "av"; // TODO: Confirm what this is/where is comes from
-        mServices = services;//getServiceFQNames(services);
+        mStatus = status == Status.AVAILABLE ? "av" : "un";
+        mServices = services;
     }
 
     /**
@@ -79,11 +69,9 @@ class DlinkServiceAnnouncePacket extends DlinkPacket
         return mServices;
     }
 
-//    public DlinkServiceAnnouncePacket(HashMap jsonHash) {
-//        super(Command.SERVICE_ANNOUNCE, jsonHash);
-//
-//        mStatus   = (String) jsonHash.get("stat");
-//        mServices = (ArrayList<String>) jsonHash.get("svcs");
-//    }
+    Status getStatus() {
+        return mStatus.equals("un") ? Status.UNAVAILABLE : Status.AVAILABLE;
+    }
 
+    String getType() { return "SA"; }
 }

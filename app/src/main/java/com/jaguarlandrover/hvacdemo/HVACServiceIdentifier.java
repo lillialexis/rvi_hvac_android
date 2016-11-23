@@ -33,10 +33,12 @@ public enum HVACServiceIdentifier
     UNSUBSCRIBE("unsubscribe"),
     NONE("none");
 
+    private final static String HVAC_BUNDLE_IDENTIFIER = "hvac";
+
     private final String mIdentifier;
 
     HVACServiceIdentifier(String identifier) {
-        mIdentifier = identifier;
+        mIdentifier = HVAC_BUNDLE_IDENTIFIER + "/" + identifier;
     }
 
     public final String value() {
@@ -45,21 +47,21 @@ public enum HVACServiceIdentifier
 
     public static HVACServiceIdentifier get(String identifier) {
         switch (identifier) {
-            case "hazard":            return HAZARD;
-            case "temp_left":         return TEMP_LEFT;
-            case "temp_right":        return TEMP_RIGHT;
-            case "seat_heat_left":    return SEAT_HEAT_LEFT;
-            case "seat_heat_right":   return SEAT_HEAT_RIGHT;
-            case "fan_speed":         return FAN_SPEED;
-            case "airflow_direction": return AIRFLOW_DIRECTION;
-            case "defrost_rear":      return DEFROST_REAR;
-            case "defrost_front":     return DEFROST_FRONT;
-            case "defrost_max":       return DEFROST_MAX;
-            case "air_circ":          return AIR_CIRC;
-            case "fan":               return AC;
-            case "control_auto":      return AUTO;
-            case "subscribe":         return SUBSCRIBE;
-            case "unsubscribe":       return UNSUBSCRIBE;
+            case HVAC_BUNDLE_IDENTIFIER + "/hazard":            return HAZARD;
+            case HVAC_BUNDLE_IDENTIFIER + "/temp_left":         return TEMP_LEFT;
+            case HVAC_BUNDLE_IDENTIFIER + "/temp_right":        return TEMP_RIGHT;
+            case HVAC_BUNDLE_IDENTIFIER + "/seat_heat_left":    return SEAT_HEAT_LEFT;
+            case HVAC_BUNDLE_IDENTIFIER + "/seat_heat_right":   return SEAT_HEAT_RIGHT;
+            case HVAC_BUNDLE_IDENTIFIER + "/fan_speed":         return FAN_SPEED;
+            case HVAC_BUNDLE_IDENTIFIER + "/airflow_direction": return AIRFLOW_DIRECTION;
+            case HVAC_BUNDLE_IDENTIFIER + "/defrost_rear":      return DEFROST_REAR;
+            case HVAC_BUNDLE_IDENTIFIER + "/defrost_front":     return DEFROST_FRONT;
+            case HVAC_BUNDLE_IDENTIFIER + "/defrost_max":       return DEFROST_MAX;
+            case HVAC_BUNDLE_IDENTIFIER + "/air_circ":          return AIR_CIRC;
+            case HVAC_BUNDLE_IDENTIFIER + "/fan":               return AC;
+            case HVAC_BUNDLE_IDENTIFIER + "/control_auto":      return AUTO;
+            case HVAC_BUNDLE_IDENTIFIER + "/subscribe":         return SUBSCRIBE;
+            case HVAC_BUNDLE_IDENTIFIER + "/unsubscribe":       return UNSUBSCRIBE;
         }
 
         return NONE;

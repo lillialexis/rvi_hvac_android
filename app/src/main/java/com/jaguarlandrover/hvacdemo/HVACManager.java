@@ -34,7 +34,6 @@ public class HVACManager
     private final static String TAG = "HVACDemo:HVACManager";
 
     private final static String RVI_DOMAIN             = "genivi.org";
-    private final static String HVAC_BUNDLE_IDENTIFIER = "hvac";
 
     private final static String X509_PRINCIPAL_PATTERN = "CN=%s, O=Genivi, OU=%s";
     private final static String X509_ORG_UNIT          = "Android Unlock App";
@@ -55,19 +54,19 @@ public class HVACManager
 
     private final static ArrayList<String> localServiceIdentifiers =
             new ArrayList<>(Arrays.asList(
-                    HVAC_BUNDLE_IDENTIFIER + "/" + HVACServiceIdentifier.HAZARD.value(),
-                    HVAC_BUNDLE_IDENTIFIER + "/" + HVACServiceIdentifier.TEMP_LEFT.value(),
-                    HVAC_BUNDLE_IDENTIFIER + "/" + HVACServiceIdentifier.TEMP_RIGHT.value(),
-                    HVAC_BUNDLE_IDENTIFIER + "/" + HVACServiceIdentifier.SEAT_HEAT_LEFT.value(),
-                    HVAC_BUNDLE_IDENTIFIER + "/" + HVACServiceIdentifier.SEAT_HEAT_RIGHT.value(),
-                    HVAC_BUNDLE_IDENTIFIER + "/" + HVACServiceIdentifier.FAN_SPEED.value(),
-                    HVAC_BUNDLE_IDENTIFIER + "/" + HVACServiceIdentifier.AIRFLOW_DIRECTION.value(),
-                    HVAC_BUNDLE_IDENTIFIER + "/" + HVACServiceIdentifier.DEFROST_REAR.value(),
-                    HVAC_BUNDLE_IDENTIFIER + "/" + HVACServiceIdentifier.DEFROST_FRONT.value(),
-                    HVAC_BUNDLE_IDENTIFIER + "/" + HVACServiceIdentifier.DEFROST_MAX.value(),
-                    HVAC_BUNDLE_IDENTIFIER + "/" + HVACServiceIdentifier.AIR_CIRC.value(),
-                    HVAC_BUNDLE_IDENTIFIER + "/" + HVACServiceIdentifier.AC.value(),
-                    HVAC_BUNDLE_IDENTIFIER + "/" + HVACServiceIdentifier.AUTO.value()//,
+                    HVACServiceIdentifier.HAZARD.value(),
+                    HVACServiceIdentifier.TEMP_LEFT.value(),
+                    HVACServiceIdentifier.TEMP_RIGHT.value(),
+                    HVACServiceIdentifier.SEAT_HEAT_LEFT.value(),
+                    HVACServiceIdentifier.SEAT_HEAT_RIGHT.value(),
+                    HVACServiceIdentifier.FAN_SPEED.value(),
+                    HVACServiceIdentifier.AIRFLOW_DIRECTION.value(),
+                    HVACServiceIdentifier.DEFROST_REAR.value(),
+                    HVACServiceIdentifier.DEFROST_FRONT.value(),
+                    HVACServiceIdentifier.DEFROST_MAX.value(),
+                    HVACServiceIdentifier.AIR_CIRC.value(),
+                    HVACServiceIdentifier.AC.value(),
+                    HVACServiceIdentifier.AUTO.value()//,
                     //HVACServiceIdentifier.SUBSCRIBE.value(),
                     //HVACServiceIdentifier.UNSUBSCRIBE.value()
             ));
@@ -351,7 +350,7 @@ public class HVACManager
         invokeParams.put("sending_node", RVI_DOMAIN + "/" + RVILocalNode.getLocalNodeIdentifier(applicationContext) + "/");
         invokeParams.put("value", value);
 
-        node.invokeService(HVAC_BUNDLE_IDENTIFIER + "/" + serviceIdentifier, invokeParams, 360000);
+        node.invokeService(serviceIdentifier, invokeParams, 360000);
     }
 
     public static HVACManagerListener getListener() {

@@ -16,36 +16,41 @@ package com.jaguarlandrover.hvacdemo;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.AssetManager;
 import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
+import com.jaguarlandrover.pki.PKICertificateResponse;
+import com.jaguarlandrover.pki.PKICertificateSigningRequestRequest;
+import com.jaguarlandrover.pki.PKIManager;
+import com.jaguarlandrover.pki.PKIServerResponse;
 import com.jaguarlandrover.rvi.*;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 
 import static android.content.Context.MODE_PRIVATE;
 
-public class HVACManager implements ServiceBundle.ServiceBundleListener
+public class HVACManager
 {
     private final static String TAG = "HVACDemo:HVACManager";
 
-    private final static String RVI_DOMAIN      = "genivi.org";
-    private final static String RVI_BUNDLE_NAME = "hvac";
+    private final static String RVI_DOMAIN             = "genivi.org";
+
+    private final static String X509_PRINCIPAL_PATTERN = "CN=%s, O=Genivi, OU=%s";
+    private final static String X509_ORG_UNIT          = "Android Unlock App";
+
+    private final static String PROVISIONING_SERVER_BASE_URL = "http://38.129.64.40:8000";
+    private final static String PROVISIONING_SERVER_CSR_URL  = "/csr_veh";
+
+    private static ArrayList<String> SIGNED_CREDENTIALS =
+            new ArrayList<>(Arrays.asList(
+                    "eyJhbGciOiAiUlMyNTYiLCJ0eXAiOiAiSldUIn0=.eyJpc3MiOiAiR0VOSVZJIiwgInJpZ2h0X3RvX2ludm9rZSI6IFsiZ2VuaXZpLm9yZy92ZWhpY2xlLysvaHZhYy8rIl0sICJyaWdodF90b19yZWNlaXZlIjogWyJnZW5pdmkub3JnL2FuZHJvaWQvKy9odmFjLysiXSwgInZhbGlkaXR5IjogeyAic3RhcnQiOiAxNDUyNDcwNDAwLCAic3RvcCI6IDE0ODQwOTI4MDB9LCAiZGV2aWNlX2NlcnQiOiAiTUlJRVpEQ0NBa3dDQmdGWWpvZWRVakFOQmdrcWhraUc5dzBCQVFzRkFEQ0JrekVMTUFrR0ExVUVCaE1DVlZNeER6QU5CZ05WQkFnTUJrOXlaV2R2YmpFUk1BOEdBMVVFQnd3SVVHOXlkR3hoYm1ReER6QU5CZ05WQkFvTUJrZEZUa2xXU1RFTU1Bb0dBMVVFQ3d3RFVsWkpNUmN3RlFZRFZRUUREQTR4T1RJdU1UWTRMakUyTGpJME5URW9NQ1lHQ1NxR1NJYjNEUUVKQVJZWmNHUjRiM04wWXk1aGJtUnliMmxrUUdkdFlXbHNMbU52YlRBZUZ3MHhOakV4TWpNd01ERXpNakphRncweE56RXhNak13TURFek1qSmFNRmN4SnpBbEJnTlZCQU1NSG1GdVpISnZhV1F2VEUxSmMwUk5iVk5SVDJGcWVGZGhVbWh1UlhCMVFURVBNQTBHQTFVRUNnd0dSMlZ1YVhacE1Sc3dHUVlEVlFRTERCSkJibVJ5YjJsa0lGVnViRzlqYXlCQmNIQXdnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFERlJFY0kyUEpGYXJGLzRwYnNvd3NrWVB5L0NFWDBZTHRFVHE0QW5XTzM3K05PTU1YTlJYUW5uV25vaGRZaERGZ3dFU0tOenVPeFU3QjNQNFZhY1Nub2I5U3dCbitRUE9PTHVDcGI1dCs1NmE2THlIWHNFT1JyRjNjSlFZczU4SzdpQ3dMZ3c5OXpjRFpzSFgzVWJaUXI2RHdLTUQvbE9Jb1JLRW94UTZqSCtMcXRHTkdIOWxrZXpBd2paYWlteVMwTXRNUit3ZG5nQktBVXJtcnEwYzFYSFpwK1hXSXpxb0hzT0ZjejQvVlJaM25nczNPenE0VzR1MkNTa25nekNEOW9DdHlCK1JLL20rU1NxbFlZSFNrMXFRaW92OWYzQ3laRkFUZDVqVEhyZHFYdmtIUVMvOEsxUEdOVkdnMGxZdlhxaTJqVjFTNXZsRVhkaXlWODhRaUJBZ01CQUFFd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dJQkFGWVF4V0dLTmZQNFBYNUM2UDF6R3hkMTBGQWN3SmtTYWhzaGw5SytDcS9iMFhtTE9SbCt1OFlsVWcyWWwvUGl2dEtxZ3c0ZWhRZlo5OUYyZ2lNWmltejVmejNxT3IyTzJXckswSHh3V2FYSE9ldnYzZEE1cWtUUlBMZ1JpYkJGQmFCRE9PWFlhbHc4bzZUT0ZPWXR3NStkblFRNm9Qa3QwYlVyMElGb1FUeXJOMXVmUlkwTlNFdDJ0UEMrS2lNT2J0cSthUXYydC9oNWxPSm5uWUN4cklYay9GZ0c4a1VOTEdzNkdlQ3ZvYlhnRlVaUzluQ1JEQUpYeFBiWWRNbXdVeVB0NVl1VjFza25hdDhsUHd5K2RSeVRnb012SC9YQjRUQ1pFUjZZakZvb3NOTnJjYlNXMFhXZHFwSFdrRU04ZEtabHdMeHhyY1lnS2hwMVZpQ3VVTi9qSVBDQk83aEZUWTlOM1FXcUt3Z0ZteHhPMC81RWJSejVJK3lJeVNaRWZxcFBNL2FYRTNiTXBPaWFRQlpvSGMxRGNvcE9uc25sTmxDdmJLVWJENHlJSUIrWDJvcEM2VHBGTXNIcGl5QnJYV3J5YjBzTEFNT3NtdXhDalhTNGpma29YZ3hERjNYMWFYR3pWR0I4ZkZEdHU4V2FRUkRDVXNZc0I3ODBxeUdlZldXaHNnNHlkQ0pmczFkSHVDaTZTOWl1VXdzMXdna0t3azZma2VNWDFoZkJoaDJCVy9yL045ZDhLN3E4TE1JMGh1djVEMC9FRHMrR0hBNXozY1pjS1VKN3BCTFA2WS85RVdPZmVWMjB4cCsyN0k3b2E3UnJHalBaUitONjNNT3lsQ1hCZFhucmtnZXphSUVsNVJvVzlKSjB4SkRBY3l5R085c2QvdVdyQVk4VCIsICJjcmVhdGVfdGltZXN0YW1wIjogMTQ3NjEzOTg3OCwgImlkIjogImY5MTIzOGJjLTUwZDQtNDEwZC1hOTIzLWEwOGUyOTZjNGVhMyJ9.PIwnFP8Kx-u3cHA4CrHxISH0lCr_b0Neq1Om06IquZKjw9AwSKGN8AusKJXOBTAWny-61QOkQrUQ_qXIInkhIRNl6A1sqTRH4i6M_kfn3BiLS8f_xlGxVjJp_lGeQdgfapgNl2cESRc7YuJzeVEymhc3vu3zzfuuOXc539ywSVaO6nt4dhwNcRHyT-aaredoRfw7JDCf8m8SYvmQOb35kxVY3VjleUG0SaoMG-x4MwabABMZjX56CijiWtWbORw83aDAOqU78M8xmOqvFQycBZI5ZQcOlTdOosW2P0kro2vCHdvFDxsHS0HwMKkBtQqk_K2kGcme47a_nuaHiFX-WzQZBZWwi_TKlZKnCDAACxX1ZZ0aE4CTysalh4hdLDApS3tMicrRNXi1f-Nt9HUgvKfZPovN0-4o8wuUQ_2qp7hRoU-zgGeK9MGfQ5bHhnkJam-M0kgBkzgnabZoaeikdMmzur4Lbo_xYbqQMTRfgQK3mzQa73sAns0cCj3AOEXOG-Ny14In4_dQQM7F1zpI7UHGYrLU9PvvOTK49wU_MJKwhXmGwEGajJWlti3_qUzx24T7CbQD1lGy-y7QpiU3qus5pUFVQgWqPDGAB5N7dZEJ28pE_RjyUuYN9YidxRsglwxlzCc0pTNf01Td6s433sN34jGQ3q1u1BTv7f3235M="
+            ));
 
     private static Context applicationContext = HVACApplication.getContext();
-    private static ServiceBundle hvacServiceBundle;
 
     private static HVACManager ourInstance = new HVACManager();
 
-    private static RVINode node;
+    private static RVIRemoteNode node;
 
     private final static ArrayList<String> localServiceIdentifiers =
             new ArrayList<>(Arrays.asList(
@@ -66,9 +71,12 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
                     //HVACServiceIdentifier.UNSUBSCRIBE.value()
             ));
 
+    private static boolean readyToConnect = false;
+    private static boolean pkiComplete = false;
+
     private HVACManagerListener mListener;
 
-    public interface HVACManagerListener
+    interface HVACManagerListener
     {
         void onNodeConnected();
 
@@ -78,27 +86,57 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
     }
 
     private HVACManager() {
-        node = new RVINode(applicationContext);
+        node = new RVIRemoteNode(applicationContext);
 
-        node.setListener(new RVINode.RVINodeListener()
+        node.setListener(new RVIRemoteNodeListener()
         {
             @Override
-            public void nodeDidConnect() {
+            public void nodeDidConnect(RVIRemoteNode node) {
                 Log.d(TAG, "RVI node has successfully connected.");
-                mListener.onNodeConnected();
+                if(mListener != null) mListener.onNodeConnected();
                 HVACManager.subscribeToHvacRvi();
             }
 
             @Override
-            public void nodeDidFailToConnect(Throwable trigger) {
-                Log.d(TAG, "RVI node failed to connect: " + ((trigger == null) ? "(null)" : trigger.getLocalizedMessage()));
-                mListener.onNodeDisconnected();
+            public void nodeDidFailToConnect(RVIRemoteNode node, Throwable reason) {
+                Log.d(TAG, "RVI node failed to connect: " + ((reason == null) ? "(null)" : reason.getLocalizedMessage()));
+                if(mListener != null) mListener.onNodeDisconnected();
             }
 
             @Override
-            public void nodeDidDisconnect(Throwable trigger) {
-                Log.d(TAG, "RVI node did disconnect: " + ((trigger == null) ? "(null)" : trigger.getLocalizedMessage()));
-                mListener.onNodeDisconnected();
+            public void nodeDidDisconnect(RVIRemoteNode node, Throwable reason) {
+                Log.d(TAG, "RVI node did disconnect: " + ((reason == null) ? "(null)" : reason.getLocalizedMessage()));
+                if(mListener != null) mListener.onNodeDisconnected();
+            }
+
+            @Override
+            public void nodeSendServiceInvocationSucceeded(RVIRemoteNode node, String serviceIdentifier) {
+
+            }
+
+            @Override
+            public void nodeSendServiceInvocationFailed(RVIRemoteNode node, String serviceIdentifier, Throwable reason) {
+
+            }
+
+            @Override
+            public void nodeReceiveServiceInvocationSucceeded(RVIRemoteNode node, String serviceIdentifier, Object parameters) {
+                if (mListener != null) mListener.onServiceInvoked(serviceIdentifier, ((LinkedTreeMap) parameters).get("value"));
+            }
+
+            @Override
+            public void nodeReceiveServiceInvocationFailed(RVIRemoteNode node, String serviceIdentifier, Throwable reason) {
+
+            }
+
+            @Override
+            public void nodeDidAuthorizeLocalServices(RVIRemoteNode node, Set<String> serviceIdentifiers) {
+
+            }
+
+            @Override
+            public void nodeDidAuthorizeRemoteServices(RVIRemoteNode node, Set<String> serviceIdentifiers) {
+
             }
         });
     }
@@ -140,71 +178,131 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
         editor.apply();
     }
 
-//    public static String getVin() {
-//        return getStringFromPrefs(applicationContext.getResources().getString(R.string.vehicle_vin_prefs_string), "");
-//    }
-//
-//    public static void setVin(String vin) {
-//        putStringInPrefs(applicationContext.getString(R.string.vehicle_vin_prefs_string), vin);
-//
-//        if (hvacServiceBundle != null)
-//            hvacServiceBundle.setRemotePrefix(vin);
-//    }
-
-    public static String getServerUrl() {
+    static String getServerUrl() {
         return getStringFromPrefs(applicationContext.getResources().getString(R.string.server_url_prefs_string), "");
     }
 
-    public static void setServerUrl(String serverUrl) {
+    static void setServerUrl(String serverUrl) {
         putStringInPrefs(applicationContext.getString(R.string.server_url_prefs_string), serverUrl);
-
-        //RemoteConnectionManager.setServerUrl(serverUrl);
     }
 
-    public static Integer getServerPort() {
+    static Integer getServerPort() {
         return getIntFromPrefs(applicationContext.getResources().getString(R.string.server_port_prefs_string), 0);
     }
 
-    public static void setServerPort(Integer serverPort) {
+    static void setServerPort(Integer serverPort) {
         putIntInPrefs(applicationContext.getString(R.string.server_port_prefs_string), serverPort);
-
-        //RemoteConnectionManager.setServerPort(serverPort);
     }
 
-    public static String getProxyServerUrl() {
+    static String getProxyServerUrl() {
         return getStringFromPrefs(applicationContext.getResources()
                                                     .getString(R.string.proxy_server_url_prefs_string), "");
     }
 
-    public static void setProxyServerUrl(String proxyUrl) {
+    static void setProxyServerUrl(String proxyUrl) {
         putStringInPrefs(applicationContext.getString(R.string.proxy_server_url_prefs_string), proxyUrl);
-
-        //RemoteConnectionManager.setProxyServerUrl(proxyUrl);
     }
 
-    public static Integer getProxyServerPort() {
+    static Integer getProxyServerPort() {
         return getIntFromPrefs(applicationContext.getResources().getString(R.string.proxy_server_port_prefs_string), 0);
     }
 
-    public static void setProxyServerPort(Integer proxyPort) {
+    static void setProxyServerPort(Integer proxyPort) {
         putIntInPrefs(applicationContext.getString(R.string.proxy_server_port_prefs_string), proxyPort);
-
-        //RemoteConnectionManager.setProxyServerPort(proxyPort);
     }
 
-    public static boolean getUsingProxyServer() {
+    static boolean getUsingProxyServer() {
         return getBoolFromPrefs(applicationContext.getResources()
                                                   .getString(R.string.using_proxy_server_prefs_string), false);
     }
 
-    public static void setUsingProxyServer(boolean usingProxyServer) {
+    static void setUsingProxyServer(boolean usingProxyServer) {
         putBoolInPrefs(applicationContext.getString(R.string.using_proxy_server_prefs_string), usingProxyServer);
-
-        //RemoteConnectionManager.setUsingProxyServer(usingProxyServer);
     }
 
-    public static boolean isRviConfigured() {
-        //if (getVin()        == null || getVin().isEmpty())       return false;
+    static void initializeRvi() {
+        RVILocalNode.start(HVACApplication.getContext(), RVI_DOMAIN);
+
+        if (PKIManager.hasValidDeviceCert(HVACApplication.getContext()) && PKIManager.hasValidServerCert(HVACApplication.getContext())) {
+            setUpRviAndConnectToServer(PKIManager.getServerKeyStore(HVACApplication.getContext()), PKIManager.getDeviceKeyStore(HVACApplication.getContext()), null, null);
+        } else {
+            generateKeysAndCerts();
+        }
+    }
+
+    private static void generateKeysAndCerts() {
+        Log.d(TAG, "Certs not found. Generating keys and certs...");
+
+        Calendar start = Calendar.getInstance();
+        Calendar end = Calendar.getInstance();
+        end.add(Calendar.YEAR, 1);
+
+        PKIManager.generateKeyPairAndCertificateSigningRequest(HVACApplication.getContext(), new PKIManager.CertificateSigningRequestGeneratorListener() {
+            @Override
+            public void generateCertificateSigningRequestSucceeded(String certificateSigningRequest) {
+                Log.d(TAG, "Certificate signing request generated. Sending to server...");
+
+                sendCertificateSigningRequest(certificateSigningRequest);
+            }
+
+            @Override
+            public void generateCertificateSigningRequestFailed(Throwable reason) {
+                Log.e(TAG, reason.getLocalizedMessage());
+            }
+
+        }, start.getTime(), end.getTime(), X509_PRINCIPAL_PATTERN, RVILocalNode.getLocalNodeIdentifier(HVACApplication.getContext()), X509_ORG_UNIT);
+    }
+
+    private static void sendCertificateSigningRequest(String certificateSigningRequest) {
+        PKICertificateSigningRequestRequest request = new PKICertificateSigningRequestRequest(certificateSigningRequest);
+
+        PKIManager.sendCertificateSigningRequest(HVACApplication.getContext(), new PKIManager.ProvisioningServerListener() {
+            @Override
+            public void managerDidReceiveResponseFromServer(PKIServerResponse response) {
+                if (response.getStatus() == PKIServerResponse.Status.VERIFICATION_NEEDED) {
+                    Log.e(TAG, "Problem: verification needed...");
+
+                } else if (response.getStatus() == PKIServerResponse.Status.CERTIFICATE_RESPONSE) {
+                    Log.d(TAG, "Certificate signing request received and server sent back certs and creds.");
+
+                    PKICertificateResponse certificateResponse = (PKICertificateResponse) response;
+
+                    setUpRviAndConnectToServer(certificateResponse.getServerKeyStore(), certificateResponse.getDeviceKeyStore(), null, certificateResponse.getJwtCredentials());
+
+                } else if (response.getStatus() == PKIServerResponse.Status.ERROR) {
+                    Log.e(TAG, "Error from server");
+
+                }
+            }
+
+        }, PROVISIONING_SERVER_BASE_URL, PROVISIONING_SERVER_CSR_URL, request);
+
+    }
+
+    private static void setUpRviAndConnectToServer(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceCertificatePassword, ArrayList<String> newCredentials) {
+
+        try {
+            RVILocalNode.setServerKeyStore(serverCertificateKeyStore);
+            RVILocalNode.setDeviceKeyStore(deviceCertificateKeyStore);
+            RVILocalNode.setDeviceKeyStorePassword(deviceCertificatePassword);
+
+            if (newCredentials != null)
+                for (String credentials : newCredentials)
+                    SIGNED_CREDENTIALS.add(credentials);
+
+            RVILocalNode.setCredentials(HVACApplication.getContext(), SIGNED_CREDENTIALS);
+
+            pkiComplete = true;
+
+            if (readyToConnect)
+                start();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    static boolean isRviConfigured() {
         if (getServerUrl()  == null || getServerUrl().isEmpty()) return false;
         if (getServerPort() == 0)                                return false;
 
@@ -216,18 +314,12 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
         return true;
     }
 
-    private static KeyStore getKeyStore(String fileName, String type, String password) throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException { // type = "jks"?
-        AssetManager assetManager = applicationContext.getAssets();
-        InputStream fis = assetManager.open(fileName);
 
-        KeyStore ks = KeyStore.getInstance(type);
-        ks.load(fis, password.toCharArray());
-        fis.close();
+    static void start() {
+        readyToConnect = true;
 
-        return ks;
-    }
+        if (!pkiComplete) return;
 
-    public static void start() {
         if (getUsingProxyServer()) {
             node.setServerUrl(getProxyServerUrl());
             node.setServerPort(getProxyServerPort());
@@ -237,53 +329,35 @@ public class HVACManager implements ServiceBundle.ServiceBundleListener
             node.setServerPort(getServerPort());
         }
 
-        try {
-            node.setKeyStores(getKeyStore("server-certs", "BKS", "password"), getKeyStore("client.p12", "PKCS12", "password"), "password");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        RVILocalNode.addLocalServices(HVACApplication.getContext(), localServiceIdentifiers);
 
-        node.addJWTCredentials("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJyaWdodF90b19pbnZva2UiOlsiZ2VuaXZpLm9yZyJdLCJpc3MiOiJqbHIuY29tIiwiZGV2aWNlX2NlcnQiOiJNSUlCOHpDQ0FWd0NBUUV3RFFZSktvWklodmNOQVFFTEJRQXdRakVMTUFrR0ExVUVCaE1DVlZNeER6QU5CZ05WQkFnTUJrOXlaV2R2YmpFUk1BOEdBMVVFQnd3SVVHOXlkR3hoYm1ReER6QU5CZ05WQkFvTUJrZEZUa2xXU1RBZUZ3MHhOVEV4TWpjeU16RTBOVEphRncweE5qRXhNall5TXpFME5USmFNRUl4Q3pBSkJnTlZCQVlUQWxWVE1ROHdEUVlEVlFRSURBWlBjbVZuYjI0eEVUQVBCZ05WQkFjTUNGQnZjblJzWVc1a01ROHdEUVlEVlFRS0RBWkhSVTVKVmtrd2daOHdEUVlKS29aSWh2Y05BUUVCQlFBRGdZMEFNSUdKQW9HQkFKdHZpTThBUklyRnF1UGMwbXlCOUJ1RjlNZGtBLzJTYXRxYlpNV2VUT1VKSEdyakJERUVNTFE3ems4QXlCbWk3UnF1WVlaczY3U3lMaHlsVkdLaDZzSkFsZWN4YkhVd2o3Y1pTUzFibUtNamU2TDYxZ0t3eEJtMk5JRlUxY1ZsMmpKbFRhVTlWWWhNNHhrNTd5ajI4bmtOeFNZV1AxdmJGWDJORFgyaUg3YjVBZ01CQUFFd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ1lFQWhicVZyOUUvME03MjluYzZESStxZ3FzUlNNZm95dkEzQ21uL0VDeGwxeWJHa3V6TzdzQjhmR2pnTVE5enpjYjZxMXVQM3dHalBpb3FNeW1pWVlqVW1DVHZ6ZHZSQlorNlNEanJaZndVdVlleGlLcUk5QVA2WEthSGxBTDE0K3JLKzZITjR1SWtaY0l6UHdTTUhpaDFic1RScHlZNVozQ1VEY0RKa1l0VmJZcz0iLCJ2YWxpZGl0eSI6eyJzdGFydCI6MTQ1MjE5Mjc3Nywic3RvcCI6MTQ4MzcyODc3N30sInJpZ2h0X3RvX3JlZ2lzdGVyIjpbImdlbml2aS5vcmciXSwiY3JlYXRlX3RpbWVzdGFtcCI6MTQ1MjE5Mjc3NywiaWQiOiJpbnNlY3VyZV9jcmVkZW50aWFscyJ9.TBDUJFL1IQ039Lz7SIkcblhz62jO35STJ8OiclL_xlxEE_L_EjnELrDOGvkIh7zhhl8RMHkUJcTFQKF7P6WDJ5rUJejXJlkTRf-aVmHqEhpspRw6xD2u_2A9wmTWLJF94_wsEb7M7xWCXVrbexu_oik85zmuxRQgRE5wrTC7DDQ");
-
-        if (hvacServiceBundle != null)
-            node.removeBundle(hvacServiceBundle);
-
-        hvacServiceBundle = new ServiceBundle(applicationContext, RVI_DOMAIN, RVI_BUNDLE_NAME, localServiceIdentifiers);
-        hvacServiceBundle.setListener(ourInstance);
-
-        node.addBundle(hvacServiceBundle);
         node.connect();
     }
 
-    public static void restart() {
+    static void restart() {
         node.disconnect();
         node.connect();
     }
 
-    public static void subscribeToHvacRvi() {
+    static void subscribeToHvacRvi() {
         invokeService(HVACServiceIdentifier.SUBSCRIBE.value(),
-                "{\"node\":\"" + RVI_DOMAIN + "/" + RVINode.getLocalNodeIdentifier(applicationContext) + "/\"}");
+                "{\"node\":\"" + RVI_DOMAIN + "/" + RVILocalNode.getLocalNodeIdentifier(applicationContext) + "/\"}");
     }
 
-    public static void invokeService(String serviceIdentifier, String value) {
+    static void invokeService(String serviceIdentifier, String value) {
         HashMap<String, Object> invokeParams = new HashMap<>(2);
 
-        invokeParams.put("sending_node", RVI_DOMAIN + "/" + RVINode.getLocalNodeIdentifier(applicationContext) + "/");
+        invokeParams.put("sending_node", RVI_DOMAIN + "/" + RVILocalNode.getLocalNodeIdentifier(applicationContext) + "/");
         invokeParams.put("value", value);
 
-        hvacServiceBundle.invokeService(serviceIdentifier, invokeParams, 360000);
-    }
-
-    @Override
-    public void onServiceInvoked(ServiceBundle serviceBundle, String serviceIdentifier, Object parameters) {
-        if (mListener != null) mListener.onServiceInvoked(serviceIdentifier, ((LinkedTreeMap) parameters).get("value"));
+        node.invokeService(serviceIdentifier, invokeParams, 360000);
     }
 
     public static HVACManagerListener getListener() {
         return ourInstance.mListener;
     }
 
-    public static void setListener(HVACManagerListener listener) {
+    static void setListener(HVACManagerListener listener) {
         ourInstance.mListener = listener;
     }
 }

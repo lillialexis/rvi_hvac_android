@@ -23,7 +23,7 @@ import com.google.gson.Gson;
  */
 class DlinkPacketParser
 {
-    private final static String TAG = "RVI:DlinkPacketParser";
+    private final static String TAG = "RVI/DlinkPacketParser__";
 
     private String                    mBuffer;
     private DlinkPacketParserListener mDataParserListener;
@@ -47,7 +47,7 @@ class DlinkPacketParser
          *
          * @param error the error
          */
-        void onPacketFailedToParse(Throwable error);
+        void onPacketFailedToParse(DlinkPacket packet, Throwable error);
     }
 
     /**
@@ -108,13 +108,13 @@ class DlinkPacketParser
     }
 
     private DlinkPacket stringToPacket(String string) {
-        Log.d(TAG, "Received packet: " + string);
+        //Log.d(TAG, "Received packet: " + string);
 
         if (mDataParserListener instanceof DlinkPacketParserTestCaseListener)
             ((DlinkPacketParserTestCaseListener) mDataParserListener).onJsonStringParsed(string);
 
         Gson gson = new Gson();
-        DlinkPacket packet;
+        DlinkPacket packet = null;
 
         try {
             packet = gson.fromJson(string, DlinkPacket.class);
@@ -138,7 +138,7 @@ class DlinkPacketParser
             }
         } catch (Exception e) {
             e.printStackTrace();
-            mDataParserListener.onPacketFailedToParse(e);
+            mDataParserListener.onPacketFailedToParse(packet, e);
 
             return null;
         }

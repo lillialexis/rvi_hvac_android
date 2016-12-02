@@ -77,6 +77,7 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
 
     private final static Integer DEFAULT_FAN_SPEED = 3;
     private final static Integer MAX_FAN_SPEED     = 8;
+    private boolean mNodeConnected = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,6 +120,8 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
         super.onResume();
 
         HVACManager.setListener(this);
+        HVACManager.initializeRvi();
+
         if (!HVACManager.isRviConfigured())
             startActivity(new Intent(this, SettingsActivity.class));
         else
@@ -523,14 +526,18 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
 
     @Override
     public void onNodeConnected() {
-        mMenu.getItem(0).setIcon(ContextCompat.getDrawable(this, R.drawable.connected_car));
+        if (mMenu != null) mMenu.getItem(0).setIcon(ContextCompat.getDrawable(this, R.drawable.connected_car));
         Toast.makeText(MainActivity.this, "Vehicle connected", Toast.LENGTH_SHORT).show();
+
+        this.mNodeConnected = true;
     }
 
     @Override
     public void onNodeDisconnected() {
-        mMenu.getItem(0).setIcon(ContextCompat.getDrawable(this, R.drawable.disconnected_car));
+        if (mMenu != null) mMenu.getItem(0).setIcon(ContextCompat.getDrawable(this, R.drawable.disconnected_car));
         Toast.makeText(MainActivity.this, "Vehicle disconnected", Toast.LENGTH_SHORT).show();
+
+        this.mNodeConnected = false;
     }
 
     String getServiceIdentifiersFromViewId(Integer uiControlId) {
@@ -546,6 +553,9 @@ public class MainActivity extends ActionBarActivity implements HVACManager.HVACM
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         this.mMenu = menu;
+
+        if (this.mNodeConnected) mMenu.getItem(0).setIcon(ContextCompat.getDrawable(this, R.drawable.connected_car));
+        else mMenu.getItem(0).setIcon(ContextCompat.getDrawable(this, R.drawable.disconnected_car));
 
         return true;
     }

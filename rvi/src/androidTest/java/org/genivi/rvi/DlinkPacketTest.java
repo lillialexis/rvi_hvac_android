@@ -1,4 +1,4 @@
-package com.jaguarlandrover.rvi;
+package org.genivi.rvi;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Copyright (c) 2015 Jaguar Land Rover.
@@ -8,7 +8,7 @@ package com.jaguarlandrover.rvi;
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
  * File:    DlinkPacketTest.java
- * Project: RVI SDK
+ * Project: RVI
  *
  * Created by Lilli Szafranski on 7/6/15.
  *

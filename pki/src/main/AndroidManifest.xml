@@ -6,14 +6,12 @@
   Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="org.genivi.rvi">
-
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+          package="org.genivi.pki">
 
     <application android:allowBackup="true"
                  android:label="@string/app_name"
-            >
+                 android:supportsRtl="true"
+    >
 
     </application>
 
